@@ -1,0 +1,1234 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+/* App container */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.App-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem 1rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.App-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.App-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Main content */
+.App-main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Filter controls */
+.filter-controls {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.view-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.view-buttons button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.view-buttons button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.view-buttons button.active {
+  background: #667eea;
+  color: white;
+}
+
+.category-filter,
+.class-filter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.category-filter label,
+.class-filter label {
+  font-weight: 600;
+  color: #333;
+}
+
+.category-filter select,
+.class-filter select {
+  padding: 0.5rem 1rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  min-width: 200px;
+}
+
+/* Content area */
+.content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 2rem;
+  min-height: 500px;
+}
+
+/* Improve list alignment */
+.content ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.content li {
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.content p {
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+/* Charts */
+.overview-chart,
+.category-chart {
+  text-align: center;
+}
+
+.overview-chart h2,
+.category-chart h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.chart-stats {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.chart-stats p {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chart-stats ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.chart-stats li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #eee;
+  line-height: 1.4;
+}
+
+/* Class detail */
+.class-detail {
+  max-width: 100%;
+}
+
+.class-detail h2 {
+  margin-bottom: 2rem;
+  color: #333;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.chart-section {
+  margin-bottom: 3rem;
+}
+
+.chart-section h3 {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+/* Audio selection */
+.audio-selection {
+  margin-bottom: 2rem;
+}
+
+.audio-selection h3 {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+/* Class selection */
+.class-selection {
+  margin-bottom: 2rem;
+}
+
+.class-selection h3 {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.class-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.class-list button {
+  text-align: center;
+  line-height: 1.4;
+  padding: 0.75rem 1rem;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.class-button:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.class-button.selected {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+/* Class info */
+.class-info {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.class-info h3 {
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.class-info p {
+  text-align: center;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.class-info .audio-selection {
+  margin-bottom: 0;
+}
+
+.class-info .audio-selection h4 {
+  margin-bottom: 1rem;
+  color: #555;
+  text-align: center;
+}
+
+.audio-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.audio-list button {
+  text-align: left;
+  line-height: 1.4;
+  padding: 0.75rem 1rem;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+.audio-button:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.audio-button.selected {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+/* Audio players */
+.players-section {
+  margin-top: 2rem;
+}
+
+.players-section h3 {
+  margin-bottom: 1.5rem;
+  color: #555;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.players-section h4 {
+  margin-bottom: 1rem;
+  color: #555;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.player-container {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.vibration-players {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.vibration-player {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vibration-player {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.audio-player {
+  margin-bottom: 1rem;
+}
+
+.audio-player h3 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 0;
+}
+
+.audio-player .error {
+  padding: 1rem;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c33;
+  margin-bottom: 1rem;
+}
+
+.audio-player .error button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #c33;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.audio-player .error button:hover {
+  background: #a22;
+}
+
+.audio-player .loading {
+  padding: 1rem;
+  background: #e8f4fd;
+  border: 1px solid #bee5eb;
+  border-radius: 6px;
+  color: #0c5460;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.simple-audio-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  min-height: 60px;
+}
+
+.simple-audio-controls .play-button {
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.simple-audio-controls .time-display {
+  flex: 1;
+  text-align: right;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.player-toggle {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.player-toggle label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  margin: 0;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.player-toggle label:hover {
+  background-color: #e9ecef;
+}
+
+.player-toggle input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.2);
+}
+
+/* Enhanced Audio Player Styles */
+.enhanced-audio-player {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.enhanced-audio-player h3 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 0;
+}
+
+.view-mode-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.view-mode-toggle button {
+  padding: 0.5rem 1rem;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.view-mode-toggle button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.view-mode-toggle button.active {
+  background: #667eea;
+  color: white;
+}
+
+.visualization-container {
+  margin-bottom: 1rem;
+  min-height: 120px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.waveform-view {
+  width: 100%;
+  height: 120px;
+}
+
+.spectrogram-view {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%), 
+              linear-gradient(-45deg, #f8f9fa 25%, transparent 25%), 
+              linear-gradient(45deg, transparent 75%, #f8f9fa 75%), 
+              linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spectrogram-placeholder {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+}
+
+.spectrogram-placeholder p {
+  margin: 0.25rem 0;
+}
+
+.spectrogram-placeholder h4 {
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 1rem;
+}
+
+.spectrogram-grid {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 60px;
+  gap: 1px;
+}
+
+.spectrogram-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 100%;
+  width: 100%;
+  max-width: 300px;
+}
+
+.spectrogram-bar {
+  flex: 1;
+  min-width: 2px;
+  background: linear-gradient(to top, #667eea, #4F4A85);
+  border-radius: 1px;
+  transition: height 0.3s ease;
+}
+
+.spectrogram-note {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-top: 1rem;
+  line-height: 1.4;
+}
+
+.enhanced-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  min-height: 60px;
+}
+
+.enhanced-controls .play-button {
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.enhanced-controls .time-display {
+  flex: 1;
+  text-align: center;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.view-mode-indicator {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Dual View Player Styles */
+.dual-view-player {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.dual-view-player h3 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 0;
+}
+
+/* Separate Waveform Section */
+.waveform-section-large {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.waveform-section-large h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+}
+
+.section-description {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  text-align: center;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.waveform-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.waveform-view-large {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Separate Spectrogram Section */
+.spectrogram-section-large {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.spectrogram-section-large h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+}
+
+.spectrogram-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spectrogram-canvas-large {
+  width: 100%;
+  max-width: 600px;
+  height: 120px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: #000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.spectrogram-placeholder-large {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.spectrogram-placeholder-large p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.spectrogram-note {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-top: 0.5rem;
+}
+
+/* Analysis Summary */
+.analysis-summary {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  margin-top: 1rem;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.summary-icon {
+  font-size: 1.5rem;
+  opacity: 0.9;
+}
+
+.summary-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Visualization Grid Styles */
+.visualization-grid {
+  padding: 1rem;
+}
+
+.loading-section {
+  text-align: center;
+  padding: 3rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.loading-section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #45a049);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.grid-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.grid-header h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.visualization-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.visualization-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.card-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.file-info {
+  font-size: 0.9rem;
+  color: #666;
+  font-family: monospace;
+}
+
+.audio-visualizations,
+.vibration-visualizations {
+  margin-bottom: 1.5rem;
+}
+
+.audio-visualizations h4,
+.vibration-visualizations h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.visualization-pair {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.waveform-mini,
+.spectrogram-mini {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.waveform-mini span,
+.spectrogram-mini span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+}
+
+.waveform-placeholder {
+  background: #f8f9fa;
+  border-radius: 4px;
+  padding: 0.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.vibration-item {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.vibration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.design-name {
+  font-weight: 600;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.rating {
+  background: #667eea;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.error-section {
+  text-align: center;
+  padding: 2rem;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  color: #721c24;
+}
+
+.error-section button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.error-section button:hover {
+  background: #c82333;
+}
+
+/* Waveform Mini States */
+.waveform-loading {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 4px;
+  color: #666;
+  font-size: 0.8rem;
+  border: 1px solid #e9ecef;
+}
+
+.waveform-error {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8d7da;
+  border-radius: 4px;
+  color: #721c24;
+  font-size: 0.8rem;
+  border: 1px solid #f5c6cb;
+}
+
+.no-selection {
+  text-align: center;
+  padding: 3rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+  margin-top: 2rem;
+}
+
+.no-selection h3 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.no-selection p {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.waveform {
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.play-button {
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.play-button:hover {
+  background: #5a6fd8;
+}
+
+.time-display {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Loading and error states */
+.loading,
+.error {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.loading h2,
+.error h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.error button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.error button:hover {
+  background: #5a6fd8;
+}
+
+/* Footer */
+.App-footer {
+  background: #333;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .App-header h1 {
+    font-size: 2rem;
+  }
+  
+  .App-main {
+    padding: 1rem;
+  }
+  
+  .view-buttons {
+    flex-direction: column;
+  }
+  
+  .view-buttons button {
+    width: 100%;
+  }
+  
+  .category-filter,
+  .class-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .category-filter select,
+  .class-filter select {
+    min-width: auto;
+  }
+  
+  .audio-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .class-list {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .vibration-players {
+    grid-template-columns: 1fr;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .simple-audio-controls {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .simple-audio-controls .time-display {
+    text-align: center;
+  }
+  
+  .view-mode-toggle {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .view-mode-toggle button {
+    width: 100%;
+  }
+  
+  .enhanced-controls {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .enhanced-controls .time-display {
+    text-align: center;
+  }
+  
+  .view-mode-indicator {
+    text-align: center;
+  }
+  
+  .waveform-section-large,
+  .spectrogram-section-large {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .waveform-section-large h3,
+  .spectrogram-section-large h3 {
+    font-size: 1.1rem;
+  }
+  
+  .section-description {
+    font-size: 0.8rem;
+  }
+  
+  .waveform-view-large,
+  .spectrogram-canvas-large {
+    height: 80px;
+  }
+  
+  .analysis-summary {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .summary-item {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  
+  .visualization-cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .visualization-card {
+    padding: 1rem;
+  }
+  
+  .visualization-pair {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .waveform-mini,
+  .spectrogram-mini {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .App-header {
+    padding: 1rem;
+  }
+  
+  .App-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .content {
+    padding: 1rem;
+  }
+  
+  .class-list {
+    grid-template-columns: 1fr;
+  }
+}

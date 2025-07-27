@@ -1,0 +1,27 @@
+{
+  "totalEntries": 4000,
+  "uniqueAudioFiles": 1000,
+  "uniqueClasses": 8,
+  "categories": {
+    "Human Speech": 3148,
+    "Music": 564,
+    "Transportation": 4,
+    "Nature Sounds": 176,
+    "Machinery": 64,
+    "Alarms": 8,
+    "Electronics": 12,
+    "Household": 24
+  },
+  "designs": [
+    "freqshift",
+    "hapticgen",
+    "percept",
+    "pitchmatch"
+  ],
+  "averageRatings": {
+    "freqshift": 56.91,
+    "hapticgen": 56.99,
+    "percept": 31.17,
+    "pitchmatch": 62.58
+  }
+}
