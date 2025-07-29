@@ -2,6 +2,12 @@
 
 An advanced interactive web application for exploring how well four vibration designs match real-world sounds, featuring comprehensive data visualization, audio/vibration playback, waveform analysis, and AI-powered research assistance.
 
+## 🌐 **Live Demo**
+
+**Visit the live application:** [https://audiovibration.netlify.app/](https://audiovibration.netlify.app/)
+
+Experience all features including the comprehensive dashboard, audio playback, AI research assistant, and interactive visualizations.
+
 ## 🚀 Features
 
 ### 📊 **Comprehensive Dashboard**
