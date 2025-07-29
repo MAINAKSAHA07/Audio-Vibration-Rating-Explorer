@@ -24,11 +24,19 @@ const ResearchChatbot: React.FC<ResearchChatbotProps> = ({ ratings, summary }) =
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
+  // Debug data availability
+  console.log('🔍 ResearchChatbot data:', {
+    ratingsCount: ratings?.length,
+    summary: summary,
+    hasRatings: !!ratings,
+    hasSummary: !!summary
+  });
+
   // Add welcome message on component mount
   useEffect(() => {
     const welcomeMessage: Message = {
       id: 'welcome',
-      text: `👋 Welcome! I'm your research assistant for vibration design analysis. I can help you explore how different vibration designs perform across various sound categories and classes.
+      text: `👋 Hi there! I'm your research assistant for vibration design analysis. I can help you explore how different vibration designs perform across various sound categories and classes.
 
 I have access to data from ${summary.totalEntries} ratings across ${summary.uniqueAudioFiles} audio files, and I can analyze preferences for 4 different vibration designs: freqshift, hapticgen, percept, and pitchmatch.
 
@@ -37,13 +45,30 @@ What would you like to know about? You can ask me about design preferences, cate
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
+    
+    // Test the question matching logic
+    console.log('🧪 Testing question matching...');
+    const testQuestions = [
+      "Which vibration design is most preferred overall?",
+      "Which vibration designs are consistently preferred?",
+      "Are there category-specific design preferences?",
+      "Do preferences vary significantly across classes?",
+      "Which design works best for human speech?",
+      "What's the most consistent vibration design?"
+    ];
+    
+    testQuestions.forEach((question, index) => {
+      console.log(`🧪 Test ${index + 1}: "${question}"`);
+      const answer = generateAnswer(question);
+      console.log(`🧪 Answer ${index + 1}:`, answer);
+    });
   }, [summary]);
 
   // Predefined questions and answers
   const predefinedQuestions = [
     {
       question: "Which vibration designs are consistently preferred?",
-      keywords: ["preferred", "consistently", "best", "top", "designs"]
+      keywords: ["consistently", "preferred", "reliable", "stable"]
     },
     {
       question: "Are there category-specific design preferences?",
@@ -52,11 +77,40 @@ What would you like to know about? You can ask me about design preferences, cate
     {
       question: "Do preferences vary significantly across classes?",
       keywords: ["classes", "vary", "significantly", "across"]
+    },
+    {
+      question: "Which design works best for human speech?",
+      keywords: ["human speech", "speech", "best", "design"]
+    },
+    {
+      question: "What's the most consistent vibration design?",
+      keywords: ["consistent", "reliable", "stable", "design"]
+    },
+    {
+      question: "Which vibration design is most preferred overall?",
+      keywords: ["preferred", "overall", "best", "top", "designs"]
+    },
+    {
+      question: "Which design performs best across all categories?",
+      keywords: ["performs", "best", "across", "categories"]
+    },
+    {
+      question: "Are there significant differences between vibration designs?",
+      keywords: ["significant", "differences", "between", "designs"]
+    },
+    {
+      question: "Which design is most reliable for different sound types?",
+      keywords: ["reliable", "different", "sound", "types"]
+    },
+    {
+      question: "How do vibration preferences differ by category?",
+      keywords: ["preferences", "differ", "category", "categories"]
     }
   ];
 
   // Analyze data for answers
   const analyzeDesignPreferences = () => {
+    console.log('📊 Analyzing design preferences...');
     const designs = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
     const designStats = designs.map(design => {
       const designData = ratings.filter(r => r.design === design);
@@ -70,15 +124,21 @@ What would you like to know about? You can ask me about design preferences, cate
     const sortedByRating = [...designStats].sort((a, b) => b.avgRating - a.avgRating);
     const mostConsistent = [...designStats].sort((a, b) => a.stdDev - b.stdDev);
 
-    return {
+    const result = {
       topDesign: sortedByRating[0],
       mostConsistent: mostConsistent[0],
       allDesigns: sortedByRating
     };
+    
+    console.log('📊 Design preferences result:', result);
+    return result;
   };
 
   const analyzeCategoryPreferences = () => {
+    console.log('📊 Analyzing category preferences...');
     const categories = [...new Set(ratings.map(r => r.category))];
+    console.log('📊 Categories found:', categories);
+    
     const categoryAnalysis = categories.map(category => {
       const categoryData = ratings.filter(r => r.category === category);
       const designs = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
@@ -93,6 +153,7 @@ What would you like to know about? You can ask me about design preferences, cate
       return { category, topDesign, allDesigns: designStats };
     });
 
+    console.log('📊 Category preferences result:', categoryAnalysis);
     return categoryAnalysis;
   };
 
@@ -126,6 +187,8 @@ What would you like to know about? You can ask me about design preferences, cate
 
   const generateAnswer = (question: string): { text: string; data?: AnalysisData } => {
     const lowerQuestion = question.toLowerCase();
+    console.log('🔍 Analyzing question:', question);
+    console.log('🔍 Lower question:', lowerQuestion);
     
     // Check for greetings and friendly responses
     if (lowerQuestion.includes('hello') || lowerQuestion.includes('hi') || 
@@ -151,12 +214,25 @@ What would you like to know about? You can ask me about design preferences, cate
         }
       };
     }
-    
-    // Check for category-specific questions first (more specific)
-    if (lowerQuestion.includes('category') || lowerQuestion.includes('categories') || 
-        (lowerQuestion.includes('preferred') && lowerQuestion.includes('categories')) ||
-        lowerQuestion.includes('freqshift') || lowerQuestion.includes('pitchmatch') ||
-        lowerQuestion.includes('hapticgen') || lowerQuestion.includes('percept')) {
+
+    // Check for consistently preferred questions (MOST SPECIFIC - check first)
+    if (lowerQuestion.includes('consistently preferred') || 
+        (lowerQuestion.includes('consistently') && lowerQuestion.includes('preferred'))) {
+      console.log('🎯 Matched: Consistently preferred question');
+      const analysis = analyzeDesignPreferences();
+      return {
+        text: `Analysis of consistently preferred vibration designs based on ${summary.totalEntries} ratings:`,
+        data: {
+          type: 'design-preferences',
+          analysis: analysis
+        }
+      };
+    }
+
+    // Check for category-specific preferences questions (SPECIFIC)
+    if (lowerQuestion.includes('category-specific') || 
+        (lowerQuestion.includes('category') && lowerQuestion.includes('specific'))) {
+      console.log('🎯 Matched: Category-specific preferences question');
       const analysis = analyzeCategoryPreferences();
       return {
         text: `Category-specific design preferences analysis:`,
@@ -167,8 +243,53 @@ What would you like to know about? You can ask me about design preferences, cate
       };
     }
 
-    // Check for class variation questions
+    // Check for class variation questions (SPECIFIC)
+    if (lowerQuestion.includes('vary significantly') || 
+        (lowerQuestion.includes('vary') && lowerQuestion.includes('significantly')) ||
+        lowerQuestion.includes('across classes')) {
+      console.log('🎯 Matched: Class variation question');
+      const analysis = analyzeClassVariations();
+      return {
+        text: `Analysis of how preferences vary across different classes:`,
+        data: {
+          type: 'class-variations',
+          analysis: analysis
+        }
+      };
+    }
+
+    // Check for human speech specific questions (SPECIFIC)
+    if (lowerQuestion.includes('human speech') || lowerQuestion.includes('speech')) {
+      console.log('🎯 Matched: Human speech question');
+      const analysis = analyzeCategoryPreferences();
+      const speechAnalysis = analysis.find(a => a.category === 'Human Speech');
+      if (speechAnalysis) {
+        return {
+          text: `For Human Speech (${speechAnalysis.allDesigns.length} designs analyzed):`,
+          data: {
+            type: 'category-preferences',
+            analysis: [speechAnalysis]
+          }
+        };
+      }
+    }
+
+    // Check for consistency questions (SPECIFIC)
+    if (lowerQuestion.includes('consistent') || lowerQuestion.includes('reliable') || lowerQuestion.includes('stable')) {
+      console.log('🎯 Matched: Consistency question');
+      const analysis = analyzeDesignPreferences();
+      return {
+        text: `Consistency analysis based on ${summary.totalEntries} ratings:`,
+        data: {
+          type: 'design-preferences',
+          analysis: analysis
+        }
+      };
+    }
+
+    // Check for general class variation questions (SPECIFIC)
     if (lowerQuestion.includes('classes') || lowerQuestion.includes('vary') || lowerQuestion.includes('across')) {
+      console.log('🎯 Matched: General class variation question');
       const analysis = analyzeClassVariations();
       return {
         text: `Class-specific design preferences analysis:`,
@@ -178,11 +299,66 @@ What would you like to know about? You can ask me about design preferences, cate
         }
       };
     }
+    
+    // Check for category-specific questions (SPECIFIC)
+    if (lowerQuestion.includes('category') || lowerQuestion.includes('categories') || 
+        (lowerQuestion.includes('preferred') && lowerQuestion.includes('categories'))) {
+      console.log('🎯 Matched: Category question');
+      const analysis = analyzeCategoryPreferences();
+      return {
+        text: `Category-specific design preferences analysis:`,
+        data: {
+          type: 'category-preferences',
+          analysis: analysis
+        }
+      };
+    }
 
-    // Check for general design preference questions (more general)
+    // Check for "most preferred" questions (SPECIFIC)
+    if (lowerQuestion.includes('most preferred')) {
+      console.log('🎯 Matched: Most preferred question');
+      const analysis = analyzeDesignPreferences();
+      return {
+        text: `Most preferred vibration design analysis based on ${summary.totalEntries} ratings:`,
+        data: {
+          type: 'design-preferences',
+          analysis: analysis
+        }
+      };
+    }
+
+    // Check for "best" questions (SPECIFIC)
+    if (lowerQuestion.includes('best') && lowerQuestion.includes('design')) {
+      console.log('🎯 Matched: Best design question');
+      const analysis = analyzeDesignPreferences();
+      return {
+        text: `Best vibration design analysis based on ${summary.totalEntries} ratings:`,
+        data: {
+          type: 'design-preferences',
+          analysis: analysis
+        }
+      };
+    }
+
+    // Check for "preferred overall" questions (SPECIFIC)
+    if (lowerQuestion.includes('preferred overall') || 
+        (lowerQuestion.includes('preferred') && lowerQuestion.includes('overall'))) {
+      console.log('🎯 Matched: Preferred overall question');
+      const analysis = analyzeDesignPreferences();
+      return {
+        text: `Overall design preference analysis based on ${summary.totalEntries} ratings:`,
+        data: {
+          type: 'design-preferences',
+          analysis: analysis
+        }
+      };
+    }
+
+    // Check for general design preference questions (MOST GENERAL - check last)
     if (lowerQuestion.includes('preferred') || lowerQuestion.includes('consistently') || 
         lowerQuestion.includes('best') || lowerQuestion.includes('top') || 
         lowerQuestion.includes('designs')) {
+      console.log('🎯 Matched: General preference question');
       const analysis = analyzeDesignPreferences();
       return {
         text: `Based on the analysis of ${summary.totalEntries} ratings:`,
@@ -193,22 +369,31 @@ What would you like to know about? You can ask me about design preferences, cate
       };
     }
 
+    console.log('🎯 Matched: No specific condition - showing help');
     return {
       text: `🤖 I'm here to help you explore vibration design preferences! Here are some things you can ask me about:
 
-🎯 Design Preferences:
-- "Which designs are consistently preferred?"
-- "What are the best vibration designs?"
-
-📂 Category Analysis:
+🎯 **Key Research Questions:**
+- "Which vibration designs are consistently preferred?"
 - "Are there category-specific design preferences?"
-- "Which designs work best for different categories?"
+- "Do preferences vary significantly across classes?"
 
-🎵 Class Variations:
+📊 **Design Analysis:**
+- "Which vibration design is most preferred overall?"
+- "What's the most consistent vibration design?"
+- "Which design performs best across all categories?"
+
+📂 **Category Analysis:**
+- "Show me category-specific design preferences"
+- "Which design works best for human speech?"
+- "How do vibration preferences differ by category?"
+
+🎵 **Class Variations:**
 - "Do preferences vary across classes?"
 - "How do designs perform in different classes?"
+- "Are there significant differences between vibration designs?"
 
-💡 Quick Insights:
+💡 **Quick Insights:**
 - "Show me the top design"
 - "Which design wins most categories?"
 - "What's the most consistent design?"
@@ -395,7 +580,34 @@ What would you like to know about? You can ask me about design preferences, cate
   };
 
   const handleQuickQuestion = (question: string) => {
-    setInputValue(question);
+    console.log('🚀 Quick question clicked:', question);
+    
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: question,
+      isUser: true,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, userMessage]);
+    
+    // Show typing indicator
+    setIsTyping(true);
+    
+    // Generate and add bot response after delay
+    setTimeout(() => {
+      const answer = generateAnswer(question);
+      console.log('🤖 Generated answer:', answer);
+      const botMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: answer.text,
+        isUser: false,
+        timestamp: new Date(),
+        data: answer.data
+      };
+      setMessages(prev => [...prev, botMessage]);
+      setIsTyping(false);
+    }, 1000);
   };
 
   return (
