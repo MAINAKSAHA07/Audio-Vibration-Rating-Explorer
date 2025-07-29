@@ -1,53 +1,143 @@
 # Audio-Vibration Rating Explorer
 
-An interactive web application for exploring how well four vibration designs match real-world sounds, with interactive charts, audio/vibration playback, and waveform inspection.
+An advanced interactive web application for exploring how well four vibration designs match real-world sounds, featuring comprehensive data visualization, audio/vibration playback, waveform analysis, and AI-powered research assistance.
 
-## Features
+## 🚀 Features
 
-- **Overview Dashboard**: View average ratings across all vibration designs
-- **Category Analysis**: Explore ratings by sound categories (Human Speech, Music, Nature Sounds, etc.)
-- **Class Detail View**: Deep dive into specific audio classes with interactive audio players
-- **Research Assistant Chatbot**: Ask questions about vibration design preferences and get data-driven insights
-- **Audio Playback**: Listen to original sound recordings and their corresponding vibration designs
-- **Waveform Visualization**: Visual representation of audio waveforms using WaveSurfer.js
-- **Responsive Design**: Works on desktop and mobile devices
+### 📊 **Comprehensive Dashboard**
+- **Multi-chart dashboard** with 6 different visualizations
+- **Category Distribution** pie chart showing sound type breakdown
+- **Rating Distribution** histogram for rating patterns
+- **Top & Bottom Performers** bar chart for class performance
+- **Performance Heatmap** showing design-category interactions
+- **Rating vs Frequency** scatter plot for trend analysis
+- **Design Correlations** matrix for relationship analysis
 
-## Tech Stack
+### 🎵 **Audio & Vibration Playback**
+- **Dual-view audio player** with waveform visualization
+- **Real-time waveform display** using WaveSurfer.js
+- **Vibration design playback** for all 4 designs per audio file
+- **Simple and enhanced player modes** with different control interfaces
+- **Time synchronization** between audio and vibration playback
+- **Spectrogram visualization** for frequency analysis
 
-- **Frontend**: React.js with TypeScript
-- **Charts**: Recharts for data visualization
-- **Audio**: WaveSurfer.js for waveform display and audio playback
-- **Data Processing**: Node.js with xlsx for Excel file processing
-- **Deployment**: Netlify for static site hosting
+### 📈 **Data Visualization**
+- **Overview Chart** - Average ratings across all vibration designs
+- **Category Analysis** - Detailed ratings by sound categories
+- **Class Detail View** - Deep dive into specific audio classes
+- **Creative Visualizations** - Advanced D3.js charts including:
+  - **Volcano Contour Plot** - Interactive 3D-style visualization
+  - **Radial Stacked Bar Chart** - Circular data representation
+- **Generated Visualizations** - Pre-processed waveform and spectrogram analysis
 
-## Project Structure
+### 🤖 **AI Research Assistant**
+- **Intelligent chatbot** for data-driven insights
+- **Quick question buttons** for common research queries
+- **Real-time analysis** of vibration design preferences
+- **Category-specific insights** and recommendations
+- **Statistical analysis** with correlation data
+- **Design performance comparisons** across different sound types
+
+### 🎯 **Interactive Navigation**
+- **7 main views** with emoji-enhanced navigation
+- **Filter controls** for category and class selection
+- **Responsive design** for desktop and mobile devices
+- **Real-time data loading** with progress indicators
+
+## 🛠️ Tech Stack
+
+### **Frontend**
+- **React.js 19.1.0** with TypeScript
+- **D3.js 7.9.0** for advanced data visualization
+- **Recharts 3.1.0** for standard charts
+- **WaveSurfer.js 7.10.1** for audio waveform display
+- **CSS3** with responsive design and animations
+
+### **Data Processing**
+- **Node.js** with xlsx for Excel file processing
+- **Custom data transformation** scripts
+- **JSON/CSV output** for web consumption
+- **Real-time data fetching** via REST API
+
+### **Deployment**
+- **Netlify** for static site hosting
+- **Git-based deployment** with automatic builds
+- **CDN optimization** for global performance
+
+## 📁 Project Structure
 
 ```
+Audio-Vibration Rating Explorer/
 ├── public/
-│   ├── audio/           # Original audio files
-│   ├── vibration/       # Vibration design files
-│   └── data/           # Processed JSON data
+│   ├── audio/           # 1000+ original audio files (.wav)
+│   ├── vibration/       # 4000+ vibration design files (.wav)
+│   ├── data/           # Processed JSON/CSV data
+│   │   ├── ratings.json    # Main dataset (4000 entries)
+│   │   ├── summary.json    # Statistical summary
+│   │   ├── ratings.csv     # CSV version for debugging
+│   │   └── visualizations/ # Pre-generated analysis files
+│   └── index.html      # Main HTML entry point
 ├── src/
 │   ├── components/     # React components
-│   ├── utils/         # API and data helper functions
-│   └── App.tsx        # Main application
+│   │   ├── DashboardOverview.tsx      # Main dashboard (6 charts)
+│   │   ├── FilterControls.tsx         # Navigation controls
+│   │   ├── OverviewChart.tsx          # Overview visualization
+│   │   ├── CategoryChart.tsx          # Category analysis
+│   │   ├── ClassDetail.tsx            # Class-specific view
+│   │   ├── AudioPlayer.tsx            # Audio playback component
+│   │   ├── SimpleAudioPlayer.tsx      # Basic audio controls
+│   │   ├── DualViewPlayer.tsx         # Advanced dual-view player
+│   │   ├── ResearchChatbot.tsx        # AI assistant (464 lines)
+│   │   ├── VolcanoContourPlot.tsx     # Creative visualization
+│   │   ├── RadialStackedBarChart.tsx  # Radial chart component
+│   │   ├── GeneratedVisualizations.tsx # Pre-processed analysis
+│   │   ├── VisualizationGrid.tsx      # Grid layout for charts
+│   │   ├── SpectrogramView.tsx        # Frequency analysis
+│   │   └── DataTest.tsx               # Data validation component
+│   ├── utils/         # Helper functions
+│   │   ├── api.ts         # Data fetching and interfaces
+│   │   └── dataHelpers.ts # Data processing utilities
+│   ├── App.tsx        # Main application component
+│   └── App.css        # Comprehensive styling (2065 lines)
 ├── scripts/
-│   └── process-data.js # Data processing script
-└── netlify.toml       # Netlify configuration
+│   ├── process-data.js                # Excel to JSON conversion
+│   ├── generate-visualizations.js     # Pre-processing analysis
+│   └── generate-visualization-structure.js # Structure generation
+├── audio_vibration/   # Raw audio data
+│   ├── audio/         # Original sound files
+│   └── vibration/     # Vibration design files
+├── audio1000_ratings.xlsx # Source Excel data
+└── netlify.toml       # Deployment configuration
 ```
 
-## Setup Instructions
+## 🎵 Data Structure
 
-### Prerequisites
+### **Audio Dataset**
+- **1000 real-world sound recordings** with ratings for each design
+- **4 vibration designs**: freqshift, hapticgen, percept, pitchmatch
+- **8 audio classes** (A-H) mapped to categories
+- **Rating scale**: 0-100 for each design
+- **Categories**: Human Speech (78.7%), Music (14.1%), Nature Sounds (4.4%), Machinery (1.6%), Household (0.6%), Electronics (0.3%), Transportation (0.1%), Alarms (0.2%)
 
+### **Processed Data**
+- **4000 total ratings** (1000 files × 4 designs)
+- **JSON format** for web consumption
+- **CSV backup** for debugging and analysis
+- **Summary statistics** for quick insights
+
+## 🚀 Setup Instructions
+
+### **Prerequisites**
 - Node.js (v16 or higher)
 - npm or yarn
+- Git for version control
 
-### Installation
+### **Installation**
 
-1. **Clone or download the project**
+1. **Clone the repository**
    ```bash
-   cd audio-vibration-explorer
+   git clone <repository-url>
+   cd Audio-Vibration-Rating-Explorer
    ```
 
 2. **Install dependencies**
@@ -59,166 +149,181 @@ An interactive web application for exploring how well four vibration designs mat
    ```bash
    npm run process-data
    ```
-   This will read the Excel file and generate the JSON data files.
+   This converts the Excel file to JSON format.
 
-4. **Start the development server**
+4. **Generate visualizations** (optional)
+   ```bash
+   npm run generate-visualizations
+   npm run generate-structure
+   ```
+
+5. **Start development server**
    ```bash
    npm start
    ```
 
-5. **Open your browser**
+6. **Open your browser**
    Navigate to `http://localhost:3000`
 
-## Data Processing
+## 📊 Usage Guide
 
-The application processes the `audio1000_ratings.xlsx` file to create:
+### **Navigation Views**
 
-- `public/data/ratings.json` - Transformed data in long format
-- `public/data/summary.json` - Summary statistics
+1. **📈 Overview** - High-level summary with average ratings
+2. **📊 Dashboard** - Comprehensive 6-chart dashboard
+3. **🏷️ By Category** - Filter and analyze by sound category
+4. **🎓 By Class** - Deep dive into specific audio classes
+5. **📊 All Visualizations** - Pre-generated waveform analysis
+6. **🎨 Creative Visualizations** - Advanced D3.js charts
+7. **🤖 Research Assistant** - AI-powered data insights
+
+### **Dashboard Features**
+
+#### **Category Distribution**
+- Interactive pie chart showing sound type breakdown
+- Color-coded segments with percentage labels
+- Legend with detailed category information
+
+#### **Rating Distribution**
+- Histogram showing rating frequency patterns
+- Interactive bars with hover effects
+- Statistical analysis of rating distribution
+
+#### **Top & Bottom Performers**
+- Bar chart comparing class performance
+- Color-coded top performers (red) vs bottom performers (blue)
+- Value labels on each bar for precise reading
+
+#### **Performance Heatmap**
+- Color-coded matrix showing design-category interactions
+- Interactive cells with tooltips
+- Gradient legend for rating interpretation
+
+#### **Rating vs Frequency**
+- Scatter plot showing rating trends
+- Trend line for pattern analysis
+- Interactive points with detailed information
+
+#### **Design Correlations**
+- Correlation matrix between vibration designs
+- Color-coded correlation strength
+- Statistical significance indicators
+
+### **Audio Playback Features**
+
+#### **Dual-View Player**
+- **Simple Mode**: Basic play/pause controls with time display
+- **Enhanced Mode**: Full waveform visualization with real-time cursor
+- **Dual View**: Side-by-side audio and vibration comparison
+- **Spectrogram**: Frequency analysis visualization
+
+#### **Vibration Design Playback**
+- All 4 designs available per audio file
+- Synchronized playback controls
+- Individual design rating display
+- A/B comparison capabilities
+
+### **Research Assistant**
+
+#### **Quick Questions**
+- "Which vibration design is most preferred overall?"
+- "What are the top performing designs by category?"
+- "Show me the most consistent vibration design"
+- "Which design works best for human speech?"
+
+#### **Interactive Analysis**
+- Real-time statistical calculations
+- Category-specific insights
+- Design performance comparisons
+- Correlation analysis
+
+## 🔧 Development
+
+### **Available Scripts**
+```bash
+npm start              # Start development server
+npm run build          # Build for production
+npm test               # Run tests
+npm run process-data   # Convert Excel to JSON
+npm run generate-visualizations  # Generate analysis files
+npm run generate-structure      # Create visualization structure
+```
+
+### **Data Processing**
+The application processes `audio1000_ratings.xlsx` to create:
+- `public/data/ratings.json` - Main dataset in long format
+- `public/data/summary.json` - Statistical summary
 - `public/data/ratings.csv` - CSV version for debugging
 
-### Data Structure
+### **Component Architecture**
+- **Modular React components** with TypeScript
+- **Custom hooks** for data management
+- **Responsive CSS** with mobile-first design
+- **D3.js integration** for advanced visualizations
 
-The processed data includes:
-- **4 vibration designs**: freqshift, hapticgen, percept, pitchmatch
-- **1000 real-world sound recordings** with ratings for each design
-- **8 audio classes** (A-H) mapped to categories
-- **Rating scale**: 0-100 for each design
+## 🌐 Deployment
 
-## Usage
-
-### Overview View
-- Shows average ratings across all vibration designs
-- Displays summary statistics
-- Provides a high-level comparison
-
-### Category View
-- Select a category from the dropdown
-- View detailed ratings for that category
-- Compare performance across designs
-
-### Class View
-- Select a specific audio class
-- View individual sound recordings with their ratings
-- Play original sounds and vibration designs
-- Compare waveforms visually
-
-### Research Assistant Chatbot
-- Ask questions about vibration design preferences
-- Get instant data-driven insights
-- Explore which designs are consistently preferred
-- Analyze category-specific and class-specific preferences
-- Quick question buttons for common research questions
-
-### Audio Playback
-- Click play buttons to listen to sound recordings
-- View real-time waveform visualization
-- Compare original sounds with vibration designs
-- See time progress and duration
-
-## Deployment
-
-### Netlify Deployment
-
+### **Netlify Deployment**
 1. **Connect to Git repository**
-   - Push your code to GitHub/GitLab
-   - Connect the repository to Netlify
+   - Push code to GitHub/GitLab
+   - Connect repository to Netlify
 
 2. **Build settings**
    - Build command: `npm run build`
    - Publish directory: `build`
 
 3. **Environment variables** (if needed)
-   - Add any required environment variables in Netlify dashboard
+   - Configure in Netlify dashboard
 
-### Manual Deployment
+### **Custom Domain**
+- Configure in Netlify DNS settings
+- SSL certificate automatically provided
 
-1. **Build the project**
-   ```bash
-   npm run build
-   ```
+## 📈 Performance
 
-2. **Deploy the `build` folder**
-   - Upload to any static hosting service
-   - Ensure all audio files are accessible
+### **Optimizations**
+- **Lazy loading** for large audio files
+- **Pre-processed visualizations** for faster loading
+- **Responsive images** and optimized assets
+- **CDN delivery** for global performance
 
-## File Organization
+### **Browser Support**
+- **Modern browsers** (Chrome, Firefox, Safari, Edge)
+- **Mobile responsive** design
+- **Progressive Web App** features
 
-### Audio Files
-- Original sound recordings: `public/audio/`
-- Vibration files: `public/vibration/`
-- File naming: `{id}-vib-{design}.wav`
+## 🤝 Contributing
 
-### Data Files
-- Excel source: `audio1000_ratings.xlsx`
-- Processed JSON: `public/data/ratings.json`
-- Summary stats: `public/data/summary.json`
-
-## Development
-
-### Adding New Features
-
-1. **New Components**: Add to `src/components/`
-2. **Data Helpers**: Extend `src/utils/dataHelpers.ts`
-3. **API Functions**: Add to `src/utils/api.ts`
-
-### Styling
-- Main styles: `src/App.css`
-- Responsive design included
-- Modern gradient design
-
-### Data Processing
-- Script: `scripts/process-data.js`
-- Run with: `npm run process-data`
-- Updates JSON files in `public/data/`
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Audio files not loading**
-   - Check that files are in `public/audio/` and `public/vibration/`
-   - Verify file permissions
-   - Check browser console for 404 errors
-
-2. **Data not loading**
-   - Run `npm run process-data` to regenerate JSON files
-   - Check that Excel file is in the root directory
-   - Verify JSON files are in `public/data/`
-
-3. **WaveSurfer not working**
-   - Check browser compatibility
-   - Ensure audio files are valid WAV format
-   - Check for CORS issues in development
-
-### Performance
-
-- Sound files are loaded on-demand
-- WaveSurfer instances are destroyed when components unmount
-- Large audio files may take time to load
-
-## License
-
-This project is for educational and research purposes.
-
-## Author
-
-**Mainak Malay Saha**
-- Email: msaha4@asu.edu
-- Website: [mainaksaha.in](https://mainaksaha.in)
-
-## Contributing
-
+### **Development Setup**
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Add tests if applicable
 5. Submit a pull request
 
-## Support
+### **Code Style**
+- **TypeScript** for type safety
+- **ESLint** for code quality
+- **Prettier** for formatting
+- **Component-based** architecture
 
-For issues or questions:
-- Check the troubleshooting section
-- Review browser console for errors
-- Ensure all dependencies are installed
-- Verify data processing has completed successfully
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👨‍💻 Author
+
+**Mainak Saha**
+- Website: [mainaksaha.in](https://mainaksaha.in/)
+- GitHub: [@mainaksaha](https://github.com/mainaksaha07)
+
+## 🙏 Acknowledgments
+
+- **D3.js** for advanced data visualization
+- **WaveSurfer.js** for audio waveform display
+- **React** for the component framework
+- **Netlify** for hosting and deployment
+
+---
+
+**🎵 Explore the fascinating world of audio-vibration matching with this comprehensive research tool!**
