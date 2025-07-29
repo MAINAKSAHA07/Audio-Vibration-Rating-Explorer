@@ -7,8 +7,8 @@ interface FilterControlsProps {
   selectedClass: string;
   onCategoryChange: (category: string) => void;
   onClassChange: (classCode: string) => void;
-  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization') => void;
-  currentView: 'overview' | 'category' | 'class' | 'visualization';
+  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard') => void;
+  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard';
 }
 
 const FilterControls: React.FC<FilterControlsProps> = ({
@@ -28,25 +28,43 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           onClick={() => onViewChange('overview')}
           className={currentView === 'overview' ? 'active' : ''}
         >
-          Overview
+          📈 Overview
+        </button>
+        <button
+          onClick={() => onViewChange('dashboard')}
+          className={currentView === 'dashboard' ? 'active' : ''}
+        >
+          📊 Dashboard
         </button>
         <button
           onClick={() => onViewChange('category')}
           className={currentView === 'category' ? 'active' : ''}
         >
-          By Category
+          🏷️ By Category
         </button>
         <button
           onClick={() => onViewChange('class')}
           className={currentView === 'class' ? 'active' : ''}
         >
-          By Class
+          🎓 By Class
         </button>
         <button
           onClick={() => onViewChange('visualization')}
           className={currentView === 'visualization' ? 'active' : ''}
         >
           📊 All Visualizations
+        </button>
+        <button
+          onClick={() => onViewChange('creative')}
+          className={currentView === 'creative' ? 'active' : ''}
+        >
+          🎨 Creative Visualizations
+        </button>
+        <button
+          onClick={() => onViewChange('chatbot')}
+          className={currentView === 'chatbot' ? 'active' : ''}
+        >
+          🤖 Research Assistant
         </button>
       </div>
 

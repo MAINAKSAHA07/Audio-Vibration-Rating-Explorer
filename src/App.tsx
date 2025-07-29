@@ -13,10 +13,13 @@ import CategoryChart from './components/CategoryChart';
 import ClassDetail from './components/ClassDetail';
 import FilterControls from './components/FilterControls';
 import DataTest from './components/DataTest';
-import VisualizationGrid from './components/VisualizationGrid';
 import GeneratedVisualizations from './components/GeneratedVisualizations';
+import ResearchChatbot from './components/ResearchChatbot';
+import VolcanoContourPlot from './components/VolcanoContourPlot';
+import RadialStackedBarChart from './components/RadialStackedBarChart';
+import DashboardOverview from './components/DashboardOverview';
 
-type ViewType = 'overview' | 'category' | 'class' | 'visualization';
+type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard';
 
 function App() {
   const [ratings, setRatings] = useState<RatingData[]>([]);
@@ -142,6 +145,28 @@ function App() {
       
       case 'visualization':
         return <GeneratedVisualizations />;
+      
+      case 'creative':
+        return (
+          <div>
+            <VolcanoContourPlot
+              data={ratings}
+              onClassSelect={setSelectedClass}
+            />
+            <div style={{ marginTop: '40px' }}>
+              <RadialStackedBarChart
+                data={ratings}
+                onClassSelect={setSelectedClass}
+              />
+            </div>
+          </div>
+        );
+      
+      case 'chatbot':
+        return <ResearchChatbot ratings={ratings} summary={summary} />;
+      
+      case 'dashboard':
+        return <DashboardOverview summary={summary} ratings={ratings} />;
       
       default:
         return <OverviewChart summary={summary} />;

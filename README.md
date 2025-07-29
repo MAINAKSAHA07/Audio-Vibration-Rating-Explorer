@@ -7,6 +7,7 @@ An interactive web application for exploring how well four vibration designs mat
 - **Overview Dashboard**: View average ratings across all vibration designs
 - **Category Analysis**: Explore ratings by sound categories (Human Speech, Music, Nature Sounds, etc.)
 - **Class Detail View**: Deep dive into specific audio classes with interactive audio players
+- **Research Assistant Chatbot**: Ask questions about vibration design preferences and get data-driven insights
 - **Audio Playback**: Listen to original sound recordings and their corresponding vibration designs
 - **Waveform Visualization**: Visual representation of audio waveforms using WaveSurfer.js
 - **Responsive Design**: Works on desktop and mobile devices
@@ -101,6 +102,13 @@ The processed data includes:
 - View individual sound recordings with their ratings
 - Play original sounds and vibration designs
 - Compare waveforms visually
+
+### Research Assistant Chatbot
+- Ask questions about vibration design preferences
+- Get instant data-driven insights
+- Explore which designs are consistently preferred
+- Analyze category-specific and class-specific preferences
+- Quick question buttons for common research questions
 
 ### Audio Playback
 - Click play buttons to listen to sound recordings
