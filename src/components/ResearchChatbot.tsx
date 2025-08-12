@@ -220,8 +220,22 @@ What would you like to know about? You can ask me about design preferences, cate
         (lowerQuestion.includes('consistently') && lowerQuestion.includes('preferred'))) {
       console.log('🎯 Matched: Consistently preferred question');
       const analysis = analyzeDesignPreferences();
+      
+      // Find designs with low standard deviation (high consistency)
+      const consistentDesigns = analysis.allDesigns
+        .filter(design => design.stdDev < 15) // Low variation threshold
+        .sort((a, b) => a.stdDev - b.stdDev);
+      
+      const consistencyText = consistentDesigns.length > 0 
+        ? `The most consistently preferred designs are: ${consistentDesigns.slice(0, 2).map(d => `${d.design} (std dev: ${d.stdDev.toFixed(2)})`).join(', ')}`
+        : `All designs show some variation, but ${analysis.mostConsistent.design} has the lowest standard deviation (${analysis.mostConsistent.stdDev.toFixed(2)}).`;
+      
       return {
-        text: `Analysis of consistently preferred vibration designs based on ${summary.totalEntries} ratings:`,
+        text: `📊 **Consistency Analysis** based on ${summary.totalEntries} ratings:
+
+${consistencyText}
+
+The analysis considers both average ratings and standard deviation to identify which designs are most consistently preferred across different audio samples.`,
         data: {
           type: 'design-preferences',
           analysis: analysis
@@ -413,23 +427,27 @@ What would you like to know about? You can ask me about design preferences, cate
       </div>
       
       <div className="design-rankings">
-        <h4>📊 Design Rankings</h4>
+        <h4>📊 Design Rankings (by Average Rating)</h4>
         <div className="ranking-list">
           {analysis.allDesigns.map((design: any, index: number) => (
             <div key={design.design} className={`ranking-item ${index === 0 ? 'top' : ''}`}>
               <span className="rank">#{index + 1}</span>
               <span className="design-name">{design.design}</span>
               <span className="rating">{design.avgRating.toFixed(2)}/100</span>
+              <span className="std-dev">±{design.stdDev.toFixed(2)}</span>
             </div>
           ))}
         </div>
       </div>
       
       <div className="consistency-info">
-        <h4>📈 Most Consistent Design</h4>
+        <h4>📈 Consistency Analysis</h4>
         <div className="consistency-item">
           <span className="design-name">{analysis.mostConsistent.design}</span>
-          <span className="std-dev">Std Dev: {analysis.mostConsistent.stdDev.toFixed(2)}</span>
+          <span className="std-dev">Lowest Std Dev: {analysis.mostConsistent.stdDev.toFixed(2)}</span>
+        </div>
+        <div className="consistency-explanation">
+          <p>💡 <strong>Consistency</strong> measures how stable the ratings are across different audio samples. Lower standard deviation = more consistent preferences.</p>
         </div>
       </div>
     </div>
@@ -620,7 +638,7 @@ What would you like to know about? You can ask me about design preferences, cate
       <div className="quick-questions">
         <h4>Quick Questions:</h4>
         <div className="question-buttons">
-          {predefinedQuestions.map((q, index) => (
+          {predefinedQuestions.slice(0, 5).map((q, index) => (
             <button
               key={index}
               onClick={() => handleQuickQuestion(q.question)}
@@ -630,6 +648,11 @@ What would you like to know about? You can ask me about design preferences, cate
             </button>
           ))}
         </div>
+        {predefinedQuestions.length > 5 && (
+          <div className="more-questions">
+            <p>💡 Type your own question or ask about specific categories, classes, or design comparisons!</p>
+          </div>
+        )}
       </div>
 
       <div className="chat-messages">
