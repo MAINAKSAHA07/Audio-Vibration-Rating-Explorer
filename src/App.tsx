@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { fetchRatings, fetchSummary, RatingData, SummaryData } from './utils/api';
+import { fetchRatings, fetchSummary, fetchMetadata, RatingData, SummaryData, MetadataData } from './utils/api';
 import { 
   getCategoryStats, 
   getClassStats, 
@@ -19,11 +19,14 @@ import VolcanoContourPlot from './components/VolcanoContourPlot';
 import RadialStackedBarChart from './components/RadialStackedBarChart';
 import DashboardOverview from './components/DashboardOverview';
 
-type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard';
+
+
+type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced';
 
 function App() {
   const [ratings, setRatings] = useState<RatingData[]>([]);
   const [summary, setSummary] = useState<SummaryData | null>(null);
+  const [metadata, setMetadata] = useState<MetadataData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -37,17 +40,20 @@ function App() {
     const loadData = async () => {
       try {
         setLoading(true);
-        console.log('Loading data...');
-        const [ratingsData, summaryData] = await Promise.all([
+        console.log('Loading enhanced data...');
+        const [ratingsData, summaryData, metadataData] = await Promise.all([
           fetchRatings(),
-          fetchSummary()
+          fetchSummary(),
+          fetchMetadata()
         ]);
-        console.log('Data loaded successfully:', {
+        console.log('Enhanced data loaded successfully:', {
           ratingsCount: ratingsData.length,
-          summary: summaryData
+          summary: summaryData,
+          metadata: metadataData
         });
         setRatings(ratingsData);
         setSummary(summaryData);
+        setMetadata(metadataData);
       } catch (err) {
         console.error('Error loading data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -63,8 +69,8 @@ function App() {
     return (
       <div className="App">
         <div className="loading">
-          <h2>Loading Audio-Vibration Explorer...</h2>
-          <p>Please wait while we load the data...</p>
+          <h2>Loading Enhanced Audio-Vibration Explorer...</h2>
+          <p>Please wait while we load the enhanced data...</p>
         </div>
       </div>
     );
@@ -100,6 +106,9 @@ function App() {
     switch (currentView) {
       case 'overview':
         return <OverviewChart summary={summary} />;
+      
+      case 'enhanced':
+        return <DashboardOverview summary={summary} ratings={ratings} />;
       
       case 'category':
         if (selectedCategory) {
@@ -169,15 +178,15 @@ function App() {
         return <DashboardOverview summary={summary} ratings={ratings} />;
       
       default:
-        return <OverviewChart summary={summary} />;
+        return <DashboardOverview summary={summary} ratings={ratings} />;
     }
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Audio-Vibration Rating Explorer</h1>
-        <p>Explore how well four vibration designs match everyday sounds</p>
+        <h1>Enhanced Audio-Vibration Rating Explorer</h1>
+        <p>Explore how well four vibration designs match everyday sounds with enhanced analytics</p>
       </header>
 
       <main className="App-main">

@@ -7,8 +7,8 @@ interface FilterControlsProps {
   selectedClass: string;
   onCategoryChange: (category: string) => void;
   onClassChange: (classCode: string) => void;
-  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard') => void;
-  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard';
+  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced') => void;
+  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced';
 }
 
 const FilterControls: React.FC<FilterControlsProps> = ({
@@ -24,18 +24,24 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   return (
     <div className="filter-controls">
       <div className="view-buttons">
+        {/* <button
+          onClick={() => onViewChange('enhanced')}
+          className={currentView === 'enhanced' ? 'active' : ''}
+        >
+          🚀 Enhanced Dashboard
+        </button> */}
         <button
           onClick={() => onViewChange('overview')}
           className={currentView === 'overview' ? 'active' : ''}
         >
           📈 Overview
         </button>
-        <button
+        {/* <button
           onClick={() => onViewChange('dashboard')}
           className={currentView === 'dashboard' ? 'active' : ''}
         >
           📊 Dashboard
-        </button>
+        </button> */}
         <button
           onClick={() => onViewChange('category')}
           className={currentView === 'category' ? 'active' : ''}
@@ -54,18 +60,18 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         >
           📊 All Visualizations
         </button>
-        <button
+        {/* <button
           onClick={() => onViewChange('creative')}
           className={currentView === 'creative' ? 'active' : ''}
         >
           🎨 Creative Visualizations
-        </button>
-        <button
+        </button> */}
+        {/* <button
           onClick={() => onViewChange('chatbot')}
           className={currentView === 'chatbot' ? 'active' : ''}
         >
           🤖 Research Assistant
-        </button>
+        </button> */}
       </div>
 
       {currentView === 'category' && (
