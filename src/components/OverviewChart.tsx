@@ -215,8 +215,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary }) => {
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
-    // Process data for line chart
-    const methods = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
+          // Process data for line chart
+      const methods = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
     const classRange = Array.from({ length: 50 }, (_, i) => i);
 
     // Calculate average ratings for each method per class
@@ -246,12 +246,12 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary }) => {
       .domain([0, 100])
       .range([chartHeight, 0]);
 
-    // Color scale for methods
+    // Color scale for methods - Bright and vibrant colors
     const methodColors = {
-      freqshift: '#FF6B6B',
-      hapticgen: '#4ECDC4', 
-      percept: '#45B7D1',
-      pitchmatch: '#96CEB4'
+      freqshift: '#FF1744', // Bright red
+      hapticgen: '#00E676', // Bright green
+      percept: '#2196F3',   // Bright blue
+      pitchmatch: '#9C27B0' // Bright purple
     };
 
     const g = svg.append("g")

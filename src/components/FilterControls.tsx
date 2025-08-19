@@ -7,8 +7,8 @@ interface FilterControlsProps {
   selectedClass: string;
   onCategoryChange: (category: string) => void;
   onClassChange: (classCode: string) => void;
-  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced') => void;
-  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced';
+  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered') => void;
+  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered';
 }
 
 const FilterControls: React.FC<FilterControlsProps> = ({
@@ -30,6 +30,12 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         >
           🚀 Enhanced Dashboard
         </button> */}
+        <button
+          onClick={() => onViewChange('filtered')}
+          className={currentView === 'filtered' ? 'active' : ''}
+        >
+          🔍 Filtered View
+        </button>
         <button
           onClick={() => onViewChange('overview')}
           className={currentView === 'overview' ? 'active' : ''}

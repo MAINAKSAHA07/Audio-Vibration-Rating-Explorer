@@ -10,8 +10,11 @@ import {
 } from './utils/dataHelpers';
 import OverviewChart from './components/OverviewChart';
 import CategoryChart from './components/CategoryChart';
+import CategoryGrid from './components/CategoryGrid';
 import ClassDetail from './components/ClassDetail';
 import FilterControls from './components/FilterControls';
+import FilterPanel, { FilterState } from './components/FilterPanel';
+import SoundGrid from './components/SoundGrid';
 import DataTest from './components/DataTest';
 import GeneratedVisualizations from './components/GeneratedVisualizations';
 import ResearchChatbot from './components/ResearchChatbot';
@@ -19,9 +22,7 @@ import VolcanoContourPlot from './components/VolcanoContourPlot';
 import RadialStackedBarChart from './components/RadialStackedBarChart';
 import DashboardOverview from './components/DashboardOverview';
 
-
-
-type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced';
+type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered';
 
 function App() {
   const [ratings, setRatings] = useState<RatingData[]>([]);
@@ -31,9 +32,20 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   
   // View state
-  const [currentView, setCurrentView] = useState<ViewType>('overview');
+  const [currentView, setCurrentView] = useState<ViewType>('filtered');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
+  
+  // Filter state
+  const [filterState, setFilterState] = useState<FilterState>({
+    search: '',
+    categories: [],
+    classes: [],
+    designs: [],
+    ratingRange: { min: 35, max: 100 },
+    sortBy: 'average',
+    sortOrder: 'desc'
+  });
 
   // Load data on component mount
   useEffect(() => {
@@ -104,6 +116,13 @@ function App() {
 
   const renderContent = () => {
     switch (currentView) {
+      case 'filtered':
+        return <SoundGrid 
+          ratings={ratings} 
+          filterState={filterState} 
+          onFilterChange={(updates) => setFilterState(prev => ({ ...prev, ...updates }))} 
+        />;
+      
       case 'overview':
         return <OverviewChart summary={summary} />;
       
@@ -112,8 +131,7 @@ function App() {
       
       case 'category':
         if (selectedCategory) {
-          const categoryStats = getCategoryStats(ratings, selectedCategory);
-          return <CategoryChart categoryStats={categoryStats} />;
+          return <CategoryGrid category={selectedCategory} />;
         }
         return (
           <div className="category-overview">
@@ -190,25 +208,37 @@ function App() {
       </header>
 
       <main className="App-main">
-        <FilterControls
-          categories={categories}
-          classes={classes}
-          selectedCategory={selectedCategory}
-          selectedClass={selectedClass}
-          onCategoryChange={setSelectedCategory}
-          onClassChange={setSelectedClass}
-          onViewChange={setCurrentView}
-          currentView={currentView}
-        />
+        <div className="app-layout">
+          {/* Filter Panel - Always Visible */}
+          <aside className="filter-sidebar">
+            <FilterPanel
+              ratings={ratings}
+              filterState={filterState}
+              onFilterChange={(filters) => setFilterState(filters)}
+              isOpen={true}
+              onToggle={() => {}} // No-op since filters are always visible
+            />
+          </aside>
 
-        <div className="content">
-          {renderContent()}
+          {/* Main Content Area */}
+          <div className="main-content-area">
+            <FilterControls
+              categories={categories}
+              classes={classes}
+              selectedCategory={selectedCategory}
+              selectedClass={selectedClass}
+              onCategoryChange={setSelectedCategory}
+              onClassChange={setSelectedClass}
+              onViewChange={setCurrentView}
+              currentView={currentView}
+            />
+
+            <div className="content">
+              {renderContent()}
+            </div>
+          </div>
         </div>
       </main>
-
-      <footer className="App-footer">
-        <p>Made by <a href="https://mainaksaha.in/">Mainak saha</a></p>
-      </footer>
     </div>
   );
 }
