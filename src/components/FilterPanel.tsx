@@ -235,7 +235,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           <div className="search-container">
             <input
               type="text"
-              placeholder="Search filenames, categories, or classes..."
+              placeholder="Search soundnames (Dog_1), categories (Animals), or classes..."
               value={localFilters.search}
               onChange={(e) => updateFilter({ search: e.target.value })}
               className="search-input"
@@ -252,7 +252,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
           {localFilters.search && (
             <div className="search-info">
-              <small>Searching across: filenames, categories, and classes</small>
+              <small>Searching across: soundnames, categories, category groups (Animals, Natural soundscapes & water), and classes</small>
             </div>
           )}
         </div>

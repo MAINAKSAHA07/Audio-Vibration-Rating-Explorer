@@ -24,6 +24,7 @@ interface SoundCard {
     pitchmatch: string;
   };
   hasZeroRatings?: boolean;
+  soundname?: string; // Added for the new logic
 }
 
 interface SoundGridProps {
@@ -80,6 +81,9 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       // Group by audio file to create sound cards - optimized for performance
       const soundMap = new Map<string, SoundCard>();
       
+      // Track category counts for sequential numbering
+      const categoryCounts = new Map<string, number>();
+      
       // Process ratings in batches to prevent memory issues
       const batchSize = 1000;
       for (let i = 0; i < ratings.length; i += batchSize) {
@@ -87,6 +91,17 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
         
         batch.forEach(rating => {
           if (!soundMap.has(rating.audioFile)) {
+            // Generate soundname from category with sequential numbering
+            const capitalizeCategory = (category: string) => {
+              const words = category.split('_');
+              const capitalizedWords = words.map(word => word.charAt(0).toUpperCase() + word.slice(1));
+              return capitalizedWords.join('_');
+            };
+            
+            // Get or increment category count
+            const currentCount = categoryCounts.get(rating.category) || 0;
+            categoryCounts.set(rating.category, currentCount + 1);
+            
             soundMap.set(rating.audioFile, {
               id: rating.id,
               filename: rating.audioFile,
@@ -105,7 +120,8 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
                 hapticgen: '',
                 percept: '',
                 pitchmatch: ''
-              }
+              },
+              soundname: rating.soundname || `${capitalizeCategory(rating.category)}_${currentCount + 1}`
             });
           }
           
@@ -131,6 +147,34 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
           return Object.values(sound.ratings).some(rating => rating >= 0);
         });
 
+      // Fix sequential numbering by sorting and reassigning numbers
+      const categorySoundGroups = new Map<string, SoundCard[]>();
+      
+      // Group sounds by category
+      soundCards.forEach(sound => {
+        if (!categorySoundGroups.has(sound.category)) {
+          categorySoundGroups.set(sound.category, []);
+        }
+        categorySoundGroups.get(sound.category)!.push(sound);
+      });
+      
+      // Reassign sequential numbers for each category
+      categorySoundGroups.forEach((sounds, category) => {
+        const capitalizeCategory = (category: string) => {
+          const words = category.split('_');
+          const capitalizedWords = words.map(word => word.charAt(0).toUpperCase() + word.slice(1));
+          return capitalizedWords.join('_');
+        };
+        
+        // Sort sounds by some consistent criteria (e.g., filename) to ensure stable ordering
+        sounds.sort((a, b) => a.filename.localeCompare(b.filename));
+        
+        // Assign sequential numbers
+        sounds.forEach((sound, index) => {
+          sound.soundname = `${capitalizeCategory(category)}_${index + 1}`;
+        });
+      });
+
       console.log('🎵 Sounds with all ratings:', soundCards.length);
 
       // Apply filters with early termination for performance
@@ -138,11 +182,24 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
         // Search filter
         if (filterState.search) {
           const searchTerm = filterState.search.toLowerCase();
+          
+          // Get category group name for search
+          const getCategoryGroupName = (category: string) => {
+            for (const group of categoryGroups) {
+              if (group.sounds.includes(category)) {
+                return group.name;
+              }
+            }
+            return category; // Fallback to category name if not found in groups
+          };
+          
           const searchableFields = [
-            sound.filename.toLowerCase(),
-            sound.category.toLowerCase(),
-            sound.class.toLowerCase(),
-            `class ${sound.class}`.toLowerCase()
+            (sound.soundname || '').toLowerCase(), // Search by soundname (e.g., "Dog_1", "Rooster_2")
+            sound.filename.toLowerCase(),   // Search by original filename
+            sound.category.toLowerCase(),   // Search by category (e.g., "dog", "rooster")
+            getCategoryGroupName(sound.category).toLowerCase(), // Search by group name (e.g., "animals", "natural soundscapes & water")
+            sound.class.toLowerCase(),      // Search by class (e.g., "A", "B")
+            `class ${sound.class}`.toLowerCase() // Search by "class A", "class B"
           ];
           
           const matchesSearch = searchableFields.some(field => field.includes(searchTerm));
@@ -185,14 +242,25 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
         }
 
         // Rating range filter
-        if (sound.maxRating < filterState.ratingRange.min || sound.maxRating > filterState.ratingRange.max) {
+        if (filterState.ratingRange.min > 0 && sound.maxRating < filterState.ratingRange.min) {
+          return false;
+        }
+        if (filterState.ratingRange.max < 100 && sound.maxRating > filterState.ratingRange.max) {
           return false;
         }
 
         return true;
       });
+
+      // Debug: Log category distribution
+      const categoryDistribution = new Map<string, number>();
+      soundCards.forEach(sound => {
+        const count = categoryDistribution.get(sound.category) || 0;
+        categoryDistribution.set(sound.category, count + 1);
+      });
       
-      console.log('✅ Final filtered sounds:', soundCards.length);
+      console.log('🔍 Category distribution:', Object.fromEntries(categoryDistribution));
+      console.log('📊 Total filtered sounds:', soundCards.length);
 
       // Sort sounds
       soundCards.sort((a, b) => {
@@ -230,8 +298,6 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
 
   // Memoized sound card component to prevent unnecessary re-renders
   const SoundCard = useCallback<React.FC<{ sound: SoundCard }>>(({ sound }) => {
-    const hasZeroRatings = sound.hasZeroRatings || Object.values(sound.ratings).some(rating => rating === 0);
-    
     const handleCardClick = (e: React.MouseEvent) => {
       // Don't open drawer if clicking on the audio player or wavesurfer player
       if ((e.target as HTMLElement).closest('.audio-player') || 
@@ -242,23 +308,29 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       setSelectedSound(sound);
       setIsDetailsOpen(true);
     };
+
+    // Get category group name
+    const getCategoryGroupName = (category: string) => {
+      for (const group of categoryGroups) {
+        if (group.sounds.includes(category)) {
+          return group.name;
+        }
+      }
+      return category; // Fallback to category name if not found in groups
+    };
     
     return (
       <div 
-        className={`sound-card ${hasZeroRatings ? 'has-zero-ratings' : ''}`}
+        className="sound-card"
         onClick={handleCardClick}
       >
         <div className="card-header">
-          <h4 className="filename">{sound.filename}</h4>
+          <h4 className="filename">{sound.soundname}</h4>
           <span className="average-badge">{sound.maxRating.toFixed(1)}</span>
-          {hasZeroRatings && (
-            <span className="zero-rating-indicator" title="Has zero ratings">⚠️</span>
-          )}
         </div>
         
         <div className="card-meta">
-          <span className="category-tag">{sound.category}</span>
-          <span className="class-tag">Class {sound.class}</span>
+          <span className="category-tag">{getCategoryGroupName(sound.category)}</span>
         </div>
         
         <div className="mini-chart">
@@ -267,18 +339,9 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
             title={sound.filename} 
           />
         </div>
-        
-        <div className="card-stats">
-          <div className="rating-breakdown">
-            <span style={{ color: chartColors.freqshift }}>F: {sound.ratings.freqshift.toFixed(0)}</span>
-            <span style={{ color: chartColors.hapticgen }}>H: {sound.ratings.hapticgen.toFixed(0)}</span>
-            <span style={{ color: chartColors.percept }}>P: {sound.ratings.percept.toFixed(0)}</span>
-            <span style={{ color: chartColors.pitchmatch }}>M: {sound.ratings.pitchmatch.toFixed(0)}</span>
-          </div>
-        </div>
       </div>
     );
-  }, [chartColors]);
+  }, [categoryGroups]);
 
   // Error state
   if (error) {

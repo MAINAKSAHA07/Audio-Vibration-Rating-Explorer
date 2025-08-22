@@ -11,6 +11,7 @@ export interface RatingData {
   clip_id: string;
   take: string;
   ratingCategory: string;
+  soundname?: string; // New field for the soundname from CSV
 }
 
 export interface SummaryData {
