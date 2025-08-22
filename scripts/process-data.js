@@ -1,4 +1,4 @@
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const fs = require('fs-extra');
 const path = require('path');
 const csv = require('csv-parser');
@@ -47,10 +47,22 @@ async function processData() {
     
     // Read the Excel file with real ratings
     console.log('📊 Reading Excel file with real ratings...');
-    const workbook = XLSX.readFile('audio_vibration/audio1000_ratings.xlsx');
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const excelData = XLSX.utils.sheet_to_json(worksheet);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile('audio_vibration/audio1000_ratings.xlsx');
+    const worksheet = workbook.getWorksheet(1); // Get the first worksheet
+    const excelData = [];
+    
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) { // Skip header row
+        excelData.push({
+          audio: row.getCell(1).value,
+          rating_freqshift: row.getCell(2).value,
+          rating_hapticgen: row.getCell(3).value,
+          rating_percept: row.getCell(4).value,
+          rating_pitchmatch: row.getCell(5).value
+        });
+      }
+    });
     
     console.log(`📈 Loaded ${excelData.length} rows from Excel file`);
     
@@ -93,7 +105,7 @@ async function processData() {
     const transformedData = [];
     
     excelData.forEach(row => {
-      const audioId = row.audio;
+      const audioId = row.audio; // Assuming audio ID is in column A (index 1)
       const parsed = parseFilename(audioId);
       
       // Get enhanced metadata from CSV
@@ -115,10 +127,10 @@ async function processData() {
       
       // Create entries for each vibration design with real ratings
       const designs = [
-        { name: 'freqshift', rating: row.rating_freqshift },
-        { name: 'hapticgen', rating: row.rating_hapticgen },
-        { name: 'percept', rating: row.rating_percept },
-        { name: 'pitchmatch', rating: row.rating_pitchmatch }
+        { name: 'freqshift', rating: row.rating_freqshift }, // Assuming rating_freqshift is in column B (index 2)
+        { name: 'hapticgen', rating: row.rating_hapticgen }, // Assuming rating_hapticgen is in column C (index 3)
+        { name: 'percept', rating: row.rating_percept }, // Assuming rating_percept is in column D (index 4)
+        { name: 'pitchmatch', rating: row.rating_pitchmatch } // Assuming rating_pitchmatch is in column E (index 5)
       ];
       
       designs.forEach(design => {

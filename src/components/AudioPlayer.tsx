@@ -19,6 +19,25 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, height = 100
   useEffect(() => {
     if (!waveformRef.current) return;
 
+    console.log('AudioPlayer: Initializing for URL:', audioUrl);
+
+    // Test if audio file is accessible
+    const testAudioAccess = async () => {
+      try {
+        const response = await fetch(audioUrl, { method: 'HEAD' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        console.log('AudioPlayer: Audio file accessible:', audioUrl);
+      } catch (error) {
+        console.error('AudioPlayer: Audio file not accessible:', audioUrl, error);
+        setError(`Audio file not accessible: ${error}`);
+        setIsLoading(false);
+        return false;
+      }
+      return true;
+    };
+
     // Initialize WaveSurfer
     let wavesurfer: WaveSurfer;
     try {
@@ -32,42 +51,56 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, height = 100
         cursorWidth: 1,
         height: height,
         barGap: 3,
+        normalize: true,
       });
 
       wavesurferRef.current = wavesurfer;
 
-      // Load audio with error handling
-      try {
-        wavesurfer.load(audioUrl);
-      } catch (error) {
-        console.error('Error loading audio:', audioUrl, error);
-        setError(`Failed to load audio: ${error}`);
-      }
+      // Test accessibility and then load audio
+      testAudioAccess().then((isAccessible) => {
+        if (isAccessible) {
+          try {
+            console.log('AudioPlayer: Loading audio file:', audioUrl);
+            wavesurfer.load(audioUrl);
+          } catch (error) {
+            console.error('Error loading audio:', audioUrl, error);
+            setError(`Failed to load audio: ${error}`);
+            setIsLoading(false);
+          }
+        }
+      });
+
     } catch (error) {
       console.error('Error creating WaveSurfer:', error);
       setError('Failed to initialize audio player');
+      setIsLoading(false);
       return;
     }
 
     // Event listeners
     wavesurfer.on('ready', () => {
+      console.log('AudioPlayer: Audio ready for:', audioUrl);
       setDuration(wavesurfer.getDuration());
       setIsLoading(false);
+      setError(null);
     });
 
-    wavesurfer.on('audioprocess', () => {
-      setCurrentTime(wavesurfer.getCurrentTime());
+    wavesurfer.on('timeupdate', (currentTime) => {
+      setCurrentTime(currentTime);
     });
 
     wavesurfer.on('play', () => {
+      console.log('AudioPlayer: Play started for:', audioUrl);
       setIsPlaying(true);
     });
 
     wavesurfer.on('pause', () => {
+      console.log('AudioPlayer: Play paused for:', audioUrl);
       setIsPlaying(false);
     });
 
     wavesurfer.on('finish', () => {
+      console.log('AudioPlayer: Play finished for:', audioUrl);
       setIsPlaying(false);
     });
 
@@ -80,12 +113,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, height = 100
     // Add timeout for loading
     const timeoutId = setTimeout(() => {
       if (isLoading) {
+        console.warn('AudioPlayer: Loading timeout for:', audioUrl);
         setError('Audio loading timeout');
         setIsLoading(false);
       }
-    }, 10000); // 10 second timeout
+    }, 15000); // 15 second timeout
 
     return () => {
+      console.log('AudioPlayer: Cleaning up for:', audioUrl);
       clearTimeout(timeoutId);
       if (wavesurferRef.current) {
         try {
@@ -95,7 +130,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, height = 100
         }
       }
     };
-  }, [audioUrl, height, isLoading]);
+  }, [audioUrl, height]); // Remove isLoading dependency to prevent re-renders
 
   const togglePlayPause = () => {
     if (wavesurferRef.current) {
@@ -115,6 +150,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, height = 100
         <h3>{title}</h3>
         <div className="loading">
           <p>Loading audio...</p>
+          <small>URL: {audioUrl}</small>
         </div>
       </div>
     );
@@ -126,6 +162,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, height = 100
         <h3>{title}</h3>
         <div className="error">
           <p>{error}</p>
+          <small>URL: {audioUrl}</small>
           <button onClick={() => window.location.reload()}>Retry</button>
         </div>
       </div>

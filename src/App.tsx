@@ -21,6 +21,7 @@ import ResearchChatbot from './components/ResearchChatbot';
 import VolcanoContourPlot from './components/VolcanoContourPlot';
 import RadialStackedBarChart from './components/RadialStackedBarChart';
 import DashboardOverview from './components/DashboardOverview';
+import ErrorBoundary from './components/ErrorBoundary';
 
 type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered';
 
@@ -117,11 +118,15 @@ function App() {
   const renderContent = () => {
     switch (currentView) {
       case 'filtered':
-        return <SoundGrid 
-          ratings={ratings} 
-          filterState={filterState} 
-          onFilterChange={(updates) => setFilterState(prev => ({ ...prev, ...updates }))} 
-        />;
+        return (
+          <ErrorBoundary>
+            <SoundGrid 
+              ratings={ratings} 
+              filterState={filterState} 
+              onFilterChange={(updates) => setFilterState(prev => ({ ...prev, ...updates }))} 
+            />
+          </ErrorBoundary>
+        );
       
       case 'overview':
         return <OverviewChart summary={summary} />;

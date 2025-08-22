@@ -103,6 +103,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   // Debounced filter update
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      console.log('🔍 FilterPanel updating filters:', localFilters);
       onFilterChange(localFilters);
     }, 300);
 
@@ -143,21 +144,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     
     if (isGroup) {
       // Handle category group selection
-      const isGroupSelected = localFilters.categories.includes(categoryName);
+      const selectedSubcategories = category.sounds.filter(sound => 
+        localFilters.categories.includes(sound)
+      );
+      const isFullySelected = selectedSubcategories.length === category.sounds.length;
       
-      if (isGroupSelected) {
-        // If group is selected, deselect the group and all its subcategories
+      if (isFullySelected) {
+        // If all subcategories are selected, deselect all subcategories
         const newCategories = localFilters.categories.filter(c => 
-          c !== categoryName && !category.sounds.includes(c)
+          !category.sounds.includes(c)
         );
         updateFilter({
           categories: newCategories
         });
       } else {
-        // If group is not selected, select the group AND all its subcategories
+        // If group is not selected, select only the subcategories (not the group name)
         const newCategories = [
           ...localFilters.categories, 
-          categoryName,
           ...category.sounds
         ];
         updateFilter({
@@ -183,42 +186,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     if (!parentCategory) return;
 
     const isSubcategorySelected = localFilters.categories.includes(subcategoryName);
-    const isParentCategorySelected = localFilters.categories.includes(parentCategory.name);
     
     let newCategories: string[];
     
     if (isSubcategorySelected) {
       // Remove the subcategory
       newCategories = localFilters.categories.filter(c => c !== subcategoryName);
-      
-      // Check if all other subcategories of this parent are selected
-      const otherSubcategories = parentCategory.sounds.filter(s => s !== subcategoryName);
-      const allOtherSubcategoriesSelected = otherSubcategories.every(s => 
-        newCategories.includes(s)
-      );
-      
-      // If all other subcategories are selected, also select the parent category
-      if (allOtherSubcategoriesSelected && !isParentCategorySelected) {
-        newCategories.push(parentCategory.name);
-      }
     } else {
       // Add the subcategory
       newCategories = [...localFilters.categories, subcategoryName];
-      
-      // If parent category is selected, remove it since we're now selecting specific subcategories
-      if (isParentCategorySelected) {
-        newCategories = newCategories.filter(c => c !== parentCategory.name);
-      }
-      
-      // Check if all subcategories are now selected
-      const allSubcategoriesSelected = parentCategory.sounds.every(s => 
-        newCategories.includes(s)
-      );
-      
-      // If all subcategories are selected, also select the parent category
-      if (allSubcategoriesSelected && !isParentCategorySelected) {
-        newCategories.push(parentCategory.name);
-      }
     }
     
     updateFilter({
@@ -289,7 +265,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               const selectedSubcategories = category.sounds.filter(sound => 
                 localFilters.categories.includes(sound)
               );
-              const isCategorySelected = localFilters.categories.includes(category.name);
               const hasSubcategoriesSelected = selectedSubcategories.length > 0;
               const isFullySelected = selectedSubcategories.length === category.sounds.length;
               
@@ -297,7 +272,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               let checkboxState = false;
               let isIndeterminate = false;
               
-              if (isCategorySelected || isFullySelected) {
+              if (isFullySelected) {
                 checkboxState = true;
                 isIndeterminate = false;
               } else if (hasSubcategoriesSelected) {
@@ -329,7 +304,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     <span className="checkmark"></span>
                     <span className="category-name">{category.name}</span>
                     <span className="class-count">
-                      {(isCategorySelected || isFullySelected)
+                      {isFullySelected
                         ? `(${category.sounds.length} items, 20 sounds each)` 
                         : `(${selectedSubcategories.length}/${category.sounds.length} items, 20 sounds each)`
                       }
