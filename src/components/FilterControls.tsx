@@ -31,16 +31,16 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           🚀 Enhanced Dashboard
         </button> */}
         <button
-          onClick={() => onViewChange('filtered')}
-          className={currentView === 'filtered' ? 'active' : ''}
-        >
-          🔍 Filtered View
-        </button>
-        <button
           onClick={() => onViewChange('overview')}
           className={currentView === 'overview' ? 'active' : ''}
         >
           📈 Overview
+        </button>
+        <button
+          onClick={() => onViewChange('filtered')}
+          className={currentView === 'filtered' ? 'active' : ''}
+        >
+          🔍 Detailed View
         </button>
         {/* <button
           onClick={() => onViewChange('dashboard')}
@@ -66,6 +66,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         >
           📊 All Visualizations
         </button>
+
         {/* <button
           onClick={() => onViewChange('creative')}
           className={currentView === 'creative' ? 'active' : ''}

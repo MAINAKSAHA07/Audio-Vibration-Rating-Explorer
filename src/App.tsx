@@ -22,6 +22,7 @@ import VolcanoContourPlot from './components/VolcanoContourPlot';
 import RadialStackedBarChart from './components/RadialStackedBarChart';
 import DashboardOverview from './components/DashboardOverview';
 import ErrorBoundary from './components/ErrorBoundary';
+import DetailView from './components/DetailView';
 
 type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered';
 
@@ -33,9 +34,10 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   
   // View state
-  const [currentView, setCurrentView] = useState<ViewType>('filtered');
+  const [currentView, setCurrentView] = useState<ViewType>('overview');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
+  const [detailViewData, setDetailViewData] = useState<any>(null);
   
   // Filter state
   const [filterState, setFilterState] = useState<FilterState>({
@@ -129,7 +131,7 @@ function App() {
         );
       
       case 'overview':
-        return <OverviewChart summary={summary} />;
+        return <OverviewChart summary={summary} onNavigateToFiltered={() => setCurrentView('filtered')} />;
       
       case 'enhanced':
         return <DashboardOverview summary={summary} ratings={ratings} />;
@@ -200,6 +202,8 @@ function App() {
       case 'dashboard':
         return <DashboardOverview summary={summary} ratings={ratings} />;
       
+
+      
       default:
         return <DashboardOverview summary={summary} ratings={ratings} />;
     }
@@ -214,19 +218,21 @@ function App() {
 
       <main className="App-main">
         <div className="app-layout">
-          {/* Filter Panel - Always Visible */}
-          <aside className="filter-sidebar">
-            <FilterPanel
-              ratings={ratings}
-              filterState={filterState}
-              onFilterChange={(filters) => setFilterState(filters)}
-              isOpen={true}
-              onToggle={() => {}} // No-op since filters are always visible
-            />
-          </aside>
+          {/* Filter Panel - Hidden on Overview */}
+          {currentView !== 'overview' && (
+            <aside className="filter-sidebar">
+              <FilterPanel
+                ratings={ratings}
+                filterState={filterState}
+                onFilterChange={(filters) => setFilterState(filters)}
+                isOpen={true}
+                onToggle={() => {}} // No-op since filters are always visible
+              />
+            </aside>
+          )}
 
           {/* Main Content Area */}
-          <div className="main-content-area">
+          <div className={`main-content-area ${currentView === 'overview' ? 'full-width' : ''}`}>
             <FilterControls
               categories={categories}
               classes={classes}
@@ -244,6 +250,15 @@ function App() {
           </div>
         </div>
       </main>
+      
+      {/* Detail View Modal */}
+      {detailViewData && (
+        <DetailView 
+          data={detailViewData} 
+          onClose={() => setDetailViewData(null)}
+          onNavigateToFiltered={() => setCurrentView('filtered')}
+        />
+      )}
     </div>
   );
 }

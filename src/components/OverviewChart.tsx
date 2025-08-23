@@ -1,17 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { SummaryData, RatingData, fetchRatings } from '../utils/api';
+import HierarchicalSunburst from './HierarchicalSunburst';
+import DetailView from './DetailView';
 
 interface OverviewChartProps {
   summary: SummaryData;
+  onNavigateToFiltered?: () => void;
 }
 
-const OverviewChart: React.FC<OverviewChartProps> = ({ summary }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
+const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFiltered }) => {
   const lineChartRef = useRef<SVGSVGElement>(null);
   const [ratings, setRatings] = useState<RatingData[]>([]);
   const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
+  const [detailViewData, setDetailViewData] = useState<any>(null);
 
   // Fetch detailed ratings data for line chart
   useEffect(() => {
@@ -48,169 +51,34 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary }) => {
     return categoryNames[classNum] || 'Unknown';
   };
 
-  // Original bar chart
-  useEffect(() => {
-    if (!svgRef.current || !summary) return;
 
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
 
-    const width = 800;
-    const height = 400;
-    const margin = { top: 60, right: 80, bottom: 80, left: 80 };
 
-    const chartWidth = width - margin.left - margin.right;
-    const chartHeight = height - margin.top - margin.bottom;
-
-    // Prepare data
-    const chartData = summary.designs.map(design => ({
-      design: design.charAt(0).toUpperCase() + design.slice(1),
-      rating: summary.averageRatings.byDesign[design]
-    }));
-
-    // Create scales
-    const xScale = d3.scaleBand()
-      .domain(chartData.map(d => d.design))
-      .range([0, chartWidth])
-      .padding(0.3);
-
-    const yScale = d3.scaleLinear()
-      .domain([0, d3.max(chartData, d => d.rating) || 100])
-      .range([chartHeight, 0]);
-
-    // Create vibrant color scale
-    const colorScale = d3.scaleOrdinal<string, string>()
-      .domain(chartData.map(d => d.design))
-      .range(['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']);
-
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // Create vibrant box plots
-    chartData.forEach((d, i) => {
-      const x = xScale(d.design);
-      const y = yScale(d.rating);
-      const boxWidth = xScale.bandwidth();
-      const boxHeight = chartHeight - y;
-
-      if (x !== undefined) {
-        // Main box with vibrant color
-        g.append("rect")
-          .attr("x", x)
-          .attr("y", y)
-          .attr("width", boxWidth)
-          .attr("height", boxHeight)
-          .attr("fill", colorScale(d.design))
-          .attr("stroke", "#fff")
-          .attr("stroke-width", 2)
-          .attr("rx", 8)
-          .attr("ry", 8)
-          .style("filter", "drop-shadow(0 4px 8px rgba(0,0,0,0.2))")
-          .on("mouseover", function() {
-            d3.select(this)
-              .attr("stroke-width", 3)
-              .style("filter", "drop-shadow(0 6px 12px rgba(0,0,0,0.3))");
-          })
-          .on("mouseout", function() {
-            d3.select(this)
-              .attr("stroke-width", 2)
-              .style("filter", "drop-shadow(0 4px 8px rgba(0,0,0,0.2))");
-          });
-
-        // Add gradient overlay for more vibrancy
-        const defs = svg.append("defs");
-        const gradient = defs.append("linearGradient")
-          .attr("id", `gradient-${i}`)
-          .attr("gradientUnits", "userSpaceOnUse")
-          .attr("x1", "0%")
-          .attr("y1", "0%")
-          .attr("x2", "0%")
-          .attr("y2", "100%");
-
-        const baseColor = colorScale(d.design) as string;
-        const brighterColor = d3.color(baseColor)?.brighter(0.3)?.toString() || baseColor;
-
-        gradient.append("stop")
-          .attr("offset", "0%")
-          .attr("stop-color", brighterColor);
-
-        gradient.append("stop")
-          .attr("offset", "100%")
-          .attr("stop-color", baseColor);
-
-        // Add value label
-        g.append("text")
-          .attr("x", x + boxWidth / 2)
-          .attr("y", y - 10)
-          .attr("text-anchor", "middle")
-          .style("font-size", "14px")
-          .style("font-weight", "600")
-          .style("fill", "#2c3e50")
-          .text(d.rating.toFixed(1) as string);
-      }
-    });
-
-    // Add axes
-    const xAxis = d3.axisBottom(xScale);
-    const yAxis = d3.axisLeft(yScale);
-
-    g.append("g")
-      .attr("transform", `translate(0,${chartHeight})`)
-      .call(xAxis)
-      .selectAll("text")
-      .style("font-size", "11px")
-      .style("fill", "#555")
-      .style("text-anchor", "middle")
-      .attr("dy", "0.5em");
-
-    g.append("g")
-      .call(yAxis)
-      .selectAll("text")
-      .style("font-size", "12px")
-      .style("fill", "#555");
-
-    // Add axis labels
-    g.append("text")
-      .attr("x", chartWidth / 2)
-      .attr("y", chartHeight + 60)
-      .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .style("fill", "#2c3e50")
-      .text("Vibration Designs");
-
-    g.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -chartHeight / 2)
-      .attr("y", -50)
-      .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .style("fill", "#2c3e50")
-      .text("Average Rating");
-
-    // Add title
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", 30)
-      .attr("text-anchor", "middle")
-      .style("font-size", "20px")
-      .style("font-weight", "700")
-      .style("fill", "#2c3e50")
-      .text("Vibrant Color Box Plot - Average Ratings by Design");
-
-  }, [summary]);
 
   // New line chart with hierarchical connections
   useEffect(() => {
-    if (!lineChartRef.current || !ratings || ratings.length === 0) return;
+    if (!lineChartRef.current) return;
+
+    // Add a small delay to ensure the container is properly sized
+    const timer = setTimeout(() => {
+      if (!lineChartRef.current || !ratings || ratings.length === 0) {
+        console.log('Line chart: waiting for data or ref', { ratingsLength: ratings?.length });
+        return;
+      }
 
     const svg = d3.select(lineChartRef.current);
     svg.selectAll("*").remove();
 
-    const width = 1200;
+      // Get the container width for responsive design
+      const containerWidth = lineChartRef.current.parentElement?.clientWidth || 600;
+      const width = Math.max(Math.min(containerWidth - 40, 900), 600); // Max width of 900px, min 600px
+      
+      console.log('Line chart rendering:', { containerWidth, width, ratingsCount: ratings.length });
     const height = 500;
-    const margin = { top: 80, right: 120, bottom: 100, left: 80 };
+    const margin = { top: 80, right: 100, bottom: 100, left: 80 };
+
+    // Set the SVG size
+    svg.attr("width", width).attr("height", height);
 
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
@@ -484,14 +352,14 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary }) => {
       .attr("x", width / 2)
       .attr("y", 30)
       .attr("text-anchor", "middle")
-      .style("font-size", "20px")
+      .style("font-size", "16px")
       .style("font-weight", "700")
       .style("fill", "#2c3e50")
-      .text("Overview Statistics - Vibration Method Performance Across Classes");
+      .text("Vibration Method Performance Across Classes");
 
     // Add legend
     const legend = svg.append("g")
-      .attr("transform", `translate(${width - margin.right + 20}, ${margin.top})`);
+      .attr("transform", `translate(${width - margin.right + 10}, ${margin.top})`);
 
     methods.forEach((method, i) => {
       const legendItem = legend.append("g")
@@ -513,19 +381,93 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary }) => {
         .style("fill", "#333")
         .text(method);
     });
+    }, 100); // 100ms delay
 
+    return () => clearTimeout(timer);
   }, [ratings, hoveredMethod, selectedClass]);
 
   return (
     <div className="overview-chart">
-      {/* Original bar chart */}
-      <div style={{ width: '100%', height: 400, marginBottom: '40px' }}>
-        <svg ref={svgRef} width="800" height="400" />
+      {/* Side-by-side layout for Sunburst and Line Chart */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '20px', 
+        alignItems: 'flex-start',
+        height: '500px',
+        marginBottom: '40px'
+      }}>
+        {/* Hierarchical Sunburst chart - Left side */}
+        <div style={{ 
+          flex: '0 0 500px', 
+          height: '500px',
+          minWidth: '500px'
+        }}>
+          <HierarchicalSunburst onDetailView={(data) => setDetailViewData(data)} />
       </div>
       
-      {/* New line chart */}
-      <div style={{ width: '100%', height: 500 }}>
-        <svg ref={lineChartRef} width="1200" height="500" />
+        {/* New line chart - Right side */}
+        <div style={{ 
+          flex: '1', 
+          height: '500px', 
+          overflow: 'auto',
+          minWidth: '600px',
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          position: 'relative'
+        }}>
+          <svg ref={lineChartRef} width="100%" height="500" />
+          {(!ratings || ratings.length === 0) && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center',
+              color: '#666'
+            }}>
+              <p>Loading line chart data...</p>
+              <p>Ratings: {ratings?.length || 0}</p>
+            </div>
+          )}
+      </div>
+      </div>
+      
+      {/* Detailed View Button */}
+      <div style={{
+        marginTop: '20px',
+        textAlign: 'center'
+      }}>
+        <button
+          onClick={onNavigateToFiltered}
+          style={{
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            padding: '15px 30px',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#2563eb';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#3b82f6';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+          }}
+        >
+          🔍 Explore Detailed View
+        </button>
       </div>
       
       <div className="chart-stats" style={{
@@ -545,6 +487,15 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary }) => {
           <p><strong>Selected Class:</strong> {selectedClass} ({getCategoryForClass(selectedClass)})</p>
         )}
       </div>
+      
+      {/* Detail View Modal */}
+      {detailViewData && (
+        <DetailView 
+          data={detailViewData} 
+          onClose={() => setDetailViewData(null)}
+          onNavigateToFiltered={onNavigateToFiltered}
+        />
+      )}
     </div>
   );
 };
