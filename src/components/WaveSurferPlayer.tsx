@@ -4,9 +4,10 @@ import WaveSurfer from 'wavesurfer.js';
 interface WaveSurferPlayerProps {
   audioUrl: string;
   title: string;
+  height?: number;
 }
 
-const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title }) => {
+const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title, height = 60 }) => {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -20,7 +21,7 @@ const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title }) 
     const wavesurfer = WaveSurfer.create({
       container: waveformRef.current,
       url: audioUrl,
-      height: 60,
+      height: height,
       barWidth: 2,
       barGap: 2,
       barRadius: 2,
@@ -68,7 +69,7 @@ const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title }) 
         wavesurferRef.current = null;
       }
     };
-  }, [audioUrl]);
+  }, [audioUrl, height]);
 
   const togglePlayPause = () => {
     if (wavesurferRef.current) {

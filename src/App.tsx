@@ -23,8 +23,9 @@ import RadialStackedBarChart from './components/RadialStackedBarChart';
 import DashboardOverview from './components/DashboardOverview';
 import ErrorBoundary from './components/ErrorBoundary';
 import DetailView from './components/DetailView';
+import AudioUpload from './components/AudioUpload';
 
-type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered';
+type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload';
 
 function App() {
   const [ratings, setRatings] = useState<RatingData[]>([]);
@@ -202,7 +203,8 @@ function App() {
       case 'dashboard':
         return <DashboardOverview summary={summary} ratings={ratings} />;
       
-
+      case 'upload':
+        return <AudioUpload />;
       
       default:
         return <DashboardOverview summary={summary} ratings={ratings} />;
@@ -218,8 +220,8 @@ function App() {
 
       <main className="App-main">
         <div className="app-layout">
-          {/* Filter Panel - Hidden on Overview */}
-          {currentView !== 'overview' && (
+          {/* Filter Panel - Hidden on Overview and Upload */}
+          {currentView !== 'overview' && currentView !== 'upload' && (
             <aside className="filter-sidebar">
               <FilterPanel
                 ratings={ratings}
@@ -232,7 +234,7 @@ function App() {
           )}
 
           {/* Main Content Area */}
-          <div className={`main-content-area ${currentView === 'overview' ? 'full-width' : ''}`}>
+          <div className={`main-content-area ${currentView === 'overview' || currentView === 'upload' ? 'full-width' : ''}`}>
             <FilterControls
               categories={categories}
               classes={classes}

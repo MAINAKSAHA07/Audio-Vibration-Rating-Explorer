@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchRatings, RatingData } from '../utils/api';
 import { getUniqueClasses, getAudioFilesForClass } from '../utils/dataHelpers';
+import { AudioMotionAnalyzer } from 'audiomotion-analyzer';
 
 interface VisualizationStructure {
   audio: Record<string, { type: string; file: string; url: string }>;

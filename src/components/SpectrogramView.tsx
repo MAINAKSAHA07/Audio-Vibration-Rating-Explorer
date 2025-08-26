@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { AudioMotionAnalyzer } from 'audiomotion-analyzer';
 
 interface SpectrogramViewProps {
   audioUrl: string;

@@ -7,8 +7,8 @@ interface FilterControlsProps {
   selectedClass: string;
   onCategoryChange: (category: string) => void;
   onClassChange: (classCode: string) => void;
-  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered') => void;
-  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered';
+  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload') => void;
+  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload';
 }
 
 const FilterControls: React.FC<FilterControlsProps> = ({
@@ -42,13 +42,19 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         >
           🔍 Detailed View
         </button>
+        <button
+          onClick={() => onViewChange('upload')}
+          className={currentView === 'upload' ? 'active' : ''}
+        >
+          🎵 Audio Upload
+        </button>
         {/* <button
           onClick={() => onViewChange('dashboard')}
           className={currentView === 'dashboard' ? 'active' : ''}
         >
           📊 Dashboard
         </button> */}
-        <button
+       {/* <button
           onClick={() => onViewChange('category')}
           className={currentView === 'category' ? 'active' : ''}
         >
@@ -65,7 +71,8 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           className={currentView === 'visualization' ? 'active' : ''}
         >
           📊 All Visualizations
-        </button>
+        </button>*/}
+
 
         {/* <button
           onClick={() => onViewChange('creative')}
