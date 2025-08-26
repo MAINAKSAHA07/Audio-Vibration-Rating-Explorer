@@ -1,0 +1,346 @@
+AUDIO-VIBRATION CATEGORY PERFORMANCE ANALYSIS
+============================================================
+
+File analyzed: /Users/mainaksaha/Desktop/MASTERS/Project/Audio-Vibration-Rating-Explorer/audio_vibration/audio_vibration_audio_20250812_150324.csv
+Total files: 1000
+Categories: 50
+
+==================================================
+ANALYSIS FOR: RATING_FREQSHIFT
+==================================================
+
+Category Performance (sorted by mean rating):
+Category                  Count    Mean     Median   Std      Min      Max     
+--------------------------------------------------------------------------------
+chainsaw                  20.0     81.08    85.50    13.41    48.50    98.50   
+engine                    20.0     72.05    80.25    20.50    32.50    97.00   
+sneezing                  20.0     70.88    73.00    15.16    42.50    97.50   
+airplane                  20.0     70.78    72.00    18.57    39.00    96.00   
+coughing                  20.0     70.75    77.00    24.24    3.00     100.00  
+thunderstorm              20.0     70.32    75.50    21.02    20.00    95.00   
+vacuum_cleaner            20.0     69.42    71.25    19.52    16.00    95.00   
+dog                       20.0     68.10    74.50    20.91    31.50    98.50   
+crying_baby               20.0     67.18    73.00    19.11    23.50    96.50   
+washing_machine           20.0     64.95    73.50    22.70    3.00     84.50   
+hand_saw                  20.0     64.20    61.75    17.00    43.50    99.00   
+rooster                   20.0     63.18    67.25    19.00    30.00    89.50   
+insects                   20.0     62.70    66.00    22.50    4.50     90.50   
+rain                      20.0     62.55    64.75    26.32    4.50     100.00  
+wind                      20.0     62.08    63.75    15.37    30.50    83.50   
+cow                       20.0     61.78    68.00    21.90    17.00    90.00   
+train                     20.0     61.52    65.50    17.99    29.50    90.00   
+cat                       20.0     61.10    62.25    18.21    33.50    95.50   
+toilet_flush              20.0     60.72    67.00    25.37    3.00     94.00   
+pig                       20.0     60.35    59.50    18.07    30.00    90.00   
+laughing                  20.0     60.18    64.00    18.49    30.00    94.50   
+snoring                   20.0     60.10    68.50    25.11    4.00     100.00  
+hen                       20.0     60.00    53.50    22.18    21.50    100.00  
+clapping                  20.0     59.40    57.25    22.79    14.50    90.50   
+sheep                     20.0     58.35    61.00    21.17    12.00    88.00   
+fireworks                 20.0     57.52    53.75    21.48    22.00    88.50   
+siren                     20.0     56.88    59.00    21.57    0.00     93.50   
+brushing_teeth            20.0     54.95    57.25    22.59    22.50    96.50   
+helicopter                20.0     54.72    63.00    24.66    6.00     88.00   
+glass_breaking            20.0     54.55    56.00    21.88    16.50    93.00   
+can_opening               20.0     54.32    54.50    18.81    14.00    88.00   
+frog                      20.0     54.25    61.00    24.70    10.50    86.50   
+breathing                 20.0     54.12    59.25    24.29    2.00     100.00  
+footsteps                 20.0     53.98    47.50    26.95    5.00     89.00   
+car_horn                  20.0     53.55    57.50    26.39    15.00    92.50   
+pouring_water             20.0     53.00    50.50    26.85    2.50     100.00  
+sea_waves                 20.0     52.08    58.50    20.76    2.50     77.00   
+crow                      20.0     51.95    53.75    22.83    11.00    94.00   
+door_wood_knock           20.0     51.88    50.00    25.04    10.00    93.00   
+crackling_fire            20.0     48.35    48.75    21.42    10.00    85.50   
+door_wood_creaks          20.0     47.68    49.25    20.99    4.50     86.50   
+keyboard_typing           20.0     47.20    46.25    26.52    6.00     91.00   
+drinking_sipping          20.0     45.80    42.00    18.75    14.50    95.00   
+church_bells              20.0     45.60    48.25    26.56    0.00     78.50   
+crickets                  20.0     45.15    46.25    32.24    0.00     100.00  
+mouse_click               20.0     42.98    41.75    25.08    7.50     87.00   
+clock_tick                20.0     38.65    43.00    23.68    2.50     83.50   
+chirping_birds            20.0     34.92    24.75    33.35    0.00     89.00   
+clock_alarm               20.0     33.85    31.75    24.98    0.00     88.50   
+water_drops               20.0     33.78    33.25    24.56    0.00     85.00   
+
+Top 5 categories for rating_freqshift:
+1. chainsaw: Mean=81.08, Count=20.0 files
+2. engine: Mean=72.05, Count=20.0 files
+3. sneezing: Mean=70.88, Count=20.0 files
+4. airplane: Mean=70.78, Count=20.0 files
+5. coughing: Mean=70.75, Count=20.0 files
+
+Bottom 5 categories for rating_freqshift:
+1. mouse_click: Mean=42.98, Count=20.0 files
+2. clock_tick: Mean=38.65, Count=20.0 files
+3. chirping_birds: Mean=34.92, Count=20.0 files
+4. clock_alarm: Mean=33.85, Count=20.0 files
+5. water_drops: Mean=33.78, Count=20.0 files
+
+==================================================
+ANALYSIS FOR: RATING_HAPTICGEN
+==================================================
+
+Category Performance (sorted by mean rating):
+Category                  Count    Mean     Median   Std      Min      Max     
+--------------------------------------------------------------------------------
+chirping_birds            20.0     73.40    73.25    18.79    27.50    95.00   
+wind                      20.0     69.88    68.75    18.73    15.00    97.50   
+hen                       20.0     67.08    69.50    17.21    34.00    91.50   
+clock_tick                20.0     66.88    75.75    30.01    0.00     99.50   
+insects                   20.0     66.32    69.25    23.21    11.50    100.00  
+clock_alarm               20.0     66.18    66.50    22.86    11.00    99.00   
+breathing                 20.0     65.55    66.50    24.81    2.00     100.00  
+cow                       20.0     64.42    68.50    18.91    32.00    92.00   
+cat                       20.0     63.95    66.00    26.49    15.00    100.00  
+crying_baby               20.0     63.90    70.50    21.85    22.00    100.00  
+dog                       20.0     63.78    65.50    21.29    23.00    100.00  
+crickets                  20.0     62.85    60.00    22.86    29.00    97.00   
+washing_machine           20.0     62.65    67.25    18.80    31.00    92.00   
+vacuum_cleaner            20.0     62.22    63.75    19.79    36.00    100.00  
+snoring                   20.0     62.00    65.25    19.63    18.50    92.00   
+can_opening               20.0     61.80    61.00    25.47    8.00     95.00   
+door_wood_creaks          20.0     61.38    69.00    21.63    27.50    96.50   
+brushing_teeth            20.0     61.00    69.00    22.96    10.00    87.50   
+frog                      20.0     60.20    59.50    18.54    24.00    90.00   
+water_drops               20.0     59.72    63.75    29.30    5.00     95.00   
+church_bells              20.0     59.28    57.25    22.76    22.00    100.00  
+pouring_water             20.0     59.22    62.00    23.99    20.00    96.00   
+car_horn                  20.0     58.78    54.75    26.04    8.50     95.50   
+rooster                   20.0     58.75    55.25    19.95    19.50    92.50   
+airplane                  20.0     58.72    60.00    25.82    1.50     92.00   
+hand_saw                  20.0     57.50    52.50    26.74    17.00    100.00  
+drinking_sipping          20.0     57.32    56.75    25.25    7.50     100.00  
+pig                       20.0     56.80    57.00    22.55    10.00    94.50   
+laughing                  20.0     55.85    54.50    20.73    8.00     85.00   
+crow                      20.0     55.25    48.50    25.84    14.50    92.50   
+sea_waves                 20.0     55.08    55.00    21.46    27.00    94.00   
+footsteps                 20.0     54.95    60.25    21.17    16.00    83.00   
+crackling_fire            20.0     54.45    52.25    22.20    9.50     96.50   
+mouse_click               20.0     53.85    62.00    31.55    8.00     100.00  
+train                     20.0     51.60    48.50    17.45    22.50    90.00   
+keyboard_typing           20.0     51.55    49.75    15.10    22.00    80.00   
+chainsaw                  20.0     51.45    50.75    19.27    21.50    87.50   
+sheep                     20.0     51.02    53.25    21.30    16.50    85.00   
+helicopter                20.0     49.58    49.50    24.39    9.50     93.50   
+thunderstorm              20.0     49.22    50.75    17.97    15.00    84.50   
+engine                    20.0     49.15    50.75    21.97    15.00    92.50   
+fireworks                 20.0     48.02    48.50    18.53    14.00    81.00   
+toilet_flush              20.0     47.58    42.75    23.88    15.50    87.50   
+sneezing                  20.0     47.55    48.75    20.02    12.00    77.50   
+coughing                  20.0     46.88    45.75    20.41    0.00     79.50   
+clapping                  20.0     46.72    50.75    21.76    10.50    81.00   
+door_wood_knock           20.0     46.48    43.75    28.80    1.00     96.00   
+rain                      20.0     46.12    42.00    21.58    8.00     95.00   
+glass_breaking            20.0     43.25    42.50    17.27    6.50     78.50   
+siren                     20.0     42.42    39.25    26.78    0.00     86.50   
+
+Top 5 categories for rating_hapticgen:
+1. chirping_birds: Mean=73.40, Count=20.0 files
+2. wind: Mean=69.88, Count=20.0 files
+3. hen: Mean=67.08, Count=20.0 files
+4. clock_tick: Mean=66.88, Count=20.0 files
+5. insects: Mean=66.32, Count=20.0 files
+
+Bottom 5 categories for rating_hapticgen:
+1. clapping: Mean=46.72, Count=20.0 files
+2. door_wood_knock: Mean=46.48, Count=20.0 files
+3. rain: Mean=46.12, Count=20.0 files
+4. glass_breaking: Mean=43.25, Count=20.0 files
+5. siren: Mean=42.42, Count=20.0 files
+
+==================================================
+ANALYSIS FOR: RATING_PERCEPT
+==================================================
+
+Category Performance (sorted by mean rating):
+Category                  Count    Mean     Median   Std      Min      Max     
+--------------------------------------------------------------------------------
+clock_alarm               20.0     52.52    52.75    27.54    0.00     91.00   
+vacuum_cleaner            20.0     44.25    43.00    26.59    3.50     97.50   
+engine                    20.0     43.40    44.25    25.18    5.00     79.50   
+helicopter                20.0     42.12    48.25    27.05    0.00     89.50   
+airplane                  20.0     41.32    36.75    26.08    2.00     91.00   
+coughing                  20.0     40.17    42.50    23.66    1.50     89.00   
+pig                       20.0     40.05    41.75    29.21    2.50     94.00   
+washing_machine           20.0     39.35    36.25    23.72    4.00     86.50   
+dog                       20.0     39.25    36.25    19.04    2.00     76.50   
+can_opening               20.0     39.08    38.75    21.66    4.50     92.50   
+sneezing                  20.0     38.83    32.25    24.70    0.50     87.50   
+rain                      20.0     37.50    41.25    26.05    0.00     89.50   
+snoring                   20.0     36.90    36.75    22.90    4.00     83.50   
+chainsaw                  20.0     36.55    31.00    28.97    3.00     88.50   
+clock_tick                20.0     36.25    36.50    25.64    1.50     92.50   
+glass_breaking            20.0     35.20    38.00    25.12    2.00     83.00   
+rooster                   20.0     34.60    37.00    15.70    5.00     60.50   
+wind                      20.0     34.33    36.25    23.62    0.00     75.50   
+hen                       20.0     32.20    33.75    18.70    2.50     67.50   
+mouse_click               20.0     32.05    28.25    24.16    0.00     78.50   
+insects                   20.0     31.62    29.75    21.45    3.00     75.00   
+fireworks                 20.0     31.15    30.50    20.68    4.00     73.50   
+frog                      20.0     30.28    35.75    21.55    0.00     67.50   
+footsteps                 20.0     30.18    22.25    22.80    0.00     71.00   
+crying_baby               20.0     29.88    34.25    21.59    0.50     69.50   
+sheep                     20.0     29.78    28.25    20.88    0.00     73.50   
+car_horn                  20.0     29.32    19.75    25.23    0.00     81.50   
+train                     20.0     28.98    30.75    17.19    0.00     56.50   
+drinking_sipping          20.0     28.88    26.75    25.50    0.00     95.00   
+keyboard_typing           20.0     28.88    19.00    24.28    0.00     70.00   
+thunderstorm              20.0     28.85    16.50    27.38    0.00     84.00   
+laughing                  20.0     28.35    21.25    24.91    0.00     82.50   
+door_wood_creaks          20.0     28.32    27.00    20.08    0.50     72.00   
+cat                       20.0     28.12    27.75    22.94    0.00     65.00   
+pouring_water             20.0     27.15    24.00    22.19    0.00     75.00   
+toilet_flush              20.0     26.45    30.25    16.31    0.00     53.00   
+door_wood_knock           20.0     26.10    22.75    24.33    0.00     72.50   
+siren                     20.0     25.98    29.50    19.54    0.00     64.50   
+church_bells              20.0     25.98    25.00    17.94    0.00     53.00   
+water_drops               20.0     24.45    20.00    21.56    0.00     85.00   
+clapping                  20.0     24.28    17.75    18.00    0.00     72.50   
+crickets                  20.0     24.12    17.25    18.78    0.00     66.50   
+sea_waves                 20.0     23.58    21.25    19.15    0.00     66.50   
+cow                       20.0     23.18    21.25    18.39    0.50     61.50   
+hand_saw                  20.0     21.82    15.50    18.11    1.00     80.00   
+breathing                 20.0     20.92    18.75    16.55    0.00     62.50   
+crackling_fire            20.0     20.48    18.75    15.55    0.00     52.50   
+brushing_teeth            20.0     20.02    18.75    14.38    0.00     46.50   
+crow                      20.0     19.23    15.75    16.41    0.00     51.00   
+chirping_birds            20.0     16.45    11.25    16.50    0.00     51.50   
+
+Top 5 categories for rating_percept:
+1. clock_alarm: Mean=52.52, Count=20.0 files
+2. vacuum_cleaner: Mean=44.25, Count=20.0 files
+3. engine: Mean=43.40, Count=20.0 files
+4. helicopter: Mean=42.12, Count=20.0 files
+5. airplane: Mean=41.32, Count=20.0 files
+
+Bottom 5 categories for rating_percept:
+1. breathing: Mean=20.92, Count=20.0 files
+2. crackling_fire: Mean=20.48, Count=20.0 files
+3. brushing_teeth: Mean=20.02, Count=20.0 files
+4. crow: Mean=19.23, Count=20.0 files
+5. chirping_birds: Mean=16.45, Count=20.0 files
+
+==================================================
+ANALYSIS FOR: RATING_PITCHMATCH
+==================================================
+
+Category Performance (sorted by mean rating):
+Category                  Count    Mean     Median   Std      Min      Max     
+--------------------------------------------------------------------------------
+keyboard_typing           20.0     78.25    83.50    14.81    45.50    97.50   
+door_wood_knock           20.0     75.92    84.00    17.48    40.00    100.00  
+snoring                   20.0     74.45    80.75    16.54    37.00    97.00   
+train                     20.0     74.03    76.75    13.24    47.50    100.00  
+footsteps                 20.0     73.62    79.50    19.62    26.00    100.00  
+crackling_fire            20.0     72.90    80.50    18.02    35.50    99.50   
+drinking_sipping          20.0     72.53    76.50    16.57    40.00    96.50   
+water_drops               20.0     72.40    73.25    19.51    38.50    100.00  
+hand_saw                  20.0     72.35    76.25    20.16    27.50    95.00   
+thunderstorm              20.0     71.75    70.75    13.97    40.50    97.00   
+dog                       20.0     71.42    72.75    15.20    36.00    95.00   
+sneezing                  20.0     70.32    68.75    16.88    34.50    97.50   
+clock_tick                20.0     69.78    76.75    23.17    4.50     96.50   
+frog                      20.0     69.53    70.00    17.51    40.00    95.50   
+coughing                  20.0     69.15    73.75    24.19    19.50    99.50   
+clock_alarm               20.0     68.90    70.50    24.69    7.00     100.00  
+fireworks                 20.0     68.55    67.75    16.30    33.50    100.00  
+hen                       20.0     68.50    71.75    18.69    17.50    100.00  
+rooster                   20.0     68.18    72.75    19.25    25.00    93.50   
+mouse_click               20.0     67.72    71.25    22.49    19.00    95.50   
+clapping                  20.0     66.65    68.50    19.13    13.00    95.00   
+engine                    20.0     66.55    67.50    19.91    17.50    95.00   
+brushing_teeth            20.0     65.45    59.00    18.88    42.50    97.00   
+laughing                  20.0     64.10    71.00    23.17    2.00     93.50   
+pig                       20.0     63.88    71.00    24.07    5.00     97.50   
+chainsaw                  20.0     62.25    69.75    27.96    0.50     97.50   
+can_opening               20.0     62.22    57.25    20.56    22.50    95.00   
+airplane                  20.0     61.28    66.00    22.15    8.00     87.50   
+rain                      20.0     59.60    66.25    24.64    5.50     98.50   
+sheep                     20.0     59.58    61.75    23.96    6.50     97.50   
+siren                     20.0     59.15    55.00    22.86    20.00    100.00  
+washing_machine           20.0     58.85    56.75    25.84    10.50    95.00   
+pouring_water             20.0     58.82    55.00    19.41    27.00    94.00   
+helicopter                20.0     58.32    59.75    18.55    10.00    89.50   
+door_wood_creaks          20.0     57.50    62.50    22.22    7.00     86.50   
+toilet_flush              20.0     57.38    60.25    24.06    5.00     98.00   
+church_bells              20.0     57.22    62.50    28.48    1.00     95.00   
+breathing                 20.0     57.12    57.00    21.31    26.00    92.50   
+chirping_birds            20.0     56.55    55.75    22.30    8.50     88.50   
+glass_breaking            20.0     55.30    60.50    26.47    5.50     96.00   
+insects                   20.0     54.10    58.00    21.83    1.00     84.50   
+cow                       20.0     52.70    56.75    25.75    12.00    86.00   
+crying_baby               20.0     52.62    54.25    24.16    0.00     91.00   
+wind                      20.0     52.20    52.25    27.01    1.00     93.00   
+crow                      20.0     52.00    51.25    25.55    2.00     90.00   
+sea_waves                 20.0     51.38    59.25    24.87    6.50     85.00   
+crickets                  20.0     48.48    44.00    22.48    15.50    81.50   
+car_horn                  20.0     46.08    42.75    25.39    1.50     96.00   
+vacuum_cleaner            20.0     42.62    40.00    25.89    3.50     83.50   
+cat                       20.0     38.72    41.50    14.86    6.00     60.50   
+
+Top 5 categories for rating_pitchmatch:
+1. keyboard_typing: Mean=78.25, Count=20.0 files
+2. door_wood_knock: Mean=75.92, Count=20.0 files
+3. snoring: Mean=74.45, Count=20.0 files
+4. train: Mean=74.03, Count=20.0 files
+5. footsteps: Mean=73.62, Count=20.0 files
+
+Bottom 5 categories for rating_pitchmatch:
+1. sea_waves: Mean=51.38, Count=20.0 files
+2. crickets: Mean=48.48, Count=20.0 files
+3. car_horn: Mean=46.08, Count=20.0 files
+4. vacuum_cleaner: Mean=42.62, Count=20.0 files
+5. cat: Mean=38.72, Count=20.0 files
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+Files with duplicate highest ratings: 8
+Percentage of total files: 0.8%
+
+Most common duplicate highest ratings:
+  69.5: 1 files
+  76.5: 1 files
+  90.0: 1 files
+  79.5: 1 files
+  77.5: 1 files
+  76.0: 1 files
+  51.5: 1 files
+  92.0: 1 files
+
+================================================================================
+ANALYSIS BY HIGHEST RATING VALUE
+================================================================================
+
+Highest Rating: 92.0 (1 files)
+--------------------------------------------------
+  5-251957-A-47.wav (airplane): freqshift, hapticgen
+
+Highest Rating: 90.0 (1 files)
+--------------------------------------------------
+  2-106015-A-44.wav (engine): freqshift, pitchmatch
+
+Highest Rating: 79.5 (1 files)
+--------------------------------------------------
+  2-118072-A-0.wav (dog): hapticgen, pitchmatch
+
+Highest Rating: 77.5 (1 files)
+--------------------------------------------------
+  3-144692-A-21.wav (sneezing): hapticgen, pitchmatch
+
+Highest Rating: 76.5 (1 files)
+--------------------------------------------------
+  1-54747-A-46.wav (church_bells): freqshift, pitchmatch
+
+Highest Rating: 76.0 (1 files)
+--------------------------------------------------
+  4-191015-A-43.wav (car_horn): freqshift, pitchmatch
+
+Highest Rating: 69.5 (1 files)
+--------------------------------------------------
+  1-23706-A-49.wav (hand_saw): hapticgen, pitchmatch
+
+Highest Rating: 51.5 (1 files)
+--------------------------------------------------
+  5-160614-H-48.wav (fireworks): freqshift, pitchmatch

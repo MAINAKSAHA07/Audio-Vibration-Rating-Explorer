@@ -176,6 +176,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       });
 
       console.log('🎵 Sounds with all ratings:', soundCards.length);
+      console.log('🎵 Sample audio files:', soundCards.slice(0, 3).map(s => s.audioFile));
 
       // Apply filters with early termination for performance
       soundCards = soundCards.filter(sound => {
@@ -399,7 +400,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
               }}
               className="sort-select"
             >
-              <option value="average">Highest Average</option>
+              <option value="average">Highest Rating</option>
               <option value="variance">Most Variable</option>
               <option value="filename">Filename</option>
             </select>

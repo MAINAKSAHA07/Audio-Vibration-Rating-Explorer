@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { SummaryData, RatingData } from '../utils/api';
+import ReactECharts from 'echarts-for-react';
 
 interface DashboardOverviewProps {
   summary: SummaryData;
@@ -51,6 +52,121 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ summary, ratings 
   const performanceHeatmapContainerRef = useRef<HTMLDivElement>(null);
   const ratingVsFrequencyContainerRef = useRef<HTMLDivElement>(null);
   const designCorrelationsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Sunburst chart configuration
+  const sunburstOption = {
+    backgroundColor: "#ffffff",
+    tooltip: { 
+      trigger: "item", 
+      formatter: "{b}" 
+    },
+    series: [
+      {
+        type: "sunburst",
+        radius: [0, "90%"],
+        sort: null,
+        emphasis: { focus: "ancestor" },
+        levels: [
+          {}, 
+          {
+            r0: "20%",
+            r: "45%",
+            label: { show: false }, 
+            itemStyle: { borderWidth: 2, borderColor: "#ffffff" }
+          },
+          {
+            r0: "50%",
+            r: "88%",
+            label: { show: false }, 
+            emphasis: { label: { show: true, color: "#0f172a" } },
+            itemStyle: { borderWidth: 2, borderColor: "#ffffff" }
+          }
+        ],
+        data: [
+          {
+            name: "Animals",
+            itemStyle: { color: "#22c55e" },
+            children: [
+              { name: "dog", value: 1 },
+              { name: "rooster", value: 1 },
+              { name: "pig", value: 1 },
+              { name: "cow", value: 1 },
+              { name: "frog", value: 1 },
+              { name: "cat", value: 1 },
+              { name: "hen", value: 1 },
+              { name: "insects", value: 1 },
+              { name: "sheep", value: 1 },
+              { name: "crow", value: 1 }
+            ]
+          },
+          {
+            name: "Natural soundscapes & water",
+            itemStyle: { color: "#3b82f6" },
+            children: [
+              { name: "rain", value: 1 },
+              { name: "sea_waves", value: 1 },
+              { name: "crackling_fire", value: 1 },
+              { name: "crickets", value: 1 },
+              { name: "chirping_birds", value: 1 },
+              { name: "water_drops", value: 1 },
+              { name: "wind", value: 1 },
+              { name: "pouring_water", value: 1 },
+              { name: "toilet_flush", value: 1 },
+              { name: "thunderstorm", value: 1 }
+            ]
+          },
+          {
+            name: "Human, non-speech",
+            itemStyle: { color: "#a855f7" },
+            children: [
+              { name: "crying_baby", value: 1 },
+              { name: "sneezing", value: 1 },
+              { name: "clapping", value: 1 },
+              { name: "breathing", value: 1 },
+              { name: "coughing", value: 1 },
+              { name: "footsteps", value: 1 },
+              { name: "laughing", value: 1 },
+              { name: "brushing_teeth", value: 1 },
+              { name: "snoring", value: 1 },
+              { name: "drinking_sipping", value: 1 }
+            ]
+          },
+          {
+            name: "Interior/domestic",
+            itemStyle: { color: "#8b5cf6" },
+            children: [
+              { name: "door_wood_knock", value: 1 },
+              { name: "mouse_click", value: 1 },
+              { name: "keyboard_typing", value: 1 },
+              { name: "door_wood_creaks", value: 1 },
+              { name: "can_opening", value: 1 },
+              { name: "washing_machine", value: 1 },
+              { name: "vacuum_cleaner", value: 1 },
+              { name: "clock_alarm", value: 1 },
+              { name: "clock_tick", value: 1 },
+              { name: "glass_breaking", value: 1 }
+            ]
+          },
+          {
+            name: "Exterior/urban",
+            itemStyle: { color: "#6366f1" },
+            children: [
+              { name: "helicopter", value: 1 },
+              { name: "chainsaw", value: 1 },
+              { name: "siren", value: 1 },
+              { name: "car_horn", value: 1 },
+              { name: "engine", value: 1 },
+              { name: "train", value: 1 },
+              { name: "church_bells", value: 1 },
+              { name: "airplane", value: 1 },
+              { name: "fireworks", value: 1 },
+              { name: "hand_saw", value: 1 }
+            ]
+          }
+        ]
+      }
+    ]
+  };
 
   // State for chart dimensions
   const [chartDimensions, setChartDimensions] = useState({
@@ -1110,9 +1226,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ summary, ratings 
       
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(2, 1fr)', 
+        gridTemplateColumns: 'repeat(3, 1fr)', 
         gap: '20px', 
-        maxWidth: '1200px',
+        maxWidth: '1400px',
         margin: '30px auto 0'
       }}>
         {/* Pie Chart */}
@@ -1125,6 +1241,16 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ summary, ratings 
         <div ref={ratingHistogramContainerRef} style={{ minHeight: '500px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fff' }}>
           <h3 style={{ textAlign: 'center', marginBottom: '15px', fontSize: '18px', fontWeight: '600', color: '#333' }}>📈 Rating Distribution</h3>
           <svg ref={ratingHistogramRef} style={{ width: '100%', height: '450px' }} />
+        </div>
+        
+        {/* Sunburst Chart */}
+        <div style={{ minHeight: '500px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fff' }}>
+          <h3 style={{ textAlign: 'center', marginBottom: '15px', fontSize: '18px', fontWeight: '600', color: '#333' }}>🌳 Category Hierarchy</h3>
+          <ReactECharts 
+            option={sunburstOption} 
+            style={{ height: '450px', width: '100%' }}
+            opts={{ renderer: 'canvas' }}
+          />
         </div>
         
         {/* Top/Bottom Performers */}

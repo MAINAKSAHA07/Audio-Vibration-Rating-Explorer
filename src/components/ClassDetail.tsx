@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ClassStats } from '../utils/dataHelpers';
 import { RatingData } from '../utils/api';
-import AudioPlayer from './AudioPlayer';
+import WaveSurferPlayer from './WaveSurferPlayer';
 import SimpleAudioPlayer from './SimpleAudioPlayer';
 import DualViewPlayer from './DualViewPlayer';
 
@@ -127,7 +127,7 @@ const ClassDetail: React.FC<ClassDetailProps> = ({ classStats, audioFiles, vibra
                   title={`Original Audio: ${selectedAudio.id}`}
                 />
               ) : (
-                <AudioPlayer
+                <WaveSurferPlayer
                   audioUrl={`/audio/${selectedAudio.audioFile}`}
                   title={`Original Audio: ${selectedAudio.id}`}
                   height={80}
@@ -152,7 +152,7 @@ const ClassDetail: React.FC<ClassDetailProps> = ({ classStats, audioFiles, vibra
                     title={`${vibration.design.charAt(0).toUpperCase() + vibration.design.slice(1)}: ${vibration.rating.toFixed(1)}/100`}
                   />
                 ) : (
-                  <AudioPlayer
+                  <WaveSurferPlayer
                     audioUrl={`/vibration/${vibration.vibrationFile}`}
                     title={`${vibration.design.charAt(0).toUpperCase() + vibration.design.slice(1)}: ${vibration.rating.toFixed(1)}/100`}
                     height={60}
