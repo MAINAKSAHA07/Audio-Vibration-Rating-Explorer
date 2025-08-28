@@ -24,8 +24,9 @@ import DashboardOverview from './components/DashboardOverview';
 import ErrorBoundary from './components/ErrorBoundary';
 import DetailView from './components/DetailView';
 import AudioUpload from './components/AudioUpload';
+import AlgorithmPerformanceSunburst from './components/AlgorithmPerformanceSunburst';
 
-type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload';
+type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload' | 'connected';
 
 function App() {
   const [ratings, setRatings] = useState<RatingData[]>([]);
@@ -39,6 +40,16 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [detailViewData, setDetailViewData] = useState<any>(null);
+  
+  // ESC-50 Category mapping
+  const getCategoryForClass = (classNum: number): string => {
+    if (classNum >= 0 && classNum <= 9) return 'Animals';
+    if (classNum >= 10 && classNum <= 19) return 'Natural Soundscapes';
+    if (classNum >= 20 && classNum <= 29) return 'Human Non-Speech';
+    if (classNum >= 30 && classNum <= 39) return 'Interior Domestic';
+    if (classNum >= 40 && classNum <= 49) return 'Exterior Urban';
+    return 'Unknown';
+  };
   
   // Filter state
   const [filterState, setFilterState] = useState<FilterState>({
@@ -194,6 +205,87 @@ function App() {
                 onClassSelect={setSelectedClass}
               />
             </div>
+          </div>
+        );
+      
+      case 'connected':
+        return (
+          <div>
+            <div style={{ 
+              marginBottom: '30px',
+              textAlign: 'center',
+              padding: '20px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '12px',
+              color: 'white'
+            }}>
+              <h2 style={{ margin: '0 0 10px 0', fontSize: '24px', fontWeight: '700' }}>
+                🔗 Connected Analysis View
+              </h2>
+              <p style={{ margin: '0', fontSize: '16px', opacity: '0.9' }}>
+                Click on any class in the Volcano Plot to see its performance breakdown in the Sunburst Chart
+              </p>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
+              <div>
+                <h3 style={{ 
+                  textAlign: 'center', 
+                  marginBottom: '20px', 
+                  fontSize: '20px', 
+                  fontWeight: '600', 
+                  color: '#1f2937' 
+                }}>
+                  🏔️ Volcano Contour Plot
+                </h3>
+                <VolcanoContourPlot
+                  data={ratings}
+                  onClassSelect={(classCode) => {
+                    setSelectedClass(classCode);
+                    // Trigger sunburst to show details for this class
+                    setCurrentView('connected');
+                  }}
+                />
+              </div>
+              
+              <div>
+                <h3 style={{ 
+                  textAlign: 'center', 
+                  marginBottom: '20px', 
+                  fontSize: '20px', 
+                  fontWeight: '600', 
+                  color: '#1f2937' 
+                }}>
+                  🏆 Algorithm Performance Sunburst
+                </h3>
+                <AlgorithmPerformanceSunburst 
+                  onDetailView={(data) => setDetailViewData(data)}
+                />
+              </div>
+            </div>
+            
+            {selectedClass && (
+              <div style={{
+                padding: '20px',
+                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                borderRadius: '12px',
+                border: '2px solid #3b82f6',
+                marginTop: '20px'
+              }}>
+                <h4 style={{ 
+                  margin: '0 0 15px 0', 
+                  color: '#1f2937', 
+                  fontSize: '18px',
+                  fontWeight: '600'
+                }}>
+                  📊 Selected Class: {selectedClass} ({getCategoryForClass(parseInt(selectedClass))})
+                </h4>
+                <p style={{ margin: '0', color: '#6b7280', fontSize: '14px' }}>
+                  Explore the performance breakdown for this class in the sunburst chart above. 
+                  The chart shows how each algorithm performs across different categories and subcategories.
+                </p>
+              </div>
+            )}
           </div>
         );
       

@@ -7,8 +7,8 @@ interface FilterControlsProps {
   selectedClass: string;
   onCategoryChange: (category: string) => void;
   onClassChange: (classCode: string) => void;
-  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload') => void;
-  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload';
+  onViewChange: (view: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload' | 'connected') => void;
+  currentView: 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload' | 'connected';
 }
 
 const FilterControls: React.FC<FilterControlsProps> = ({
@@ -47,6 +47,12 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           className={currentView === 'upload' ? 'active' : ''}
         >
           🎵 Audio Upload
+        </button>
+        <button
+          onClick={() => onViewChange('connected')}
+          className={currentView === 'connected' ? 'active' : ''}
+        >
+          🔗 Connected Analysis
         </button>
         {/* <button
           onClick={() => onViewChange('dashboard')}

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { SummaryData, RatingData, fetchRatings } from '../utils/api';
 import HierarchicalSunburst from './HierarchicalSunburst';
+import AlgorithmPerformanceSunburst from './AlgorithmPerformanceSunburst';
 import DetailView from './DetailView';
 
 interface OverviewChartProps {
@@ -14,6 +15,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
   const [ratings, setRatings] = useState<RatingData[]>([]);
   const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('');
   const [detailViewData, setDetailViewData] = useState<any>(null);
 
   // Fetch detailed ratings data for line chart
@@ -75,7 +77,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       
       console.log('Line chart rendering:', { containerWidth, width, ratingsCount: ratings.length });
     const height = 500;
-    const margin = { top: 80, right: 100, bottom: 100, left: 80 };
+    const margin = { top: 80, right: 150, bottom: 100, left: 80 };
 
     // Set the SVG size
     svg.attr("width", width).attr("height", height);
@@ -176,8 +178,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         .datum(methodData)
         .attr("fill", "none")
         .attr("stroke", methodColors[method as keyof typeof methodColors])
-        .attr("stroke-width", hoveredMethod === method ? 4 : 2)
-        .attr("stroke-opacity", hoveredMethod && hoveredMethod !== method ? 0.3 : 1)
+        .attr("stroke-width", selectedAlgorithm === method ? 5 : (hoveredMethod === method ? 4 : 2))
+        .attr("stroke-opacity", selectedAlgorithm === method ? 1 : (hoveredMethod && hoveredMethod !== method ? 0.3 : 1))
         .attr("d", line)
         .style("cursor", "pointer")
         .on("mouseover", function(event) {
@@ -215,12 +217,15 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
             .attr("y", 30)
             .style("font-size", "11px")
             .style("fill", "#666")
-            .text("Hover over points for details");
+            .text("Click to select algorithm");
         })
         .on("mouseout", function() {
           setHoveredMethod(null);
           d3.select(this).attr("stroke-width", 2);
           svg.selectAll(".method-tooltip").remove();
+        })
+        .on("click", function() {
+          setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
         });
 
       // Add data points
@@ -231,10 +236,10 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         .attr("class", `point-${method}`)
         .attr("cx", d => xScale(d.class))
         .attr("cy", d => yScale(d.rating))
-        .attr("r", 3)
+        .attr("r", selectedAlgorithm === method ? 5 : 3)
         .attr("fill", methodColors[method as keyof typeof methodColors])
         .attr("stroke", "#fff")
-        .attr("stroke-width", 1)
+        .attr("stroke-width", selectedAlgorithm === method ? 2 : 1)
         .style("cursor", "pointer")
                  .on("mouseover", function(event, d) {
            d3.select(this).attr("r", 6);
@@ -303,7 +308,14 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
            svg.selectAll(".tooltip").remove();
          })
         .on("click", function(event, d) {
-          setSelectedClass(selectedClass === d.class ? null : d.class);
+          // Toggle between class selection and algorithm selection
+          if (event.shiftKey) {
+            // Shift+click for class selection (existing behavior)
+            setSelectedClass(selectedClass === d.class ? null : d.class);
+          } else {
+            // Regular click for algorithm selection
+            setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
+          }
         });
     });
 
@@ -361,6 +373,14 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
     const legend = svg.append("g")
       .attr("transform", `translate(${width - margin.right + 10}, ${margin.top})`);
 
+    // Method name mapping for display
+    const methodDisplayNames = {
+      'freqshift': 'Frequency Shift',
+      'hapticgen': 'HapticGen', 
+      'percept': 'Perceptual Mapping',
+      'pitchmatch': 'Pitch Match'
+    };
+
     methods.forEach((method, i) => {
       const legendItem = legend.append("g")
         .attr("transform", `translate(0, ${i * 25})`);
@@ -377,14 +397,18 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         .attr("x", 25)
         .attr("y", 4)
         .style("font-size", "12px")
-        .style("font-weight", "500")
-        .style("fill", "#333")
-        .text(method);
+        .style("font-weight", selectedAlgorithm === method ? "700" : "500")
+        .style("fill", selectedAlgorithm === method ? methodColors[method as keyof typeof methodColors] : "#333")
+        .style("cursor", "pointer")
+        .text(methodDisplayNames[method as keyof typeof methodDisplayNames])
+        .on("click", () => {
+          setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
+        });
     });
     }, 100); // 100ms delay
 
     return () => clearTimeout(timer);
-  }, [ratings, hoveredMethod, selectedClass]);
+  }, [ratings, hoveredMethod, selectedClass, selectedAlgorithm]);
 
   return (
     <div className="overview-chart">
@@ -433,6 +457,41 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       </div>
       </div>
       
+      {/* Algorithm Performance Sunburst - New section */}
+      <div style={{ 
+        marginTop: '40px',
+        marginBottom: '40px'
+      }}>
+        <h2 style={{
+          textAlign: 'center',
+          marginBottom: '20px',
+          fontSize: '24px',
+          fontWeight: '700',
+          color: '#1f2937',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
+          🏆 Algorithm Performance Analysis
+        </h2>
+        <p style={{
+          textAlign: 'center',
+          marginBottom: '30px',
+          fontSize: '16px',
+          color: '#6b7280',
+          maxWidth: '800px',
+          margin: '0 auto 30px auto'
+        }}>
+          Explore which algorithms perform best across different sound categories. 
+          Segment sizes represent winning percentages, with ties counted for both algorithms.
+        </p>
+        <AlgorithmPerformanceSunburst 
+          onDetailView={(data) => setDetailViewData(data)} 
+          selectedAlgorithm={selectedAlgorithm}
+        />
+      </div>
+      
       {/* Detailed View Button */}
       <div style={{
         marginTop: '20px',
@@ -478,11 +537,15 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         fontSize: '14px'
       }}>
         <p><strong>Total Audio Files:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.audioFile)).size : summary.uniqueAudioFiles}</p>
-        <p><strong>Total ESC-50 Classes:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.target)).size : summary.uniqueClasses}</p>
         <p><strong>Total Ratings:</strong> {ratings.length > 0 ? ratings.length : summary.totalEntries}</p>
-        <p><strong>Vibration Methods:</strong> {summary.designs.join(', ')}</p>
-        <p><strong>Data Classes:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.class)).size : 0} (A, B, C, etc.)</p>
-        <p><strong>Categories:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.category)).size : summary.uniqueCategories}</p>
+        <p><strong>Vibration Methods:</strong> {summary.designs.map(d => ({
+          'freqshift': 'Frequency Shift',
+          'hapticgen': 'HapticGen', 
+          'percept': 'Perceptual Mapping',
+          'pitchmatch': 'Pitch Match'
+        })[d]).join(', ')}</p>
+        <p><strong>Categories:</strong> Animals, Natural Soundscapes, Human Non-Speech, Interior/Domestic, Exterior/Urban</p>
+        <p><strong>Classes:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.category)).size : summary.uniqueCategories}</p>
         {selectedClass !== null && (
           <p><strong>Selected Class:</strong> {selectedClass} ({getCategoryForClass(selectedClass)})</p>
         )}
