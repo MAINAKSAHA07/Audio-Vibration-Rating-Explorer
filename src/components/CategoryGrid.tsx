@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import * as d3 from 'd3';
 import { RatingData, fetchRatings } from '../utils/api';
+import colors from '../colors.js';
 
 interface SoundCard {
   id: string;
@@ -51,10 +52,10 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ category }) => {
 
   // Color system (consistent everywhere)
   const chartColors = {
-    freqshift: '#FF1744',  // Bright red
-    hapticgen: '#00E676',  // Bright green
-    percept: '#2196F3',    // Bright blue
-    pitchmatch: '#9C27B0'  // Bright purple
+    freqshift: colors(0),  // Pink
+    hapticgen: colors(1),  // Blue
+    percept: colors(2),    // Yellow
+    pitchmatch: colors(3)  // Lavender
   };
 
   // Load data for the category

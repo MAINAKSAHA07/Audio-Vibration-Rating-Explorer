@@ -29,18 +29,18 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           className={currentView === 'enhanced' ? 'active' : ''}
         >
           🚀 Enhanced Dashboard
-        </button> */}
+        </button> 
         <button
           onClick={() => onViewChange('overview')}
           className={currentView === 'overview' ? 'active' : ''}
         >
-          📈 Overview
-        </button>
+           Overview
+        </button>*/}
         <button
           onClick={() => onViewChange('filtered')}
           className={currentView === 'filtered' ? 'active' : ''}
         >
-          🔍 Detailed View
+          📈 Audio Overview
         </button>
         <button
           onClick={() => onViewChange('upload')}
@@ -48,13 +48,13 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         >
           🎵 Audio Upload
         </button>
-        <button
+       {/* <button
           onClick={() => onViewChange('connected')}
           className={currentView === 'connected' ? 'active' : ''}
         >
           🔗 Connected Analysis
         </button>
-        {/* <button
+         <button
           onClick={() => onViewChange('dashboard')}
           className={currentView === 'dashboard' ? 'active' : ''}
         >

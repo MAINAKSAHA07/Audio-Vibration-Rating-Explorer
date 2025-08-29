@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
+import { RatingData } from '../utils/api';
+import colors from '../colors.js';
 
 interface AlgorithmPerformanceSunburstProps {
   onDetailView?: (data: DetailViewData) => void;
   selectedAlgorithm?: string;
   selectedPoint?: {algorithm: string, class: number, category: string, subcategory: string} | null;
+  ratings?: RatingData[];
+  hoveredMethod?: string | null;
 }
 
 export interface DetailViewData {
@@ -63,7 +67,7 @@ interface SoundData {
 
 type NavigationLevel = 'level1' | 'level2' | 'level3' | 'level4';
 
-const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> = ({ onDetailView, selectedAlgorithm: externalSelectedAlgorithm, selectedPoint }) => {
+const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> = ({ onDetailView, selectedAlgorithm: externalSelectedAlgorithm, selectedPoint, ratings, hoveredMethod }) => {
   const [performanceData, setPerformanceData] = useState<PerformanceData | null>(null);
   const [currentLevel, setCurrentLevel] = useState<NavigationLevel>('level1');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('');
@@ -135,17 +139,95 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
 
 
 
-  // Calculate algorithm performance from CSV data
+  // Calculate algorithm performance from ratings data
   const calculateAlgorithmPerformance = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/audio_vibration_audio_20250812_150324_backup_20250826_111121.csv');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      
+      // Use ratings prop if available, otherwise fetch from CSV
+      let dataToProcess: any[] = [];
+      
+      if (ratings && ratings.length > 0) {
+        // Process ratings data directly
+        const audioFileGroups = new Map<string, RatingData[]>();
+        
+        // Group ratings by audio file
+        ratings.forEach(rating => {
+          if (!audioFileGroups.has(rating.audioFile)) {
+            audioFileGroups.set(rating.audioFile, []);
+          }
+          audioFileGroups.get(rating.audioFile)!.push(rating);
+        });
+        
+        // Convert to the format expected by the processing logic
+        dataToProcess = Array.from(audioFileGroups.values()).map(audioRatings => {
+          const firstRating = audioRatings[0];
+          const freqshift = audioRatings.find(r => r.design === 'freqshift')?.rating || 0;
+          const hapticgen = audioRatings.find(r => r.design === 'hapticgen')?.rating || 0;
+          const percept = audioRatings.find(r => r.design === 'percept')?.rating || 0;
+          const pitchmatch = audioRatings.find(r => r.design === 'pitchmatch')?.rating || 0;
+          
+          const ratings = [freqshift, hapticgen, percept, pitchmatch];
+          const maxRating = Math.max(...ratings);
+          const bestAlgorithm = audioRatings.find(r => r.rating === maxRating)?.design || 'freqshift';
+          
+          return {
+            filename: firstRating.audioFile,
+            soundname: firstRating.audioFile,
+            target: parseInt(firstRating.target),
+            category: getCategoryForClass(parseInt(firstRating.target)),
+            subcategory: getSpecificCategoryName(parseInt(firstRating.target)),
+            freqshift,
+            hapticgen,
+            percept,
+            pitchmatch,
+            bestAlgorithm,
+            bestRating: maxRating
+          };
+        });
+      } else {
+        // Fallback to CSV fetch
+        const response = await fetch('/audio_vibration_audio_20250812_150324_backup_20250826_111121.csv');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const csvText = await response.text();
+        const lines = csvText.split('\n').slice(1); // Skip header
+        
+        dataToProcess = lines.map(line => {
+          if (!line.trim()) return null;
+          
+          const columns = line.split(',');
+          if (columns.length < 15) return null;
+
+          const filename = columns[0];
+          const soundname = columns[1];
+          const target = parseInt(columns[3]);
+          const category = getCategoryForClass(target);
+          const subcategory = getSpecificCategoryName(target);
+          const freqshift = parseFloat(columns[9]);
+          const hapticgen = parseFloat(columns[10]);
+          const percept = parseFloat(columns[11]);
+          const pitchmatch = parseFloat(columns[12]);
+          const bestAlgorithm = columns[13];
+          const bestRating = parseFloat(columns[15]);
+
+          return {
+            filename,
+            soundname,
+            target,
+            category,
+            subcategory,
+            freqshift,
+            hapticgen,
+            percept,
+            pitchmatch,
+            bestAlgorithm,
+            bestRating
+          };
+        }).filter(Boolean);
       }
-      const csvText = await response.text();
-      const lines = csvText.split('\n').slice(1); // Skip header
       
       const performance: PerformanceData = {
         freqshift: { overall: 0, categories: {}, subcategories: {} },
@@ -159,23 +241,20 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
       const subcategoryCounts: Record<string, number> = {};
       const allSoundData: SoundData[] = [];
 
-      lines.forEach(line => {
-        if (!line.trim()) return;
-        
-        const columns = line.split(',');
-        if (columns.length < 15) return;
+      dataToProcess.forEach(item => {
+        if (!item) return;
 
-        const filename = columns[0];
-        const soundname = columns[1];
-        const target = parseInt(columns[3]);
-        const category = getCategoryForClass(target);
-        const subcategory = getSpecificCategoryName(target);
-        const freqshift = parseFloat(columns[9]);
-        const hapticgen = parseFloat(columns[10]);
-        const percept = parseFloat(columns[11]);
-        const pitchmatch = parseFloat(columns[12]);
-        const bestAlgorithm = columns[13];
-        const bestRating = parseFloat(columns[15]);
+        const filename = item.filename;
+        const soundname = item.soundname;
+        const target = item.target;
+        const category = item.category;
+        const subcategory = item.subcategory;
+        const freqshift = item.freqshift;
+        const hapticgen = item.hapticgen;
+        const percept = item.percept;
+        const pitchmatch = item.pitchmatch;
+        const bestAlgorithm = item.bestAlgorithm;
+        const bestRating = item.bestRating;
 
         // Store sound data
         allSoundData.push({
@@ -248,7 +327,15 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
 
   useEffect(() => {
     calculateAlgorithmPerformance();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ratings]); // Recalculate when ratings change
+
+  // Determine which algorithms to show based on filtered ratings
+  const availableAlgorithms = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
+  const algorithmsToShow = ratings && ratings.length > 0 
+    ? availableAlgorithms.filter(alg => 
+        ratings.some(r => r.design === alg)
+      )
+    : availableAlgorithms; // Show all if no ratings prop (using CSV data)
 
   // Generate chart data based on current level
   useEffect(() => {
@@ -277,138 +364,89 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
         }
         return baseColor;
       };
+
+      // Helper function to get algorithm item style with hover highlighting
+      const getAlgorithmItemStyle = (algorithm: string) => {
+        const isSelected = externalSelectedAlgorithm === algorithm;
+        const isHovered = hoveredMethod === algorithm;
+        
+        return {
+          color: getAlgorithmColor(algorithm),
+          borderWidth: (isSelected || isHovered) ? 3 : 0,
+          borderColor: '#ffffff',
+          shadowBlur: (isSelected || isHovered) ? 15 : 0,
+          shadowColor: getAlgorithmColor(algorithm),
+          shadowOffsetX: (isSelected || isHovered) ? 2 : 0,
+          shadowOffsetY: (isSelected || isHovered) ? 2 : 0,
+          opacity: hoveredMethod && hoveredMethod !== algorithm ? 0.3 : 1
+        };
+      };
+
+      // Helper function to get category item style with hover highlighting
+      const getCategoryItemStyle = (algorithm: string, category: string) => {
+        const isAlgorithmHovered = hoveredMethod === algorithm;
+        
+        return {
+          color: getCategoryColor(category),
+          borderWidth: isAlgorithmHovered ? 2 : 0,
+          borderColor: '#ffffff',
+          shadowBlur: isAlgorithmHovered ? 8 : 0,
+          shadowColor: getCategoryColor(category),
+          shadowOffsetX: isAlgorithmHovered ? 1 : 0,
+          shadowOffsetY: isAlgorithmHovered ? 1 : 0,
+          opacity: hoveredMethod && hoveredMethod !== algorithm ? 0.3 : 1
+        };
+      };
       
-      data = [
-        {
-          name: "Frequency Shift",
-          value: performanceData.freqshift.overall,
-          itemStyle: { 
-            color: getAlgorithmColorWithHighlight('freqshift'),
-            borderWidth: externalSelectedAlgorithm === 'freqshift' ? 3 : 0,
-            borderColor: '#ffffff',
-            shadowBlur: externalSelectedAlgorithm === 'freqshift' ? 10 : 0,
-            shadowColor: getAlgorithmColor('freqshift')
-          },
-          algorithm: 'freqshift',
-                      children: categories.map(category => {
-              const categoryValue = performanceData.freqshift.categories[category] || 0;
+      // Create algorithm data dynamically based on filtered algorithms
+      const algorithmConfigs = {
+        freqshift: { name: "Frequency Shift", data: performanceData.freqshift },
+        hapticgen: { name: "HapticGen", data: performanceData.hapticgen },
+        percept: { name: "Percept", data: performanceData.percept },
+        pitchmatch: { name: "PitchMatch", data: performanceData.pitchmatch }
+      };
+
+      // If no algorithms are selected in the filter, show a message
+      if (algorithmsToShow.length === 0) {
+        data = [{
+          name: "No Algorithms Selected",
+          value: 1,
+          itemStyle: { color: '#ccc' },
+          children: [{
+            name: "Please select algorithms in the filter panel",
+            value: 1,
+            itemStyle: { color: '#eee' }
+          }]
+        }];
+      } else {
+        data = algorithmsToShow.map(algorithmKey => {
+          const config = algorithmConfigs[algorithmKey as keyof typeof algorithmConfigs];
+          const algorithmData = config.data;
+          
+          return {
+            name: config.name,
+            value: algorithmData.overall,
+            itemStyle: getAlgorithmItemStyle(algorithmKey),
+            algorithm: algorithmKey,
+            children: categories.map(category => {
+              const categoryValue = algorithmData.categories[category] || 0;
+              const algorithmTotal = algorithmTotals[algorithmKey as keyof typeof algorithmTotals];
               // Calculate proportional value based on algorithm's total area
-              const proportionalValue = algorithmTotals.freqshift > 0 ? 
-                (categoryValue / algorithmTotals.freqshift) * performanceData.freqshift.overall : 
-                performanceData.freqshift.overall / 5; // Equal distribution if no wins
+              const proportionalValue = algorithmTotal > 0 ? 
+                (categoryValue / algorithmTotal) * algorithmData.overall : 
+                algorithmData.overall / 5; // Equal distribution if no wins
               return {
                 name: category,
                 value: proportionalValue,
-                itemStyle: { 
-                  color: getCategoryColor(category),
-                  borderWidth: externalSelectedAlgorithm === 'freqshift' ? 2 : 0,
-                  borderColor: '#ffffff',
-                  shadowBlur: externalSelectedAlgorithm === 'freqshift' ? 5 : 0,
-                  shadowColor: getCategoryColor(category)
-                },
-                algorithm: 'freqshift',
+                itemStyle: getCategoryItemStyle(algorithmKey, category),
+                algorithm: algorithmKey,
                 category: category,
                 originalValue: categoryValue // Store original value for tooltip
               };
             })
-        },
-        {
-          name: "HapticGen",
-          value: performanceData.hapticgen.overall,
-          itemStyle: { 
-            color: getAlgorithmColorWithHighlight('hapticgen'),
-            borderWidth: externalSelectedAlgorithm === 'hapticgen' ? 3 : 0,
-            borderColor: '#ffffff',
-            shadowBlur: externalSelectedAlgorithm === 'hapticgen' ? 10 : 0,
-            shadowColor: getAlgorithmColor('hapticgen')
-          },
-          algorithm: 'hapticgen',
-                      children: categories.map(category => {
-              const categoryValue = performanceData.hapticgen.categories[category] || 0;
-              const proportionalValue = algorithmTotals.hapticgen > 0 ? 
-                (categoryValue / algorithmTotals.hapticgen) * performanceData.hapticgen.overall : 
-                performanceData.hapticgen.overall / 5; // Equal distribution if no wins
-              return {
-                name: category,
-                value: proportionalValue,
-                itemStyle: { 
-                  color: getCategoryColor(category),
-                  borderWidth: externalSelectedAlgorithm === 'hapticgen' ? 2 : 0,
-                  borderColor: '#ffffff',
-                  shadowBlur: externalSelectedAlgorithm === 'hapticgen' ? 5 : 0,
-                  shadowColor: getCategoryColor(category)
-                },
-                algorithm: 'hapticgen',
-                category: category,
-                originalValue: categoryValue
-              };
-            })
-        },
-        {
-          name: "Percept",
-          value: performanceData.percept.overall,
-          itemStyle: { 
-            color: getAlgorithmColorWithHighlight('percept'),
-            borderWidth: externalSelectedAlgorithm === 'percept' ? 3 : 0,
-            borderColor: '#ffffff',
-            shadowBlur: externalSelectedAlgorithm === 'percept' ? 10 : 0,
-            shadowColor: getAlgorithmColor('percept')
-          },
-          algorithm: 'percept',
-                      children: categories.map(category => {
-              const categoryValue = performanceData.percept.categories[category] || 0;
-              const proportionalValue = algorithmTotals.percept > 0 ? 
-                (categoryValue / algorithmTotals.percept) * performanceData.percept.overall : 
-                performanceData.percept.overall / 5; // Equal distribution if no wins
-              return {
-                name: category,
-                value: proportionalValue,
-                itemStyle: { 
-                  color: getCategoryColor(category),
-                  borderWidth: externalSelectedAlgorithm === 'percept' ? 2 : 0,
-                  borderColor: '#ffffff',
-                  shadowBlur: externalSelectedAlgorithm === 'percept' ? 5 : 0,
-                  shadowColor: getCategoryColor(category)
-                },
-                algorithm: 'percept',
-                category: category,
-                originalValue: categoryValue
-              };
-            })
-        },
-        {
-          name: "PitchMatch",
-          value: performanceData.pitchmatch.overall,
-          itemStyle: { 
-            color: getAlgorithmColorWithHighlight('pitchmatch'),
-            borderWidth: externalSelectedAlgorithm === 'pitchmatch' ? 3 : 0,
-            borderColor: '#ffffff',
-            shadowBlur: externalSelectedAlgorithm === 'pitchmatch' ? 10 : 0,
-            shadowColor: getAlgorithmColor('pitchmatch')
-          },
-          algorithm: 'pitchmatch',
-                      children: categories.map(category => {
-              const categoryValue = performanceData.pitchmatch.categories[category] || 0;
-              const proportionalValue = algorithmTotals.pitchmatch > 0 ? 
-                (categoryValue / algorithmTotals.pitchmatch) * performanceData.pitchmatch.overall : 
-                performanceData.pitchmatch.overall / 5; // Equal distribution if no wins
-              return {
-                name: category,
-                value: proportionalValue,
-                itemStyle: { 
-                  color: getCategoryColor(category),
-                  borderWidth: externalSelectedAlgorithm === 'pitchmatch' ? 2 : 0,
-                  borderColor: '#ffffff',
-                  shadowBlur: externalSelectedAlgorithm === 'pitchmatch' ? 5 : 0,
-                  shadowColor: getCategoryColor(category)
-                },
-                algorithm: 'pitchmatch',
-                category: category,
-                originalValue: categoryValue
-              };
-            })
-        }
-      ];
+          };
+        });
+      }
     } else if (currentLevel === 'level2') {
       // Level 2: Selected algorithm in center + categories only
       const algorithmData = performanceData[selectedAlgorithm as keyof PerformanceData];
@@ -557,17 +595,17 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
     }
 
     setChartData(data);
-  }, [performanceData, currentLevel, selectedAlgorithm, selectedCategory, selectedSubcategory, soundData, externalSelectedAlgorithm, selectedPoint]);
+  }, [performanceData, currentLevel, selectedAlgorithm, selectedCategory, selectedSubcategory, soundData, externalSelectedAlgorithm, selectedPoint, hoveredMethod]);
 
   // Color functions
   const getAlgorithmColor = (algorithm: string): string => {
-    const colors: Record<string, string> = {
-      'freqshift': '#dc2626', // Red
-      'hapticgen': '#22c55e', // Light green
-      'percept': '#3b82f6',   // Blue
-      'pitchmatch': '#8b5cf6' // Purple
+    const algorithmColors: Record<string, string> = {
+      'freqshift': colors(0), // Pink
+      'hapticgen': colors(1), // Orange
+      'percept': colors(2),   // Gold
+      'pitchmatch': colors(3) // Teal
     };
-    return colors[algorithm] || '#6b7280';
+    return algorithmColors[algorithm] || '#6b7280';
   };
 
   const getCategoryColor = (category: string): string => {
@@ -648,6 +686,9 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
     // Chart configuration
   const sunburstOption = {
     backgroundColor: "#ffffff",
+    animation: true,
+    animationDuration: 300,
+    animationEasing: 'cubicOut',
     tooltip: { 
       trigger: "item", 
       formatter: function(params: any) {
@@ -872,7 +913,7 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
           marginBottom: '15px', 
           fontSize: '18px', 
           fontWeight: '600', 
-          color: '#333' 
+          color: hoveredMethod ? getAlgorithmColor(hoveredMethod) : '#333' 
         }}>
           {currentLevel === 'level1' && (
             selectedPoint ? 
@@ -883,6 +924,12 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
             `🏆 Algorithm Performance Overview - ${externalSelectedAlgorithm === 'freqshift' ? 'FreqShift' : 
               externalSelectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
               externalSelectedAlgorithm === 'percept' ? 'Percept' : 'PitchMatch'} selected in line chart` :
+            hoveredMethod ? 
+            `🏆 Algorithm Performance Overview - Hovering ${hoveredMethod === 'freqshift' ? 'FreqShift' : 
+              hoveredMethod === 'hapticgen' ? 'HapticGen' : 
+              hoveredMethod === 'percept' ? 'Percept' : 'PitchMatch'} from line chart` :
+            ratings && ratings.length > 0 && algorithmsToShow && algorithmsToShow.length < 4 ?
+            `🏆 Algorithm Performance Overview - Filtered (${algorithmsToShow.length}/4 algorithms)` :
             '🏆 Algorithm Performance Overview (Hover outer ring to see categories)'
           )}
           {currentLevel === 'level2' && `📊 ${selectedAlgorithm === 'freqshift' ? 'FreqShift' : 

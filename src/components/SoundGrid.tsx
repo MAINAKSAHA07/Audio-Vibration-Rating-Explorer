@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { RatingData } from '../utils/api';
 import { FilterState } from './FilterPanel';
+import colors from '../colors.js';
 import DetailedSoundDrawer from './DetailedSoundDrawer';
 import WaveSurferPlayer from './WaveSurferPlayer';
+import OverviewChart from './OverviewChart';
 
 interface SoundCard {
   id: string;
@@ -14,6 +16,7 @@ interface SoundCard {
     pitchmatch: number;
   };
   maxRating: number;
+  bestAlgorithm: string;
   category: string;
   class: string;
   audioFile: string;
@@ -49,10 +52,10 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
 
   // Memoized color system to prevent recreation on every render
   const chartColors = useMemo(() => ({
-    freqshift: '#FF1744',  // Bright red
-    hapticgen: '#00E676',  // Bright green
-    percept: '#2196F3',    // Bright blue
-    pitchmatch: '#9C27B0'  // Bright purple
+    freqshift: colors(0),  // Pink
+    hapticgen: colors(1),  // Blue
+    percept: colors(2),    // Yellow
+    pitchmatch: colors(3)  // Lavender
   }), []);
 
   // Memoized category groups to prevent recreation
@@ -63,6 +66,16 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
     { name: 'Interior/domestic', sounds: ['door_wood_knock', 'mouse_click', 'keyboard_typing', 'door_wood_creaks', 'can_opening', 'washing_machine', 'vacuum_cleaner', 'clock_alarm', 'clock_tick', 'glass_breaking'] },
     { name: 'Exterior/urban', sounds: ['helicopter', 'chainsaw', 'siren', 'car_horn', 'engine', 'train', 'church_bells', 'airplane', 'fireworks', 'hand_saw'] }
   ], []);
+
+  // Create filtered ratings based on algorithm selection
+  const filteredRatings = useMemo(() => {
+    if (!filterState.algorithms || filterState.algorithms.length === 0) {
+      return ratings; // Show all ratings if no algorithms are selected
+    }
+    
+    // Filter ratings to only include selected algorithms
+    return ratings.filter(rating => filterState.algorithms.includes(rating.design));
+  }, [ratings, filterState.algorithms]);
 
   // Process and filter sounds with error handling and performance optimization
   const processedSounds = useMemo(() => {
@@ -112,6 +125,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
                 pitchmatch: 0
               },
               maxRating: 0,
+              bestAlgorithm: 'freqshift',
               category: rating.category,
               class: rating.class,
               audioFile: rating.audioFile,
@@ -136,9 +150,16 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       // Convert to array and calculate max ratings
       let soundCards = Array.from(soundMap.values())
         .map(sound => {
+          const ratings = Object.values(sound.ratings);
+          const maxRating = Math.max(...ratings);
+          const bestAlgorithm = Object.keys(sound.ratings).find(key => 
+            sound.ratings[key as keyof typeof sound.ratings] === maxRating
+          ) || 'freqshift';
+          
           return {
             ...sound,
-            maxRating: Math.max(...Object.values(sound.ratings)),
+            maxRating,
+            bestAlgorithm,
             hasZeroRatings: Object.values(sound.ratings).some(rating => rating === 0)
           };
         })
@@ -242,6 +263,13 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
           if (!hasSelectedDesign) return false;
         }
 
+        // Algorithm filter
+        if (filterState.algorithms.length > 0) {
+          // Filter sounds where the best algorithm is one of the selected algorithms
+          const isBestAlgorithmSelected = filterState.algorithms.includes(sound.bestAlgorithm);
+          if (!isBestAlgorithmSelected) return false;
+        }
+
         // Rating range filter
         if (filterState.ratingRange.min > 0 && sound.maxRating < filterState.ratingRange.min) {
           return false;
@@ -262,6 +290,17 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       
       console.log('🔍 Category distribution:', Object.fromEntries(categoryDistribution));
       console.log('📊 Total filtered sounds:', soundCards.length);
+      
+      // Debug algorithm filtering
+      if (filterState.algorithms.length > 0) {
+        const algorithmDistribution = new Map<string, number>();
+        soundCards.forEach(sound => {
+          const count = algorithmDistribution.get(sound.bestAlgorithm) || 0;
+          algorithmDistribution.set(sound.bestAlgorithm, count + 1);
+        });
+        console.log('⚙️ Algorithm distribution:', Object.fromEntries(algorithmDistribution));
+        console.log('🎯 Selected algorithms:', filterState.algorithms);
+      }
 
       // Sort sounds
       soundCards.sort((a, b) => {
@@ -327,7 +366,20 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       >
         <div className="card-header">
           <h4 className="filename">{sound.soundname}</h4>
-          <span className="average-badge">{sound.maxRating.toFixed(1)}</span>
+          <span 
+            className="average-badge"
+            style={{ 
+              backgroundColor: chartColors[sound.bestAlgorithm as keyof typeof chartColors] || '#667eea',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+            title={`Best rating: ${sound.maxRating.toFixed(1)} achieved by ${sound.bestAlgorithm === 'freqshift' ? 'Frequency Shift' : 
+                    sound.bestAlgorithm === 'hapticgen' ? 'HapticGen' : 
+                    sound.bestAlgorithm === 'percept' ? 'Perceptual Mapping' : 
+                    sound.bestAlgorithm === 'pitchmatch' ? 'Pitch Match' : 'Frequency Shift'}`}
+          >
+            {sound.maxRating.toFixed(1)}
+          </span>
         </div>
         
         <div className="card-meta">
@@ -337,7 +389,8 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
         <div className="mini-chart">
           <WaveSurferPlayer 
             audioUrl={`/audio/${sound.audioFile}`} 
-            title={sound.filename} 
+            title={sound.filename}
+            height={130}
           />
         </div>
       </div>
@@ -359,78 +412,122 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
 
   return (
     <div className="sound-grid-container">
-      {/* Results Header */}
-      <div className="results-header">
-        <div className="results-header-left">
-          <h2>Filtered Results</h2>
-          <div className="results-info">
-            {isProcessing ? (
-              <span className="processing-indicator">Processing sounds...</span>
-            ) : (
-              <span className="results-count">
-                {processedSounds.length} sounds found
-                {filterState.search && (
-                  <span className="search-highlight">
-                    {' '}for "{filterState.search}"
-                  </span>
-                )}
-              </span>
-            )}
-            {!isProcessing && processedSounds.length === 0 && (
-              <p className="no-results">
-                {filterState.search 
-                  ? `No sounds found for "${filterState.search}". Try a different search term or clear the search.`
-                  : 'No sounds match the current filters. Try adjusting your criteria.'
-                }
-              </p>
-            )}
-          </div>
-        </div>
-        
-        <div className="results-header-right">
-          <div className="sort-controls">
-            <label htmlFor="sort-select">Sort by:</label>
-            <select
-              id="sort-select"
-              value={localSortBy}
-              onChange={(e) => {
-                const newSortBy = e.target.value as 'average' | 'variance' | 'filename';
-                setLocalSortBy(newSortBy);
-                onFilterChange?.({ sortBy: newSortBy });
-              }}
-              className="sort-select"
-            >
-              <option value="average">Highest Rating</option>
-              <option value="variance">Most Variable</option>
-              <option value="filename">Filename</option>
-            </select>
-            <button
-              className="sort-order-btn"
-              onClick={() => {
-                const newSortOrder = localSortOrder === 'asc' ? 'desc' : 'asc';
-                setLocalSortOrder(newSortOrder);
-                onFilterChange?.({ sortOrder: newSortOrder });
-              }}
-              title={`Sort ${localSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
-            >
-              {localSortOrder === 'asc' ? '↑' : '↓'}
-            </button>
-          </div>
-        </div>
+      {/* Fixed Header Section - Overview Charts */}
+      <div className="fixed-charts-header" style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        backgroundColor: '#f5f5f5',
+        padding: '20px 0',
+        borderBottom: '2px solid #e9ecef',
+        marginBottom: '20px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+      }}>
+        <OverviewChart 
+          summary={{
+            totalEntries: filteredRatings.length,
+            uniqueAudioFiles: new Set(filteredRatings.map(r => r.audioFile)).size,
+            uniqueClasses: new Set(filteredRatings.map(r => r.class)).size,
+            uniqueCategories: new Set(filteredRatings.map(r => r.category)).size,
+            uniqueTargets: new Set(filteredRatings.map(r => r.target)).size,
+            uniqueFolds: new Set(filteredRatings.map(r => r.fold)).size,
+            categories: {},
+            designs: filterState.algorithms.length > 0 ? filterState.algorithms : ['freqshift', 'hapticgen', 'percept', 'pitchmatch'],
+            ratingCategories: {},
+            averageRatings: { 
+              overall: 0,
+              byDesign: {},
+              byCategory: {}
+            },
+            categoryAverages: {},
+            designAverages: {},
+            foldDistribution: {},
+            targetDistribution: {},
+            classDistribution: {}
+          }}
+          onNavigateToFiltered={() => {}} // No-op since we're already in filtered view
+          filterState={filterState}
+          ratings={filteredRatings}
+        />
       </div>
 
-      {/* Main Grid */}
-      {isProcessing ? (
-        <div className="loading-grid">
-          <div className="loading-spinner">Processing sounds...</div>
+      {/* Scrollable Content Area */}
+      <div className="scrollable-content" style={{
+        padding: '0 20px'
+      }}>
+        {/* Results Header */}
+        <div className="results-header">
+          <div className="results-header-left">
+            <h2>Filtered Results</h2>
+            <div className="results-info">
+              {isProcessing ? (
+                <span className="processing-indicator">Processing sounds...</span>
+              ) : (
+                <span className="results-count">
+                  {processedSounds.length} sounds found
+                  {filterState.search && (
+                    <span className="search-highlight">
+                      {' '}for "{filterState.search}"
+                    </span>
+                  )}
+                </span>
+              )}
+              {!isProcessing && processedSounds.length === 0 && (
+                <p className="no-results">
+                  {filterState.search 
+                    ? `No sounds found for "${filterState.search}". Try a different search term or clear the search.`
+                    : 'No sounds match the current filters. Try adjusting your criteria.'
+                  }
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <div className="results-header-right">
+            <div className="sort-controls">
+              <label htmlFor="sort-select">Sort by:</label>
+              <select
+                id="sort-select"
+                value={localSortBy}
+                onChange={(e) => {
+                  const newSortBy = e.target.value as 'average' | 'variance' | 'filename';
+                  setLocalSortBy(newSortBy);
+                  onFilterChange?.({ sortBy: newSortBy });
+                }}
+                className="sort-select"
+              >
+                <option value="average">Highest Rating</option>
+                <option value="variance">Most Variable</option>
+                <option value="filename">Filename</option>
+              </select>
+              <button
+                className="sort-order-btn"
+                onClick={() => {
+                  const newSortOrder = localSortOrder === 'asc' ? 'desc' : 'asc';
+                  setLocalSortOrder(newSortOrder);
+                  onFilterChange?.({ sortOrder: newSortOrder });
+                }}
+                title={`Sort ${localSortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+              >
+                {localSortOrder === 'asc' ? '↑' : '↓'}
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="sound-grid">
-          {processedSounds.map(sound => (
-            <SoundCard key={sound.id} sound={sound} />
-          ))}
-        </div>
-      )}
+
+        {/* Main Grid */}
+        {isProcessing ? (
+          <div className="loading-grid">
+            <div className="loading-spinner">Processing sounds...</div>
+          </div>
+        ) : (
+          <div className="sound-grid">
+            {processedSounds.map(sound => (
+              <SoundCard key={sound.id} sound={sound} />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Details Drawer */}
       <DetailedSoundDrawer 

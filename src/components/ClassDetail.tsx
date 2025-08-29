@@ -5,6 +5,7 @@ import { RatingData } from '../utils/api';
 import WaveSurferPlayer from './WaveSurferPlayer';
 import SimpleAudioPlayer from './SimpleAudioPlayer';
 import DualViewPlayer from './DualViewPlayer';
+import AWSAudioPlayer from './AWSAudioPlayer';
 
 interface ClassDetailProps {
   classStats: ClassStats;
@@ -115,51 +116,39 @@ const ClassDetail: React.FC<ClassDetailProps> = ({ classStats, audioFiles, vibra
             
             {/* Original Audio */}
             <div className="player-container">
-              {useDualView ? (
-                <DualViewPlayer
-                  audioUrl={`/audio/${selectedAudio.audioFile}`}
-                  title={`Original Audio: ${selectedAudio.id}`}
-                  height={120}
-                />
-              ) : useSimplePlayer ? (
-                <SimpleAudioPlayer
-                  audioUrl={`/audio/${selectedAudio.audioFile}`}
-                  title={`Original Audio: ${selectedAudio.id}`}
-                />
-              ) : (
-                <WaveSurferPlayer
-                  audioUrl={`/audio/${selectedAudio.audioFile}`}
-                  title={`Original Audio: ${selectedAudio.id}`}
-                  height={80}
-                />
-              )}
+              <AWSAudioPlayer
+                audioFile={selectedAudio.audioFile}
+                title={`Original Audio: ${selectedAudio.id}`}
+                height={120}
+                showSource={true}
+                onLoad={(url, source) => {
+                  console.log(`Audio loaded from ${source}: ${url}`);
+                }}
+                onError={(error) => {
+                  console.error('Audio loading error:', error);
+                }}
+              />
             </div>
 
             {/* Vibration Files */}
             <div className="vibration-players">
               <h4>Vibration Designs</h4>
-                          {getVibrationFilesForAudio(selectedAudio.id).map((vibration) => (
-              <div key={vibration.design} className="vibration-player">
-                {useDualView ? (
-                  <DualViewPlayer
-                    audioUrl={`/vibration/${vibration.vibrationFile}`}
+              {getVibrationFilesForAudio(selectedAudio.id).map((vibration) => (
+                <div key={vibration.design} className="vibration-player">
+                  <AWSAudioPlayer
+                    audioFile={vibration.vibrationFile}
                     title={`${vibration.design.charAt(0).toUpperCase() + vibration.design.slice(1)}: ${vibration.rating.toFixed(1)}/100`}
                     height={100}
+                    showSource={true}
+                    onLoad={(url, source) => {
+                      console.log(`Vibration loaded from ${source}: ${url}`);
+                    }}
+                    onError={(error) => {
+                      console.error('Vibration loading error:', error);
+                    }}
                   />
-                ) : useSimplePlayer ? (
-                  <SimpleAudioPlayer
-                    audioUrl={`/vibration/${vibration.vibrationFile}`}
-                    title={`${vibration.design.charAt(0).toUpperCase() + vibration.design.slice(1)}: ${vibration.rating.toFixed(1)}/100`}
-                  />
-                ) : (
-                  <WaveSurferPlayer
-                    audioUrl={`/vibration/${vibration.vibrationFile}`}
-                    title={`${vibration.design.charAt(0).toUpperCase() + vibration.design.slice(1)}: ${vibration.rating.toFixed(1)}/100`}
-                    height={60}
-                  />
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
             </div>
           </div>
         )}

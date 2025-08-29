@@ -1,16 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { SummaryData, RatingData, fetchRatings } from '../utils/api';
+import colors from '../colors.js';
 // import HierarchicalSunburst from './HierarchicalSunburst';
 import AlgorithmPerformanceSunburst from './AlgorithmPerformanceSunburst';
 import DetailView from './DetailView';
+import { FilterState } from './FilterPanel';
 
 interface OverviewChartProps {
   summary: SummaryData;
   onNavigateToFiltered?: () => void;
+  filterState?: FilterState;
+  ratings?: RatingData[];
+  onAlgorithmSelect?: (algorithm: string) => void;
 }
 
-const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFiltered }) => {
+const OverviewChart: React.FC<OverviewChartProps> = ({ 
+  summary, 
+  onNavigateToFiltered, 
+  filterState,
+  ratings: externalRatings,
+  onAlgorithmSelect
+}) => {
   const lineChartRef = useRef<SVGSVGElement>(null);
   const [ratings, setRatings] = useState<RatingData[]>([]);
   const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
@@ -19,18 +30,41 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
   const [selectedPoint, setSelectedPoint] = useState<{algorithm: string, class: number, category: string, subcategory: string} | null>(null);
   const [detailViewData, setDetailViewData] = useState<any>(null);
 
-  // Fetch detailed ratings data for line chart
+  // Use external ratings if provided, otherwise fetch them
   useEffect(() => {
-    const loadRatings = async () => {
-      try {
-        const data = await fetchRatings();
-        setRatings(data);
-      } catch (error) {
-        console.error('Error loading ratings for line chart:', error);
-      }
-    };
-    loadRatings();
-  }, []);
+    if (externalRatings && externalRatings.length > 0) {
+      setRatings(externalRatings);
+    } else {
+      const loadRatings = async () => {
+        try {
+          const data = await fetchRatings();
+          setRatings(data);
+        } catch (error) {
+          console.error('Error loading ratings for line chart:', error);
+        }
+      };
+      loadRatings();
+    }
+  }, [externalRatings]);
+
+  // Sync selectedAlgorithm with filterState
+  useEffect(() => {
+    if (filterState?.algorithms && filterState.algorithms.length === 1) {
+      setSelectedAlgorithm(filterState.algorithms[0]);
+    } else if (!filterState?.algorithms || filterState.algorithms.length === 0) {
+      setSelectedAlgorithm('');
+    }
+  }, [filterState?.algorithms]);
+
+  // Filter ratings based on algorithm selection
+  const filteredRatings = React.useMemo(() => {
+    if (!filterState || !filterState.algorithms || filterState.algorithms.length === 0) {
+      return ratings;
+    }
+
+    // If algorithms are selected, filter to only show data for those algorithms
+    return ratings.filter(rating => filterState.algorithms.includes(rating.design));
+  }, [ratings, filterState]);
 
   // ESC-50 Category mapping for hierarchical structure
   const getCategoryForClass = (classNum: number): string => {
@@ -64,8 +98,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
 
     // Add a small delay to ensure the container is properly sized
     const timer = setTimeout(() => {
-      if (!lineChartRef.current || !ratings || ratings.length === 0) {
-        console.log('Line chart: waiting for data or ref', { ratingsLength: ratings?.length });
+      if (!lineChartRef.current || !filteredRatings || filteredRatings.length === 0) {
+        console.log('Line chart: waiting for data or ref', { ratingsLength: filteredRatings?.length });
         return;
       }
 
@@ -76,7 +110,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       const containerWidth = lineChartRef.current.parentElement?.clientWidth || 600;
       const width = Math.max(Math.min(containerWidth - 40, 900), 600); // Max width of 900px, min 600px
       
-      console.log('Line chart rendering:', { containerWidth, width, ratingsCount: ratings.length });
+      console.log('Line chart rendering:', { containerWidth, width, ratingsCount: filteredRatings.length });
     const height = 500;
     const margin = { top: 80, right: 150, bottom: 100, left: 80 };
 
@@ -99,7 +133,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
 
     // Group ratings by class and audio file to handle individual sounds
     const classAudioGroups = new Map<number, Map<string, RatingData[]>>();
-    ratings.forEach(rating => {
+    filteredRatings.forEach(rating => {
       const classNum = parseInt(rating.target);
       const audioFile = rating.audioFile;
       
@@ -180,12 +214,12 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       .domain([0, 100])
       .range([chartHeight, 0]);
 
-    // Color scale for methods - Bright and vibrant colors
+    // Color scale for methods - New color scheme
     const methodColors = {
-      freqshift: '#FF1744', // Bright red
-      hapticgen: '#00E676', // Bright green
-      percept: '#2196F3',   // Bright blue
-      pitchmatch: '#9C27B0' // Bright purple
+      freqshift: colors(0), // Pink
+      hapticgen: colors(1), // Blue
+      percept: colors(2),   // Yellow
+      pitchmatch: colors(3) // Lavender
     };
 
     const g = svg.append("g")
@@ -201,7 +235,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
     ];
 
     categoryRanges.forEach((range, i) => {
-      const bandColor = i % 2 === 0 ? 'rgba(240, 240, 240, 0.3)' : 'rgba(250, 250, 250, 0.3)';
+      const bandColor = i % 2 === 0 ? 'rgba(250, 250, 250, 0.3)' : 'rgba(205, 205, 205, 0.3)';
       
       g.append("rect")
         .attr("x", xScale(range.start))
@@ -209,7 +243,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         .attr("width", xScale(range.end) - xScale(range.start))
         .attr("height", chartHeight)
         .attr("fill", bandColor)
-        .attr("stroke", "#ddd")
+        .attr("stroke", "#444")
         .attr("stroke-width", 1);
 
       // Add category labels
@@ -257,7 +291,11 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
             d3.select(this).attr("stroke-opacity", selectedAlgorithm === method ? 1 : (hoveredMethod && hoveredMethod !== method ? 0.3 : 0.8));
           })
           .on("click", function() {
-            setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
+            const newAlgorithm = selectedAlgorithm === method ? '' : method;
+            setSelectedAlgorithm(newAlgorithm);
+            if (onAlgorithmSelect) {
+              onAlgorithmSelect(newAlgorithm);
+            }
           });
       }
 
@@ -276,6 +314,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         .style("cursor", "pointer")
                  .on("mouseover", function(event, d: any) {
            d3.select(this).attr("r", 6);
+           setHoveredMethod(method);
            
            // Get specific category name
            const specificName = getSpecificCategoryName(d.class);
@@ -346,6 +385,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
          })
                  .on("mouseout", function() {
            d3.select(this).attr("r", 3);
+           setHoveredMethod(null);
            svg.selectAll(".tooltip").remove();
          })
         .on("click", function(event, d: any) {
@@ -367,10 +407,18 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
                 selectedPoint.algorithm === newSelectedPoint.algorithm && 
                 selectedPoint.class === newSelectedPoint.class) {
               setSelectedPoint(null);
-              setSelectedAlgorithm('');
+              const newAlgorithm = '';
+              setSelectedAlgorithm(newAlgorithm);
+              if (onAlgorithmSelect) {
+                onAlgorithmSelect(newAlgorithm);
+              }
             } else {
               setSelectedPoint(newSelectedPoint);
-              setSelectedAlgorithm(method);
+              const newAlgorithm = method;
+              setSelectedAlgorithm(newAlgorithm);
+              if (onAlgorithmSelect) {
+                onAlgorithmSelect(newAlgorithm);
+              }
             }
           }
         });
@@ -458,24 +506,43 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         .attr("x2", 20)
         .attr("y2", 0)
         .attr("stroke", methodColors[method as keyof typeof methodColors])
-        .attr("stroke-width", selectedAlgorithm === method ? 3 : 1.5);
+        .attr("stroke-width", selectedAlgorithm === method ? 3 : (hoveredMethod === method ? 2.5 : 1.5))
+        .style("cursor", "pointer")
+        .on("mouseover", function() {
+          setHoveredMethod(method);
+          d3.select(this).attr("stroke-width", 2.5);
+        })
+        .on("mouseout", function() {
+          setHoveredMethod(null);
+          d3.select(this).attr("stroke-width", selectedAlgorithm === method ? 3 : 1.5);
+        });
 
       legendItem.append("text")
         .attr("x", 25)
         .attr("y", 4)
         .style("font-size", "12px")
-        .style("font-weight", selectedAlgorithm === method ? "700" : "500")
-        .style("fill", selectedAlgorithm === method ? methodColors[method as keyof typeof methodColors] : "#333")
+        .style("font-weight", selectedAlgorithm === method ? "700" : (hoveredMethod === method ? "600" : "500"))
+        .style("fill", selectedAlgorithm === method ? methodColors[method as keyof typeof methodColors] : (hoveredMethod === method ? methodColors[method as keyof typeof methodColors] : "#333"))
         .style("cursor", "pointer")
         .text(methodDisplayNames[method as keyof typeof methodDisplayNames])
+        .on("mouseover", () => {
+          setHoveredMethod(method);
+        })
+        .on("mouseout", () => {
+          setHoveredMethod(null);
+        })
         .on("click", () => {
-          setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
+          const newAlgorithm = selectedAlgorithm === method ? '' : method;
+          setSelectedAlgorithm(newAlgorithm);
+          if (onAlgorithmSelect) {
+            onAlgorithmSelect(newAlgorithm);
+          }
         });
     });
     }, 100); // 100ms delay
 
     return () => clearTimeout(timer);
-  }, [ratings, hoveredMethod, selectedClass, selectedAlgorithm]);
+      }, [filteredRatings, hoveredMethod, selectedClass, selectedAlgorithm]);
 
   return (
     <div className="overview-chart">
@@ -497,6 +564,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
             onDetailView={(data) => setDetailViewData(data)} 
             selectedAlgorithm={selectedAlgorithm}
             selectedPoint={selectedPoint}
+            hoveredMethod={hoveredMethod}
+            ratings={filteredRatings}
           />
       </div>
       
@@ -512,7 +581,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
           position: 'relative'
         }}>
           <svg ref={lineChartRef} width="100%" height="500" />
-          {(!ratings || ratings.length === 0) && (
+          {(!filteredRatings || filteredRatings.length === 0) && (
             <div style={{
               position: 'absolute',
               top: '50%',
@@ -522,7 +591,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
               color: '#666'
             }}>
               <p>Loading line chart data...</p>
-              <p>Ratings: {ratings?.length || 0}</p>
+              <p>Ratings: {filteredRatings?.length || 0}</p>
             </div>
           )}
       </div>
@@ -530,7 +599,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       
 
       
-      {/* Detailed View Button */}
+      {/* Detailed View Button 
       <div style={{
         marginTop: '20px',
         textAlign: 'center'
@@ -565,9 +634,9 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         >
           🔍 Explore Detailed View
         </button>
-      </div>
+      </div>*/}
       
-      <div className="chart-stats" style={{
+      {/* <div className="chart-stats" style={{
         marginTop: '20px',
         padding: '15px',
         background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
@@ -575,8 +644,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         fontSize: '14px'
       }}>
         <p><strong>Chart Type:</strong> Algorithm Wins with Connected Lines</p>
-        <p><strong>Total Audio Files:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.audioFile)).size : summary.uniqueAudioFiles}</p>
-        <p><strong>Total Ratings:</strong> {ratings.length > 0 ? ratings.length : summary.totalEntries}</p>
+        <p><strong>Total Audio Files:</strong> {filteredRatings.length > 0 ? new Set(filteredRatings.map(r => r.audioFile)).size : summary.uniqueAudioFiles}</p>
+        <p><strong>Total Ratings:</strong> {filteredRatings.length > 0 ? filteredRatings.length : summary.totalEntries}</p>
         <p><strong>Vibration Methods:</strong> {summary.designs.map(d => ({
           'freqshift': 'Frequency Shift',
           'hapticgen': 'HapticGen', 
@@ -584,11 +653,11 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
           'pitchmatch': 'Pitch Match'
         })[d]).join(', ')}</p>
         <p><strong>Categories:</strong> Animals, Natural Soundscapes, Human Non-Speech, Interior/Domestic, Exterior/Urban</p>
-        <p><strong>Classes:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.category)).size : summary.uniqueCategories}</p>
+        <p><strong>Classes:</strong> {filteredRatings.length > 0 ? new Set(filteredRatings.map(r => r.category)).size : summary.uniqueCategories}</p>
         {selectedClass !== null && (
           <p><strong>Selected Class:</strong> {selectedClass} ({getCategoryForClass(selectedClass)})</p>
         )}
-      </div>
+      </div> */}
       
       {/* Detail View Modal */}
       {detailViewData && (

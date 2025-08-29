@@ -1,5 +1,6 @@
 import React from 'react';
 import { DetailViewData } from './HierarchicalSunburst';
+import colors from '../colors.js';
 
 interface AudioFileDetail {
   filename: string;
@@ -352,13 +353,13 @@ const getRatingColor = (rating: number): string => {
 };
 
 const getMethodColor = (method: string): string => {
-  const colors: Record<string, string> = {
-    freqshift: '#ef4444', // Red
-    hapticgen: '#22c55e', // Green
-    percept: '#3b82f6',   // Blue
-    pitchmatch: '#8b5cf6' // Purple
+  const methodColors: Record<string, string> = {
+    freqshift: colors(0), // Pink
+    hapticgen: colors(1), // Blue
+    percept: colors(2),   // Yellow
+    pitchmatch: colors(3) // Lavender
   };
-  return colors[method] || '#6b7280';
+  return methodColors[method] || '#6b7280';
 };
 
 export default DetailView;

@@ -239,15 +239,15 @@ const SpectrogramView: React.FC<SpectrogramViewProps> = ({
     }
   }, [spectrogramData, width, height]);
 
-  if (loading) {
-    return (
-      <div className="spectrogram-view">
-        <div className="spectrogram-loading">
-          <div className="loading-spinner">Generating spectrogram...</div>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="spectrogram-view">
+  //       <div className="spectrogram-loading">
+  //         <div className="loading-spinner">Generating spectrogram...</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -262,8 +262,8 @@ const SpectrogramView: React.FC<SpectrogramViewProps> = ({
   return (
     <div className="spectrogram-view">
       <div className="spectrogram-header">
-        <h4>📊 Spectrogram</h4>
-        <p className="spectrogram-title">{title}</p>
+        {/* <h4>📊 Spectrogram</h4>
+        <p className="spectrogram-title">{title}</p> */}
       </div>
       <div className="spectrogram-container">
         <canvas
@@ -277,11 +277,14 @@ const SpectrogramView: React.FC<SpectrogramViewProps> = ({
             height: 'auto'
           }}
         />
+        
       </div>
       <div className="spectrogram-info">
-        <p className="spectrogram-note">
+       {/*loading ? <p className="spectrogram-note">
           Frequency analysis over time
-        </p>
+        </p> : <p className="spectrogram-note">
+          Frequency analysis over time
+        </p>*/}
       </div>
     </div>
   );

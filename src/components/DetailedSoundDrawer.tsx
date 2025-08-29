@@ -1,6 +1,7 @@
 import React from 'react';
 import WaveSurferPlayer from './WaveSurferPlayer';
 import SpectrogramView from './SpectrogramView';
+import colors from '../colors.js';
 
 interface SoundCard {
   id: string;
@@ -36,10 +37,10 @@ const DetailedSoundDrawer: React.FC<DetailedSoundDrawerProps> = ({ sound, isOpen
 
   // Color scheme for the ratings
   const ratingColors = {
-    freqshift: '#FF1744',  // Bright red
-    hapticgen: '#00E676',  // Bright green
-    percept: '#2196F3',    // Bright blue
-    pitchmatch: '#9C27B0'  // Bright purple
+    freqshift: colors(0),  // Pink
+    hapticgen: colors(1),  // Blue
+    percept: colors(2),    // Yellow
+    pitchmatch: colors(3)  // Lavender
   };
 
   // Design name mapping

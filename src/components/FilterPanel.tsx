@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { RatingData } from '../utils/api';
+import colors from '../colors.js';
 
 export interface FilterState {
   search: string;
   categories: string[];
   classes: string[];
   designs: string[];
+  algorithms: string[];
   ratingRange: { min: number; max: number };
   sortBy: 'average' | 'variance' | 'filename';
   sortOrder: 'asc' | 'desc';
@@ -210,6 +212,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       categories: [],
       classes: [],
       designs: [],
+      algorithms: [],
       ratingRange: { min: 35, max: 100 },
       sortBy: 'average',
       sortOrder: 'desc'
@@ -255,6 +258,62 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               <small>Searching across: soundnames, categories, category groups (Animals, Natural soundscapes & water), and classes</small>
             </div>
           )}
+        </div>
+
+        {/* Algorithm Filter */}
+        <div className="filter-section">
+          <h4>⚙️ Algorithms</h4>
+          <div className="filter-description">
+            <small>Show sounds where selected algorithms achieved the best rating</small>
+          </div>
+          <div className="algorithm-list">
+            {[
+              { key: 'freqshift', name: 'Frequency Shift', color: colors(0) },
+              { key: 'hapticgen', name: 'HapticGen', color: colors(1) },
+              { key: 'percept', name: 'Perceptual Mapping', color: colors(2) },
+              { key: 'pitchmatch', name: 'Pitch Match', color: colors(3) }
+            ].map(algorithm => {
+              const isSelected = localFilters.algorithms.includes(algorithm.key);
+              
+              // Count sounds where this algorithm is the best performer
+              const algorithmCount = ratings.filter(r => {
+                // Group by audio file to get unique sounds
+                const audioFile = r.audioFile;
+                const soundRatings = ratings.filter(r2 => r2.audioFile === audioFile);
+                
+                // Find the best rating for this sound
+                const maxRating = Math.max(...soundRatings.map(sr => sr.rating));
+                
+                // Check if this algorithm achieved the best rating
+                return r.design === algorithm.key && r.rating === maxRating;
+              }).length;
+              
+              return (
+                <label key={algorithm.key} className={`algorithm-checkbox ${isSelected ? 'algorithm-selected' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => {
+                      const newAlgorithms = isSelected
+                        ? localFilters.algorithms.filter(a => a !== algorithm.key)
+                        : [algorithm.key]; // Only select this algorithm, deselect others
+                      updateFilter({ algorithms: newAlgorithms });
+                    }}
+                  />
+                  <span className="checkmark"></span>
+                  <span 
+                    className="algorithm-name" 
+                    style={{ color: algorithm.color, fontWeight: isSelected ? 'bold' : 'normal' }}
+                  >
+                    {algorithm.name}
+                  </span>
+                  <span className="algorithm-count">
+                    ({algorithmCount})
+                  </span>
+                </label>
+              );
+            })}
+          </div>
         </div>
 
         {/* Category Filter */}
@@ -333,8 +392,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             })}
           </div>
         </div>
-
-
 
         {/* Rating Range Filter */}
         <div className="filter-section">
@@ -425,6 +482,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 Categories: {localFilters.categories.length}
               </div>
             )}
+            {localFilters.algorithms.length > 0 && (
+              <div className="filter-tag">
+                Algorithms: {localFilters.algorithms.length}
+              </div>
+            )}
             {localFilters.search && (
               <div className="filter-tag">
                 Search: "{localFilters.search}"
@@ -436,6 +498,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               </div>
             )}
             {localFilters.categories.length === 0 && 
+             localFilters.algorithms.length === 0 &&
              !localFilters.search && 
              localFilters.ratingRange.min === 0 && 
              localFilters.ratingRange.max === 100 && (

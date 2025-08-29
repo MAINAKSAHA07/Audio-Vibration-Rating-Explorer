@@ -12,7 +12,7 @@ import OverviewChart from './components/OverviewChart';
 import CategoryChart from './components/CategoryChart';
 import CategoryGrid from './components/CategoryGrid';
 import ClassDetail from './components/ClassDetail';
-import FilterControls from './components/FilterControls';
+
 import FilterPanel, { FilterState } from './components/FilterPanel';
 import SoundGrid from './components/SoundGrid';
 import DataTest from './components/DataTest';
@@ -25,6 +25,10 @@ import ErrorBoundary from './components/ErrorBoundary';
 import DetailView from './components/DetailView';
 import AudioUpload from './components/AudioUpload';
 import AlgorithmPerformanceSunburst from './components/AlgorithmPerformanceSunburst';
+import AWSAudioPlayer from './components/AWSAudioPlayer';
+
+import { getAWSS3Service, getAWSS3Config } from './utils/awsS3';
+import { AWS_CONFIG } from './config/aws';
 
 type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload' | 'connected';
 
@@ -36,7 +40,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   
   // View state
-  const [currentView, setCurrentView] = useState<ViewType>('overview');
+  const [currentView, setCurrentView] = useState<ViewType>('filtered');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [detailViewData, setDetailViewData] = useState<any>(null);
@@ -57,6 +61,7 @@ function App() {
     categories: [],
     classes: [],
     designs: [],
+    algorithms: [],
     ratingRange: { min: 35, max: 100 },
     sortBy: 'average',
     sortOrder: 'desc'
@@ -90,6 +95,28 @@ function App() {
     };
 
     loadData();
+  }, []);
+
+  // Initialize AWS S3 service
+  useEffect(() => {
+    if (AWS_CONFIG.FEATURES.AWS_ENABLED) {
+      console.log('🚀 Initializing AWS S3 service...');
+      try {
+        const config = getAWSS3Config();
+        const service = getAWSS3Service();
+        console.log('✅ AWS S3 service initialized successfully');
+        console.log('📋 AWS Config:', { 
+          bucketName: config.bucketName, 
+          region: config.region,
+          cloudfrontEnabled: AWS_CONFIG.CLOUDFRONT.ENABLED,
+          baseUrl: service.getAudioUrl('test.wav').replace('/test.wav', '')
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize AWS S3 service:', error);
+      }
+    } else {
+      console.log('⚠️ AWS S3 disabled, using local files only');
+    }
   }, []);
 
   if (loading) {
@@ -143,7 +170,19 @@ function App() {
         );
       
       case 'overview':
-        return <OverviewChart summary={summary} onNavigateToFiltered={() => setCurrentView('filtered')} />;
+        return <OverviewChart 
+          summary={summary} 
+          onNavigateToFiltered={() => setCurrentView('filtered')} 
+          filterState={filterState}
+          ratings={ratings}
+          onAlgorithmSelect={(algorithm) => {
+            if (algorithm) {
+              setFilterState(prev => ({ ...prev, algorithms: [algorithm] }));
+            } else {
+              setFilterState(prev => ({ ...prev, algorithms: [] }));
+            }
+          }}
+        />;
       
       case 'enhanced':
         return <DashboardOverview summary={summary} ratings={ratings} />;
@@ -306,14 +345,32 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Enhanced Audio-Vibration Rating Explorer</h1>
-        <p>Explore how well four vibration designs match everyday sounds with enhanced analytics</p>
+        <div className="header-content">
+          <div className="header-text">
+            <h1>Enhanced Audio-Vibration Rating Explorer</h1>
+            <p>Explore how well four vibration designs match everyday sounds with enhanced analytics</p>
+          </div>
+          <div className="header-tabs">
+            <button
+              onClick={() => setCurrentView('filtered')}
+              className={currentView === 'filtered' ? 'active' : ''}
+            >
+              📈 Audio Overview
+            </button>
+            <button
+              onClick={() => setCurrentView('upload')}
+              className={currentView === 'upload' ? 'active' : ''}
+            >
+              🎵 Audio Upload
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="App-main">
         <div className="app-layout">
-          {/* Filter Panel - Hidden on Overview and Upload */}
-          {currentView !== 'overview' && currentView !== 'upload' && (
+          {/* Filter Panel - Hidden only on Upload */}
+          {currentView !== 'upload' && (
             <aside className="filter-sidebar">
               <FilterPanel
                 ratings={ratings}
@@ -326,19 +383,12 @@ function App() {
           )}
 
           {/* Main Content Area */}
-          <div className={`main-content-area ${currentView === 'overview' || currentView === 'upload' ? 'full-width' : ''}`}>
-            <FilterControls
-              categories={categories}
-              classes={classes}
-              selectedCategory={selectedCategory}
-              selectedClass={selectedClass}
-              onCategoryChange={setSelectedCategory}
-              onClassChange={setSelectedClass}
-              onViewChange={setCurrentView}
-              currentView={currentView}
-            />
-
-            <div className="content">
+          <div className={`main-content-area ${currentView === 'upload' ? 'full-width' : ''}`}>
+            <div className="content" style={{
+              height: '100%',
+              overflow: 'hidden',
+              padding: currentView === 'filtered' ? '0' : '2rem'
+            }}>
               {renderContent()}
             </div>
           </div>
