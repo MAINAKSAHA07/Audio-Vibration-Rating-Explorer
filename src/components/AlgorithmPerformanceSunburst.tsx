@@ -4,6 +4,7 @@ import ReactECharts from 'echarts-for-react';
 interface AlgorithmPerformanceSunburstProps {
   onDetailView?: (data: DetailViewData) => void;
   selectedAlgorithm?: string;
+  selectedPoint?: {algorithm: string, class: number, category: string, subcategory: string} | null;
 }
 
 export interface DetailViewData {
@@ -62,7 +63,7 @@ interface SoundData {
 
 type NavigationLevel = 'level1' | 'level2' | 'level3' | 'level4';
 
-const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> = ({ onDetailView, selectedAlgorithm: externalSelectedAlgorithm }) => {
+const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> = ({ onDetailView, selectedAlgorithm: externalSelectedAlgorithm, selectedPoint }) => {
   const [performanceData, setPerformanceData] = useState<PerformanceData | null>(null);
   const [currentLevel, setCurrentLevel] = useState<NavigationLevel>('level1');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('');
@@ -73,13 +74,42 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
   const [error, setError] = useState<string | null>(null);
   const [soundData, setSoundData] = useState<SoundData[]>([]);
 
-  // Update selected algorithm when external prop changes
+  // Update selected algorithm when external prop changes (but don't force navigation)
   useEffect(() => {
     if (externalSelectedAlgorithm && externalSelectedAlgorithm !== selectedAlgorithm) {
-      setSelectedAlgorithm(externalSelectedAlgorithm);
-      setCurrentLevel('level2'); // Navigate to level 2 to show the selected algorithm
+      // Only update if we're at level 1 (overview) to show the algorithm is selected in line chart
+      // Don't force navigation to level 2 - let user control the sunburst independently
+      if (currentLevel === 'level1') {
+        setSelectedAlgorithm(externalSelectedAlgorithm);
+      }
+    } else if (!externalSelectedAlgorithm && selectedAlgorithm && currentLevel === 'level1') {
+      // Clear selection only if we're at level 1 and no external selection
+      setSelectedAlgorithm('');
     }
-  }, [externalSelectedAlgorithm, selectedAlgorithm]);
+  }, [externalSelectedAlgorithm, selectedAlgorithm, currentLevel]);
+
+  // Handle selected point from line chart
+  useEffect(() => {
+    if (selectedPoint) {
+      // Navigate to the specific algorithm and subcategory
+      setSelectedAlgorithm(selectedPoint.algorithm);
+      setSelectedCategory(selectedPoint.category);
+      setSelectedSubcategory(selectedPoint.subcategory);
+      setCurrentLevel('level4'); // Go directly to level 4 (individual sounds)
+    } else if (externalSelectedAlgorithm) {
+      // If no specific point is selected but algorithm is selected, go to level 2
+      setSelectedAlgorithm(externalSelectedAlgorithm);
+      setSelectedCategory('');
+      setSelectedSubcategory('');
+      setCurrentLevel('level2');
+    } else if (!externalSelectedAlgorithm) {
+      // Only return to initial view if there's no external selection
+      setSelectedAlgorithm('');
+      setSelectedCategory('');
+      setSelectedSubcategory('');
+      setCurrentLevel('level1');
+    }
+  }, [selectedPoint, externalSelectedAlgorithm]);
 
   // ESC-50 Category mapping
   const getCategoryForClass = (classNum: number): string => {
@@ -227,31 +257,156 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
     let data: any[] = [];
 
     if (currentLevel === 'level1') {
-      // Level 1: All algorithms only (no children to avoid overlapping)
+      // Level 1: Hierarchical view with algorithms in inner ring and categories in outer ring
+      const categories = ['Animals', 'Natural\nSoundscapes', 'Human\nNon-Speech', 'Interior\nDomestic', 'Exterior\nUrban'];
+      
+      // Calculate total wins for each algorithm to normalize category values
+      const algorithmTotals = {
+        freqshift: Object.values(performanceData.freqshift.categories).reduce((sum, val) => sum + val, 0),
+        hapticgen: Object.values(performanceData.hapticgen.categories).reduce((sum, val) => sum + val, 0),
+        percept: Object.values(performanceData.percept.categories).reduce((sum, val) => sum + val, 0),
+        pitchmatch: Object.values(performanceData.pitchmatch.categories).reduce((sum, val) => sum + val, 0)
+      };
+      
+      // Helper function to get algorithm color with highlighting
+      const getAlgorithmColorWithHighlight = (algorithm: string): string => {
+        const baseColor = getAlgorithmColor(algorithm);
+        if (externalSelectedAlgorithm === algorithm) {
+          // Add a subtle glow effect by making it slightly brighter
+          return baseColor;
+        }
+        return baseColor;
+      };
+      
       data = [
         {
           name: "Frequency Shift",
           value: performanceData.freqshift.overall,
-          itemStyle: { color: "#dc2626" },
-          algorithm: 'freqshift'
+          itemStyle: { 
+            color: getAlgorithmColorWithHighlight('freqshift'),
+            borderWidth: externalSelectedAlgorithm === 'freqshift' ? 3 : 0,
+            borderColor: '#ffffff',
+            shadowBlur: externalSelectedAlgorithm === 'freqshift' ? 10 : 0,
+            shadowColor: getAlgorithmColor('freqshift')
+          },
+          algorithm: 'freqshift',
+                      children: categories.map(category => {
+              const categoryValue = performanceData.freqshift.categories[category] || 0;
+              // Calculate proportional value based on algorithm's total area
+              const proportionalValue = algorithmTotals.freqshift > 0 ? 
+                (categoryValue / algorithmTotals.freqshift) * performanceData.freqshift.overall : 
+                performanceData.freqshift.overall / 5; // Equal distribution if no wins
+              return {
+                name: category,
+                value: proportionalValue,
+                itemStyle: { 
+                  color: getCategoryColor(category),
+                  borderWidth: externalSelectedAlgorithm === 'freqshift' ? 2 : 0,
+                  borderColor: '#ffffff',
+                  shadowBlur: externalSelectedAlgorithm === 'freqshift' ? 5 : 0,
+                  shadowColor: getCategoryColor(category)
+                },
+                algorithm: 'freqshift',
+                category: category,
+                originalValue: categoryValue // Store original value for tooltip
+              };
+            })
         },
         {
           name: "HapticGen",
           value: performanceData.hapticgen.overall,
-          itemStyle: { color: "#22c55e" },
-          algorithm: 'hapticgen'
+          itemStyle: { 
+            color: getAlgorithmColorWithHighlight('hapticgen'),
+            borderWidth: externalSelectedAlgorithm === 'hapticgen' ? 3 : 0,
+            borderColor: '#ffffff',
+            shadowBlur: externalSelectedAlgorithm === 'hapticgen' ? 10 : 0,
+            shadowColor: getAlgorithmColor('hapticgen')
+          },
+          algorithm: 'hapticgen',
+                      children: categories.map(category => {
+              const categoryValue = performanceData.hapticgen.categories[category] || 0;
+              const proportionalValue = algorithmTotals.hapticgen > 0 ? 
+                (categoryValue / algorithmTotals.hapticgen) * performanceData.hapticgen.overall : 
+                performanceData.hapticgen.overall / 5; // Equal distribution if no wins
+              return {
+                name: category,
+                value: proportionalValue,
+                itemStyle: { 
+                  color: getCategoryColor(category),
+                  borderWidth: externalSelectedAlgorithm === 'hapticgen' ? 2 : 0,
+                  borderColor: '#ffffff',
+                  shadowBlur: externalSelectedAlgorithm === 'hapticgen' ? 5 : 0,
+                  shadowColor: getCategoryColor(category)
+                },
+                algorithm: 'hapticgen',
+                category: category,
+                originalValue: categoryValue
+              };
+            })
         },
         {
           name: "Percept",
           value: performanceData.percept.overall,
-          itemStyle: { color: "#3b82f6" },
-          algorithm: 'percept'
+          itemStyle: { 
+            color: getAlgorithmColorWithHighlight('percept'),
+            borderWidth: externalSelectedAlgorithm === 'percept' ? 3 : 0,
+            borderColor: '#ffffff',
+            shadowBlur: externalSelectedAlgorithm === 'percept' ? 10 : 0,
+            shadowColor: getAlgorithmColor('percept')
+          },
+          algorithm: 'percept',
+                      children: categories.map(category => {
+              const categoryValue = performanceData.percept.categories[category] || 0;
+              const proportionalValue = algorithmTotals.percept > 0 ? 
+                (categoryValue / algorithmTotals.percept) * performanceData.percept.overall : 
+                performanceData.percept.overall / 5; // Equal distribution if no wins
+              return {
+                name: category,
+                value: proportionalValue,
+                itemStyle: { 
+                  color: getCategoryColor(category),
+                  borderWidth: externalSelectedAlgorithm === 'percept' ? 2 : 0,
+                  borderColor: '#ffffff',
+                  shadowBlur: externalSelectedAlgorithm === 'percept' ? 5 : 0,
+                  shadowColor: getCategoryColor(category)
+                },
+                algorithm: 'percept',
+                category: category,
+                originalValue: categoryValue
+              };
+            })
         },
         {
           name: "PitchMatch",
           value: performanceData.pitchmatch.overall,
-          itemStyle: { color: "#8b5cf6" },
-          algorithm: 'pitchmatch'
+          itemStyle: { 
+            color: getAlgorithmColorWithHighlight('pitchmatch'),
+            borderWidth: externalSelectedAlgorithm === 'pitchmatch' ? 3 : 0,
+            borderColor: '#ffffff',
+            shadowBlur: externalSelectedAlgorithm === 'pitchmatch' ? 10 : 0,
+            shadowColor: getAlgorithmColor('pitchmatch')
+          },
+          algorithm: 'pitchmatch',
+                      children: categories.map(category => {
+              const categoryValue = performanceData.pitchmatch.categories[category] || 0;
+              const proportionalValue = algorithmTotals.pitchmatch > 0 ? 
+                (categoryValue / algorithmTotals.pitchmatch) * performanceData.pitchmatch.overall : 
+                performanceData.pitchmatch.overall / 5; // Equal distribution if no wins
+              return {
+                name: category,
+                value: proportionalValue,
+                itemStyle: { 
+                  color: getCategoryColor(category),
+                  borderWidth: externalSelectedAlgorithm === 'pitchmatch' ? 2 : 0,
+                  borderColor: '#ffffff',
+                  shadowBlur: externalSelectedAlgorithm === 'pitchmatch' ? 5 : 0,
+                  shadowColor: getCategoryColor(category)
+                },
+                algorithm: 'pitchmatch',
+                category: category,
+                originalValue: categoryValue
+              };
+            })
         }
       ];
     } else if (currentLevel === 'level2') {
@@ -337,66 +492,72 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
       }
     } else if (currentLevel === 'level4') {
       // Level 4: Selected subcategory in center + individual winning sounds
-      const categoryRanges = {
-        'Animals': [0, 9],
-        'Natural\nSoundscapes': [10, 19],
-        'Human\nNon-Speech': [20, 29],
-        'Interior\nDomestic': [30, 39],
-        'Exterior\nUrban': [40, 49]
-      };
+      let classNum = -1;
       
-      const range = categoryRanges[selectedCategory as keyof typeof categoryRanges];
-      if (range) {
-        // Find the class number for the selected subcategory by searching through the range
-        let classNum = -1;
-        for (let i = range[0]; i <= range[1]; i++) {
-          if (getSpecificCategoryName(i) === selectedSubcategory) {
-            classNum = i;
-            break;
+      if (selectedPoint) {
+        // If we have a selected point, use its class number directly
+        classNum = selectedPoint.class;
+      } else {
+        // Otherwise, find the class number for the selected subcategory by searching through the range
+        const categoryRanges = {
+          'Animals': [0, 9],
+          'Natural\nSoundscapes': [10, 19],
+          'Human\nNon-Speech': [20, 29],
+          'Interior\nDomestic': [30, 39],
+          'Exterior\nUrban': [40, 49]
+        };
+        
+        const range = categoryRanges[selectedCategory as keyof typeof categoryRanges];
+        if (range) {
+          for (let i = range[0]; i <= range[1]; i++) {
+            if (getSpecificCategoryName(i) === selectedSubcategory) {
+              classNum = i;
+              break;
+            }
           }
         }
+      }
+      
+      if (classNum >= 0) {
+        // Get all sounds for this specific subcategory
+        const subcategorySounds = soundData.filter(sound => 
+          sound.target === classNum
+        );
         
-                 if (classNum >= 0) {
-           // Get all sounds for this specific subcategory
-           const subcategorySounds = soundData.filter(sound => 
-             sound.target === classNum
-           );
-          
-          // Get sounds where this algorithm wins
-          const winningSounds = subcategorySounds.filter(sound => {
-            const algorithmRating = sound.ratings[selectedAlgorithm as keyof typeof sound.ratings];
-            const maxRating = Math.max(
-              sound.ratings.freqshift,
-              sound.ratings.hapticgen,
-              sound.ratings.percept,
-              sound.ratings.pitchmatch
-            );
-            return algorithmRating === maxRating;
-          });
-          
-          const individualSoundsData = winningSounds.map(sound => ({
-            name: sound.soundname,
-            value: sound.ratings[selectedAlgorithm as keyof typeof sound.ratings],
-            itemStyle: { color: getSubcategoryColor(selectedCategory) },
-            filename: sound.filename,
-            rating: sound.ratings[selectedAlgorithm as keyof typeof sound.ratings],
-            isIndividualSound: true
-          }));
+        // Get sounds where this algorithm wins
+        const winningSounds = subcategorySounds.filter(sound => {
+          const algorithmRating = sound.ratings[selectedAlgorithm as keyof typeof sound.ratings];
+          const maxRating = Math.max(
+            sound.ratings.freqshift,
+            sound.ratings.hapticgen,
+            sound.ratings.percept,
+            sound.ratings.pitchmatch
+          );
+          return algorithmRating === maxRating;
+        });
+        
+        const individualSoundsData = winningSounds.map(sound => ({
+          name: sound.soundname,
+          value: sound.ratings[selectedAlgorithm as keyof typeof sound.ratings],
+          itemStyle: { color: getSubcategoryColor(selectedCategory) },
+          filename: sound.filename,
+          rating: sound.ratings[selectedAlgorithm as keyof typeof sound.ratings],
+          isIndividualSound: true
+        }));
 
-          data = [
-            {
-              name: selectedSubcategory,
-              itemStyle: { color: getSubcategoryColor(selectedCategory) },
-              isCenter: true,
-              children: individualSoundsData
-            }
-          ];
-         }
-       }
+        data = [
+          {
+            name: selectedSubcategory,
+            itemStyle: { color: getSubcategoryColor(selectedCategory) },
+            isCenter: true,
+            children: individualSoundsData
+          }
+        ];
+      }
     }
 
     setChartData(data);
-  }, [performanceData, currentLevel, selectedAlgorithm, selectedCategory, selectedSubcategory, soundData]);
+  }, [performanceData, currentLevel, selectedAlgorithm, selectedCategory, selectedSubcategory, soundData, externalSelectedAlgorithm, selectedPoint]);
 
   // Color functions
   const getAlgorithmColor = (algorithm: string): string => {
@@ -410,43 +571,59 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
   };
 
   const getCategoryColor = (category: string): string => {
+    // Normalize category name to handle both formats (with and without newlines)
+    const normalizedCategory = category.replace(/\n/g, ' ').replace(/\//g, '/');
     const colors: Record<string, string> = {
       'Animals': '#166534',
+      'Natural Soundscapes': '#1d4ed8',
       'Natural\nSoundscapes': '#1d4ed8',
+      'Human Non-Speech': '#7e22ce',
       'Human\nNon-Speech': '#7e22ce',
+      'Interior/Domestic': '#b91c1c',
       'Interior\nDomestic': '#b91c1c',
+      'Exterior/Urban': '#d97706',
       'Exterior\nUrban': '#d97706'
     };
-    return colors[category] || '#6b7280';
+    return colors[category] || colors[normalizedCategory] || '#6b7280';
   };
 
   const getSubcategoryColor = (category: string): string => {
+    // Normalize category name to handle both formats (with and without newlines)
+    const normalizedCategory = category.replace(/\n/g, ' ').replace(/\//g, '/');
     const colors: Record<string, string> = {
       'Animals': '#22c55e',
+      'Natural Soundscapes': '#3b82f6',
       'Natural\nSoundscapes': '#3b82f6',
+      'Human Non-Speech': '#a855f7',
       'Human\nNon-Speech': '#a855f7',
+      'Interior/Domestic': '#ef4444',
       'Interior\nDomestic': '#ef4444',
+      'Exterior/Urban': '#fbbf24',
       'Exterior\nUrban': '#fbbf24'
     };
-    return colors[category] || '#9ca3af';
+    return colors[category] || colors[normalizedCategory] || '#9ca3af';
   };
 
   // Handle chart click events
   const handleChartClick = (params: any) => {
     if (currentLevel === 'level1') {
-      if (params.data && params.data.algorithm) {
-        // Clicked on algorithm - go to level 2
+      if (params.data && params.data.algorithm && !params.data.category) {
+        // Clicked on algorithm (inner ring) - go to level 2
         setSelectedAlgorithm(params.data.algorithm);
         setCurrentLevel('level2');
-      } else if (params.data && params.data.name && !params.data.algorithm) {
-        // Clicked on category - go to level 3
-        setSelectedCategory(params.data.name);
+      } else if (params.data && params.data.algorithm && params.data.category) {
+        // Clicked on category (outer ring) - go to level 3
+        setSelectedAlgorithm(params.data.algorithm);
+        setSelectedCategory(params.data.category);
         setCurrentLevel('level3');
       }
     } else if (currentLevel === 'level2') {
       if (params.data && params.data.isCenter) {
         setCurrentLevel('level1');
-        setSelectedAlgorithm('');
+        // Don't clear selectedAlgorithm if it's from external selection
+        if (!externalSelectedAlgorithm) {
+          setSelectedAlgorithm('');
+        }
       } else if (params.data && params.data.name) {
         setSelectedCategory(params.data.name);
         setCurrentLevel('level3');
@@ -475,10 +652,20 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
       trigger: "item", 
       formatter: function(params: any) {
         if (currentLevel === 'level1') {
-          if (params.data && params.data.algorithm) {
-            return `${params.name}<br/>Overall Win Rate: ${params.value.toFixed(1)}%<br/>Click to explore categories`;
-          } else if (params.data && params.data.name && !params.data.algorithm) {
-            return `${params.name}<br/>Category Win Rate: ${params.value.toFixed(1)}%<br/>Click to explore sounds`;
+          if (params.data && params.data.algorithm && !params.data.category) {
+            // Inner ring - algorithm
+            const fullName = params.name === "FreqShift" ? "Frequency Shift" : params.name;
+            return `${fullName}<br/>Overall Win Rate: ${params.value.toFixed(1)}%<br/>Click to explore categories`;
+          } else if (params.data && params.data.algorithm && params.data.category) {
+            // Outer ring - category
+            const originalValue = params.data.originalValue || params.value;
+            const fullCategoryName = params.name === "Natural" ? "Natural Soundscapes" :
+                                   params.name === "Human" ? "Human Non-Speech" :
+                                   params.name === "Interior" ? "Interior Domestic" :
+                                   params.name === "Exterior" ? "Exterior Urban" : params.name;
+            return `${fullCategoryName}<br/>Category Win Rate: ${originalValue.toFixed(1)}%<br/>Algorithm: ${params.data.algorithm === 'freqshift' ? 'FreqShift' : 
+              params.data.algorithm === 'hapticgen' ? 'HapticGen' : 
+              params.data.algorithm === 'percept' ? 'Percept' : 'PitchMatch'}<br/>Hover to see category name<br/>Click to explore sounds`;
           }
         } else if (currentLevel === 'level2') {
           if (params.data && params.data.isCenter) {
@@ -507,26 +694,70 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
     },
     series: [
       {
-        type: "sunburst",
+                type: "sunburst",
         radius: [0, "90%"],
         sort: null,
-        minAngle: 0.5,
+        minAngle: 2,
         nodeClick: false,
         emphasis: { focus: "ancestor" },
         colorMappingBy: 'id',
         levels: currentLevel === 'level1' ? [
           {
-            r: "90%",
+            r0: "10%",
+            r: "12%",
             label: { 
               show: true,
-              color: "#000000", 
-              fontSize: 12, 
+              color: "#ffffff", 
+              fontSize: 10, 
               fontWeight: "bold",
-              position: "inside"
+              position: "inside",
+              formatter: function(params: any) {
+                // Short algorithm names for better fit
+                const name = params.name;
+                if (name === "Frequency Shift") return "FreqShift";
+                if (name === "HapticGen") return "HapticGen";
+                if (name === "Percept") return "Percept";
+                if (name === "PitchMatch") return "PitchMatch";
+                return name;
+              }
+            },
+            itemStyle: { 
+              borderWidth: 2, 
+              borderColor: "#ffffff"
             },
             emphasis: {
               label: {
-                show: true
+                show: true,
+                fontSize: 12
+              }
+            }
+          },
+          {
+            r0: "13%",
+            r: "40%",
+            label: { 
+              show: true, // Hide category labels initially
+              color: "#000000", 
+              fontSize: 9, 
+              fontWeight: "bold",
+              formatter: function(params: any) {
+                return ""; // Return empty string to completely hide category names
+              },
+              rotate: 0,
+              overflow: 'truncate',
+              minAngle: 5
+            },
+            itemStyle: { 
+              borderWidth: 1, 
+              borderColor: "#ffffff"
+            },
+            emphasis: {
+              label: {
+                show: false, // Keep labels hidden even on hover
+                fontSize: 11,
+                formatter: function(params: any) {
+                  return ""; // Return empty string to completely hide category names
+                }
               }
             }
           }
@@ -573,24 +804,24 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
               borderWidth: 2, 
               borderColor: "#ffffff"
             },
-                          emphasis: {
-                label: {
-                  show: true,
-                  fontSize: 10,
-                  formatter: function(params: any) {
-                    // Handle long names by breaking them into 2 lines
-                    const name = params.name;
-                    if (name.length > 8) {
-                      // Find a good break point (space or underscore)
-                      const breakPoint = name.indexOf(' ') !== -1 ? name.indexOf(' ') : 
-                                       name.indexOf('_') !== -1 ? name.indexOf('_') : 
-                                       Math.floor(name.length / 2);
-                      return name.substring(0, breakPoint) + '\n' + name.substring(breakPoint + 1);
-                    }
-                    return name;
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 10,
+                formatter: function(params: any) {
+                  // Handle long names by breaking them into 2 lines
+                  const name = params.name;
+                  if (name.length > 8) {
+                    // Find a good break point (space or underscore)
+                    const breakPoint = name.indexOf(' ') !== -1 ? name.indexOf(' ') : 
+                                     name.indexOf('_') !== -1 ? name.indexOf('_') : 
+                                     Math.floor(name.length / 2);
+                    return name.substring(0, breakPoint) + '\n' + name.substring(breakPoint + 1);
                   }
+                  return name;
                 }
               }
+            }
           },
           {
             r0: "55%",
@@ -643,12 +874,28 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
           fontWeight: '600', 
           color: '#333' 
         }}>
-          {currentLevel === 'level1' && '🏆 Algorithm Performance Overview'}
+          {currentLevel === 'level1' && (
+            selectedPoint ? 
+            `🏆 Algorithm Performance Overview - ${selectedPoint.algorithm === 'freqshift' ? 'FreqShift' : 
+              selectedPoint.algorithm === 'hapticgen' ? 'HapticGen' : 
+              selectedPoint.algorithm === 'percept' ? 'Percept' : 'PitchMatch'} ${selectedPoint.subcategory} selected in line chart` :
+            externalSelectedAlgorithm ? 
+            `🏆 Algorithm Performance Overview - ${externalSelectedAlgorithm === 'freqshift' ? 'FreqShift' : 
+              externalSelectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
+              externalSelectedAlgorithm === 'percept' ? 'Percept' : 'PitchMatch'} selected in line chart` :
+            '🏆 Algorithm Performance Overview (Hover outer ring to see categories)'
+          )}
           {currentLevel === 'level2' && `📊 ${selectedAlgorithm === 'freqshift' ? 'FreqShift' : 
             selectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
             selectedAlgorithm === 'percept' ? 'Percept' : 'PitchMatch'} by Category`}
           {currentLevel === 'level3' && `🎵 ${selectedCategory} Sounds`}
-          {currentLevel === 'level4' && `🎵 ${selectedSubcategory} Individual Sounds`}
+          {currentLevel === 'level4' && (
+            selectedPoint ? 
+            `🎵 ${selectedPoint.algorithm === 'freqshift' ? 'FreqShift' : 
+              selectedPoint.algorithm === 'hapticgen' ? 'HapticGen' : 
+              selectedPoint.algorithm === 'percept' ? 'Percept' : 'PitchMatch'} - ${selectedPoint.subcategory} (Selected from line chart)` :
+            `🎵 ${selectedSubcategory} Individual Sounds`
+          )}
         </h3>
         
         {isLoading && (

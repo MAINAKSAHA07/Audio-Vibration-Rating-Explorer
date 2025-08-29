@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { SummaryData, RatingData, fetchRatings } from '../utils/api';
-import HierarchicalSunburst from './HierarchicalSunburst';
+// import HierarchicalSunburst from './HierarchicalSunburst';
 import AlgorithmPerformanceSunburst from './AlgorithmPerformanceSunburst';
 import DetailView from './DetailView';
 
@@ -16,6 +16,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
   const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('');
+  const [selectedPoint, setSelectedPoint] = useState<{algorithm: string, class: number, category: string, subcategory: string} | null>(null);
   const [detailViewData, setDetailViewData] = useState<any>(null);
 
   // Fetch detailed ratings data for line chart
@@ -85,24 +86,87 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
-          // Process data for line chart
-      const methods = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
-    const classRange = Array.from({ length: 50 }, (_, i) => i);
+          // Process data for line chart - Only show winning points for each algorithm
+    const methods = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
+    
+    // Process ratings data to find winning algorithms for each class
+    const winningData: { [key: string]: Array<{class: number, rating: number, category: string}> } = {
+      freqshift: [],
+      hapticgen: [],
+      percept: [],
+      pitchmatch: []
+    };
 
-    // Calculate average ratings for each method per class
-    const lineData = classRange.map(classNum => {
-      const classData: any = { class: classNum, category: getCategoryForClass(classNum) };
+    // Group ratings by class and audio file to handle individual sounds
+    const classAudioGroups = new Map<number, Map<string, RatingData[]>>();
+    ratings.forEach(rating => {
+      const classNum = parseInt(rating.target);
+      const audioFile = rating.audioFile;
       
-      methods.forEach(method => {
-        const methodRatings = ratings.filter(r => 
-          parseInt(r.target) === classNum && r.design === method
-        );
-        classData[method] = methodRatings.length > 0 
-          ? d3.mean(methodRatings, d => d.rating) || 0 
-          : 0;
+      if (!classAudioGroups.has(classNum)) {
+        classAudioGroups.set(classNum, new Map());
+      }
+      
+      const audioMap = classAudioGroups.get(classNum)!;
+      if (!audioMap.has(audioFile)) {
+        audioMap.set(audioFile, []);
+      }
+      
+      audioMap.get(audioFile)!.push(rating);
+    });
+
+    // For each class, find which algorithm wins for individual sounds
+    classAudioGroups.forEach((audioMap, classNum) => {
+      // Track which algorithms have won for any sound in this class
+      const classWinners = new Set<string>();
+      
+      // Process each audio file separately
+      audioMap.forEach((audioRatings) => {
+        // Group by algorithm for this specific audio file
+        const algorithmRatings = new Map<string, number[]>();
+        audioRatings.forEach(rating => {
+          if (!algorithmRatings.has(rating.design)) {
+            algorithmRatings.set(rating.design, []);
+          }
+          algorithmRatings.get(rating.design)!.push(rating.rating);
+        });
+
+        // Calculate average rating for each algorithm for this audio file
+        const algorithmAverages = new Map<string, number>();
+        algorithmRatings.forEach((ratings, algorithm) => {
+          algorithmAverages.set(algorithm, d3.mean(ratings) || 0);
+        });
+
+        // Find the winning algorithm(s) for this audio file - including ties
+        const maxRating = Math.max(...Array.from(algorithmAverages.values()));
+        const winners = Array.from(algorithmAverages.entries())
+          .filter(([_, rating]) => rating === maxRating)
+          .map(([algorithm, _]) => algorithm);
+
+        // Add to class winners
+        winners.forEach(winner => {
+          if (methods.includes(winner)) {
+            classWinners.add(winner);
+          }
+        });
       });
-      
-      return classData;
+
+      // Add points for all algorithms that won for any sound in this class
+      classWinners.forEach(winner => {
+        // Calculate the overall average rating for this algorithm in this class for display
+        const allClassRatings = Array.from(audioMap.values()).flat();
+        const algorithmRatings = allClassRatings
+          .filter(rating => rating.design === winner)
+          .map(rating => rating.rating);
+        
+        const averageRating = d3.mean(algorithmRatings) || 0;
+        
+        winningData[winner].push({
+          class: classNum,
+          rating: averageRating,
+          category: getCategoryForClass(classNum)
+        });
+      });
     });
 
 
@@ -165,83 +229,52 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       .y(d => yScale(d.rating))
       .curve(d3.curveMonotoneX);
 
-    // Draw lines for each method
+    // Draw lines and points for each method (only winning points)
     methods.forEach(method => {
-      const methodData = lineData.map(d => ({
-        class: d.class,
-        rating: d[method],
-        category: d.category
-      }));
+      const methodData = winningData[method];
 
-      // Main line
-      g.append("path")
-        .datum(methodData)
-        .attr("fill", "none")
-        .attr("stroke", methodColors[method as keyof typeof methodColors])
-        .attr("stroke-width", selectedAlgorithm === method ? 5 : (hoveredMethod === method ? 4 : 2))
-        .attr("stroke-opacity", selectedAlgorithm === method ? 1 : (hoveredMethod && hoveredMethod !== method ? 0.3 : 1))
-        .attr("d", line)
-        .style("cursor", "pointer")
-        .on("mouseover", function(event) {
-          setHoveredMethod(method);
-          d3.select(this).attr("stroke-width", 4);
-          
-          // Get mouse position relative to SVG
-          const mousePos = d3.pointer(event);
-          
-          // Show method info tooltip
-          const tooltip = svg.append("g")
-            .attr("class", "method-tooltip")
-            .attr("transform", `translate(${mousePos[0] + 10}, ${mousePos[1] - 20})`);
-          
-          tooltip.append("rect")
-            .attr("width", 150)
-            .attr("height", 40)
-            .attr("fill", "white")
-            .attr("stroke", "#ddd")
-            .attr("stroke-width", 1)
-            .attr("rx", 3)
-            .attr("ry", 3)
-            .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.2))");
-          
-          tooltip.append("text")
-            .attr("x", 10)
-            .attr("y", 15)
-            .style("font-size", "12px")
-            .style("font-weight", "bold")
-            .style("fill", methodColors[method as keyof typeof methodColors])
-            .text(method);
-          
-          tooltip.append("text")
-            .attr("x", 10)
-            .attr("y", 30)
-            .style("font-size", "11px")
-            .style("fill", "#666")
-            .text("Click to select algorithm");
-        })
-        .on("mouseout", function() {
-          setHoveredMethod(null);
-          d3.select(this).attr("stroke-width", 2);
-          svg.selectAll(".method-tooltip").remove();
-        })
-        .on("click", function() {
-          setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
-        });
+      // Sort data by class for proper line drawing
+      const sortedData = methodData.sort((a, b) => a.class - b.class);
 
-      // Add data points
+      // Draw line connecting the points
+      if (sortedData.length > 0) {
+        g.append("path")
+          .datum(sortedData)
+          .attr("fill", "none")
+          .attr("stroke", methodColors[method as keyof typeof methodColors])
+          .attr("stroke-width", selectedAlgorithm === method ? 3 : (hoveredMethod === method ? 2.5 : 1.5))
+          .attr("stroke-opacity", selectedAlgorithm === method ? 1 : (hoveredMethod && hoveredMethod !== method ? 0.3 : 0.8))
+          .attr("d", line)
+          .style("cursor", "pointer")
+          .on("mouseover", function(event) {
+            setHoveredMethod(method);
+            d3.select(this).attr("stroke-width", 2.5);
+            d3.select(this).attr("stroke-opacity", 1);
+          })
+          .on("mouseout", function() {
+            setHoveredMethod(null);
+            d3.select(this).attr("stroke-width", selectedAlgorithm === method ? 3 : 1.5);
+            d3.select(this).attr("stroke-opacity", selectedAlgorithm === method ? 1 : (hoveredMethod && hoveredMethod !== method ? 0.3 : 0.8));
+          })
+          .on("click", function() {
+            setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
+          });
+      }
+
+      // Add data points for winning algorithm
       g.selectAll(`.point-${method}`)
         .data(methodData)
         .enter()
         .append("circle")
         .attr("class", `point-${method}`)
-        .attr("cx", d => xScale(d.class))
-        .attr("cy", d => yScale(d.rating))
+        .attr("cx", (d: any) => xScale(d.class))
+        .attr("cy", (d: any) => yScale(d.rating))
         .attr("r", selectedAlgorithm === method ? 5 : 3)
         .attr("fill", methodColors[method as keyof typeof methodColors])
         .attr("stroke", "#fff")
         .attr("stroke-width", selectedAlgorithm === method ? 2 : 1)
         .style("cursor", "pointer")
-                 .on("mouseover", function(event, d) {
+                 .on("mouseover", function(event, d: any) {
            d3.select(this).attr("r", 6);
            
            // Get specific category name
@@ -261,8 +294,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
            
            // Tooltip background
            tooltip.append("rect")
-             .attr("width", 200)
-             .attr("height", 60)
+             .attr("width", 220)
+             .attr("height", 80)
              .attr("fill", "white")
              .attr("stroke", "#ddd")
              .attr("stroke-width", 1)
@@ -285,7 +318,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
              .attr("y", 30)
              .style("font-size", "11px")
              .style("fill", "#333")
-             .text(`Rating: ${d.rating.toFixed(1)}`);
+             .text(`Avg Rating: ${d.rating.toFixed(1)}`);
            
            // Specific category name
            tooltip.append("text")
@@ -298,23 +331,47 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
            // Class number
            tooltip.append("text")
              .attr("x", 10)
-             .attr("y", 55)
+             .attr("y", 60)
              .style("font-size", "10px")
              .style("fill", "#999")
              .text(`Class ${d.class}`);
+           
+           // Additional info
+           tooltip.append("text")
+             .attr("x", 10)
+             .attr("y", 75)
+             .style("font-size", "9px")
+             .style("fill", "#666")
+             .text("Wins for individual sounds");
          })
                  .on("mouseout", function() {
            d3.select(this).attr("r", 3);
            svg.selectAll(".tooltip").remove();
          })
-        .on("click", function(event, d) {
+        .on("click", function(event, d: any) {
           // Toggle between class selection and algorithm selection
           if (event.shiftKey) {
             // Shift+click for class selection (existing behavior)
             setSelectedClass(selectedClass === d.class ? null : d.class);
           } else {
             // Regular click for algorithm selection
-            setSelectedAlgorithm(selectedAlgorithm === method ? '' : method);
+            const newSelectedPoint = {
+              algorithm: method,
+              class: d.class,
+              category: d.category,
+              subcategory: getSpecificCategoryName(d.class)
+            };
+            
+            // Toggle point selection
+            if (selectedPoint && 
+                selectedPoint.algorithm === newSelectedPoint.algorithm && 
+                selectedPoint.class === newSelectedPoint.class) {
+              setSelectedPoint(null);
+              setSelectedAlgorithm('');
+            } else {
+              setSelectedPoint(newSelectedPoint);
+              setSelectedAlgorithm(method);
+            }
           }
         });
     });
@@ -367,7 +424,17 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       .style("font-size", "16px")
       .style("font-weight", "700")
       .style("fill", "#2c3e50")
-      .text("Vibration Method Performance Across Classes");
+      .text("Algorithm Wins Across Classes (Individual Sounds)");
+    
+    // Add subtitle
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", 50)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .style("font-weight", "400")
+      .style("fill", "#666")
+      .text("Lines connect winning points for each algorithm across classes");
 
     // Add legend
     const legend = svg.append("g")
@@ -391,7 +458,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         .attr("x2", 20)
         .attr("y2", 0)
         .attr("stroke", methodColors[method as keyof typeof methodColors])
-        .attr("stroke-width", 3);
+        .attr("stroke-width", selectedAlgorithm === method ? 3 : 1.5);
 
       legendItem.append("text")
         .attr("x", 25)
@@ -420,13 +487,17 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         height: '500px',
         marginBottom: '40px'
       }}>
-        {/* Hierarchical Sunburst chart - Left side */}
+        {/* Algorithm Performance Sunburst chart - Left side */}
         <div style={{ 
           flex: '0 0 500px', 
           height: '500px',
           minWidth: '500px'
         }}>
-          <HierarchicalSunburst onDetailView={(data) => setDetailViewData(data)} />
+          <AlgorithmPerformanceSunburst 
+            onDetailView={(data) => setDetailViewData(data)} 
+            selectedAlgorithm={selectedAlgorithm}
+            selectedPoint={selectedPoint}
+          />
       </div>
       
         {/* New line chart - Right side */}
@@ -457,40 +528,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
       </div>
       </div>
       
-      {/* Algorithm Performance Sunburst - New section */}
-      <div style={{ 
-        marginTop: '40px',
-        marginBottom: '40px'
-      }}>
-        <h2 style={{
-          textAlign: 'center',
-          marginBottom: '20px',
-          fontSize: '24px',
-          fontWeight: '700',
-          color: '#1f2937',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
-        }}>
-          🏆 Algorithm Performance Analysis
-        </h2>
-        <p style={{
-          textAlign: 'center',
-          marginBottom: '30px',
-          fontSize: '16px',
-          color: '#6b7280',
-          maxWidth: '800px',
-          margin: '0 auto 30px auto'
-        }}>
-          Explore which algorithms perform best across different sound categories. 
-          Segment sizes represent winning percentages, with ties counted for both algorithms.
-        </p>
-        <AlgorithmPerformanceSunburst 
-          onDetailView={(data) => setDetailViewData(data)} 
-          selectedAlgorithm={selectedAlgorithm}
-        />
-      </div>
+
       
       {/* Detailed View Button */}
       <div style={{
@@ -536,6 +574,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ summary, onNavigateToFilt
         borderRadius: '8px',
         fontSize: '14px'
       }}>
+        <p><strong>Chart Type:</strong> Algorithm Wins with Connected Lines</p>
         <p><strong>Total Audio Files:</strong> {ratings.length > 0 ? new Set(ratings.map(r => r.audioFile)).size : summary.uniqueAudioFiles}</p>
         <p><strong>Total Ratings:</strong> {ratings.length > 0 ? ratings.length : summary.totalEntries}</p>
         <p><strong>Vibration Methods:</strong> {summary.designs.map(d => ({
