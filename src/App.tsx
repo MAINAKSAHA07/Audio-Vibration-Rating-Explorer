@@ -348,7 +348,7 @@ function App() {
         <div className="header-content">
           <div className="header-text">
             <h1>Enhanced Audio-Vibration Rating Explorer</h1>
-            <p>Explore how well four vibration designs match everyday sounds with enhanced analytics</p>
+            {/* <p>Explore how well four vibration designs match everyday sounds with enhanced analytics</p> */}
           </div>
           <div className="header-tabs">
             <button
