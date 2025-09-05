@@ -1,0 +1,61 @@
+{
+  "name": "audio-vibration-explorer",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/d3": "^7.4.3",
+    "@types/d3-scale-chromatic": "^3.1.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.126",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@types/wavesurfer.js": "^6.0.12",
+    "audiomotion-analyzer": "^4.5.1",
+    "csv-parser": "^3.2.0",
+    "d3": "^7.9.0",
+    "d3-scale-chromatic": "^3.1.0",
+    "echarts-for-react": "^3.0.2",
+    "exceljs": "^4.4.0",
+    "fs-extra": "^11.3.1",
+    "install": "^0.13.0",
+    "netlify-cli": "^1.2.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scripts": "^5.0.1",
+    "recharts": "^3.1.0",
+    "typescript": "^4.9.5",
+    "wavesurfer.js": "^7.10.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "process-data": "node scripts/process-data.js",
+    "generate-visualizations": "node scripts/generate-visualizations.js",
+    "generate-structure": "node scripts/generate-visualization-structure.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

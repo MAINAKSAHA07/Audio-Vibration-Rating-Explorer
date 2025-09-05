@@ -1,0 +1,287 @@
+{
+  "datasetInfo": {
+    "name": "Audio-Vibration Rating Dataset",
+    "description": "Enhanced dataset containing audio files with real ratings and comprehensive metadata",
+    "audioFiles": 1000,
+    "vibrationFiles": 4000,
+    "totalRatings": 4000,
+    "dateProcessed": "2025-08-21T18:03:07.852Z",
+    "dataSource": "Excel ratings + CSV metadata"
+  },
+  "fileStructure": {
+    "audioPath": "audio_vibration/audio/",
+    "vibrationPath": "audio_vibration/vibration/",
+    "audioFormat": ".wav",
+    "vibrationTypes": [
+      "freqshift",
+      "percept",
+      "pitchmatch",
+      "hapticgen"
+    ]
+  },
+  "categories": [
+    {
+      "name": "chirping_birds",
+      "count": 80,
+      "averageRating": 45.33
+    },
+    {
+      "name": "vacuum_cleaner",
+      "count": 80,
+      "averageRating": 54.63
+    },
+    {
+      "name": "thunderstorm",
+      "count": 80,
+      "averageRating": 55.04
+    },
+    {
+      "name": "can_opening",
+      "count": 80,
+      "averageRating": 54.36
+    },
+    {
+      "name": "door_wood_knock",
+      "count": 80,
+      "averageRating": 50.09
+    },
+    {
+      "name": "clapping",
+      "count": 80,
+      "averageRating": 49.26
+    },
+    {
+      "name": "fireworks",
+      "count": 80,
+      "averageRating": 51.31
+    },
+    {
+      "name": "chainsaw",
+      "count": 80,
+      "averageRating": 57.83
+    },
+    {
+      "name": "airplane",
+      "count": 80,
+      "averageRating": 58.03
+    },
+    {
+      "name": "mouse_click",
+      "count": 80,
+      "averageRating": 49.15
+    },
+    {
+      "name": "train",
+      "count": 80,
+      "averageRating": 54.03
+    },
+    {
+      "name": "water_drops",
+      "count": 80,
+      "averageRating": 47.59
+    },
+    {
+      "name": "church_bells",
+      "count": 80,
+      "averageRating": 47.02
+    },
+    {
+      "name": "clock_alarm",
+      "count": 80,
+      "averageRating": 55.36
+    },
+    {
+      "name": "keyboard_typing",
+      "count": 80,
+      "averageRating": 51.47
+    },
+    {
+      "name": "wind",
+      "count": 80,
+      "averageRating": 54.62
+    },
+    {
+      "name": "footsteps",
+      "count": 80,
+      "averageRating": 53.18
+    },
+    {
+      "name": "frog",
+      "count": 80,
+      "averageRating": 53.56
+    },
+    {
+      "name": "cow",
+      "count": 80,
+      "averageRating": 50.52
+    },
+    {
+      "name": "car_horn",
+      "count": 80,
+      "averageRating": 46.93
+    },
+    {
+      "name": "crackling_fire",
+      "count": 80,
+      "averageRating": 49.04
+    },
+    {
+      "name": "helicopter",
+      "count": 80,
+      "averageRating": 51.19
+    },
+    {
+      "name": "drinking_sipping",
+      "count": 80,
+      "averageRating": 51.13
+    },
+    {
+      "name": "rain",
+      "count": 80,
+      "averageRating": 51.44
+    },
+    {
+      "name": "insects",
+      "count": 80,
+      "averageRating": 53.69
+    },
+    {
+      "name": "hen",
+      "count": 80,
+      "averageRating": 56.94
+    },
+    {
+      "name": "engine",
+      "count": 80,
+      "averageRating": 57.79
+    },
+    {
+      "name": "breathing",
+      "count": 80,
+      "averageRating": 49.43
+    },
+    {
+      "name": "crying_baby",
+      "count": 80,
+      "averageRating": 53.39
+    },
+    {
+      "name": "hand_saw",
+      "count": 80,
+      "averageRating": 53.97
+    },
+    {
+      "name": "coughing",
+      "count": 80,
+      "averageRating": 56.74
+    },
+    {
+      "name": "sheep",
+      "count": 80,
+      "averageRating": 49.68
+    },
+    {
+      "name": "glass_breaking",
+      "count": 80,
+      "averageRating": 47.08
+    },
+    {
+      "name": "clock_tick",
+      "count": 80,
+      "averageRating": 52.89
+    },
+    {
+      "name": "pig",
+      "count": 80,
+      "averageRating": 55.27
+    },
+    {
+      "name": "rooster",
+      "count": 80,
+      "averageRating": 56.18
+    },
+    {
+      "name": "washing_machine",
+      "count": 80,
+      "averageRating": 56.45
+    },
+    {
+      "name": "snoring",
+      "count": 80,
+      "averageRating": 58.36
+    },
+    {
+      "name": "toilet_flush",
+      "count": 80,
+      "averageRating": 48.03
+    },
+    {
+      "name": "sea_waves",
+      "count": 80,
+      "averageRating": 45.53
+    },
+    {
+      "name": "sneezing",
+      "count": 80,
+      "averageRating": 56.89
+    },
+    {
+      "name": "dog",
+      "count": 80,
+      "averageRating": 60.64
+    },
+    {
+      "name": "laughing",
+      "count": 80,
+      "averageRating": 52.12
+    },
+    {
+      "name": "cat",
+      "count": 80,
+      "averageRating": 47.98
+    },
+    {
+      "name": "crow",
+      "count": 80,
+      "averageRating": 44.61
+    },
+    {
+      "name": "brushing_teeth",
+      "count": 80,
+      "averageRating": 50.36
+    },
+    {
+      "name": "pouring_water",
+      "count": 80,
+      "averageRating": 49.55
+    },
+    {
+      "name": "door_wood_creaks",
+      "count": 80,
+      "averageRating": 48.72
+    },
+    {
+      "name": "siren",
+      "count": 80,
+      "averageRating": 46.11
+    },
+    {
+      "name": "crickets",
+      "count": 80,
+      "averageRating": 45.15
+    }
+  ],
+  "ratingAnalysis": {
+    "minRating": 0,
+    "maxRating": 100,
+    "medianRating": 52.5,
+    "stdDeviation": 26.339592582982363,
+    "ratingRanges": {
+      "0-20": 621,
+      "21-40": 716,
+      "41-60": 1012,
+      "61-80": 973,
+      "81-100": 678
+    }
+  }
+}
