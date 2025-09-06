@@ -210,13 +210,22 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
 
   const checkBackendHealth = async () => {
     try {
+      console.log('🔍 Checking backend health...');
       const health = await vibrationService.checkHealth();
+      console.log('✅ Backend health check successful:', health);
       setBackendHealth(health);
       setIsBackendAvailable(true);
     } catch (error) {
-      console.warn('Backend not available:', error);
+      console.warn('❌ Backend not available:', error);
       setIsBackendAvailable(false);
       setBackendHealth(null);
+      
+      // Check if it's a mixed content error
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('Mixed Content') || errorMessage.includes('blocked') || errorMessage.includes('CORS')) {
+        console.log('🔒 Mixed content error detected - backend is running but blocked by browser');
+        // Don't set vibration error here, just mark as unavailable
+      }
     }
   };
 
@@ -303,52 +312,72 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
     }
 
     try {
+      console.log('🎵 Starting vibration generation for:', file.name);
       setIsGeneratingVibrations(true);
       setVibrationError(null);
       setVibrationResults(null);
 
       const results = await vibrationService.generateVibrations(file);
+      console.log('✅ Vibration generation completed:', results);
       setVibrationResults(results);
       
       // Refresh backend health
       await checkBackendHealth();
       
     } catch (error) {
-      console.error('Error generating vibrations:', error);
-      setVibrationError(error instanceof Error ? error.message : 'Failed to generate vibrations');
+      console.error('❌ Error generating vibrations:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate vibrations';
+      setVibrationError(errorMessage);
+      
+      // Check if it's a mixed content error
+      if (errorMessage.includes('Mixed Content') || errorMessage.includes('blocked') || errorMessage.includes('CORS')) {
+        setVibrationError('🔒 Mixed Content Error: Your browser is blocking the connection to the HTTP backend from this HTTPS site. This is a security feature. To fix this, you can: 1) Use a different browser, 2) Disable mixed content blocking in your browser settings, or 3) Access the site via HTTP instead of HTTPS.');
+      }
     } finally {
       setIsGeneratingVibrations(false);
     }
   };
 
   const processAudioFile = (file: File) => {
-    setIsUploading(true);
-    setError(null);
-    setSpectrogramError(null);
-    setVibrationError(null);
-    setVibrationResults(null);
+    try {
+      console.log('🎵 Processing audio file:', file.name, 'Size:', file.size);
+      
+      setIsUploading(true);
+      setError(null);
+      setSpectrogramError(null);
+      setVibrationError(null);
+      setVibrationResults(null);
 
-    // Create object URL for the uploaded file
-    const url = URL.createObjectURL(file);
-    setUploadedAudio(file);
-    setAudioUrl(url);
-    setIsUploading(false);
-    
-    // Get audio duration
-    const audio = new Audio(url);
-    audio.addEventListener('loadedmetadata', () => {
-      setAudioDuration(audio.duration);
-    });
-    audio.addEventListener('error', () => {
-      setAudioDuration(null);
-    });
+      // Create object URL for the uploaded file
+      const url = URL.createObjectURL(file);
+      setUploadedAudio(file);
+      setAudioUrl(url);
+      setIsUploading(false);
+      
+      // Get audio duration
+      const audio = new Audio(url);
+      audio.addEventListener('loadedmetadata', () => {
+        setAudioDuration(audio.duration);
+      });
+      audio.addEventListener('error', () => {
+        setAudioDuration(null);
+      });
 
-    // Generate spectrogram
-    generateSpectrogramForFile(file);
-    
-    // Generate vibrations if backend is available
-    if (isBackendAvailable) {
-      generateVibrations(file);
+      // Generate spectrogram
+      generateSpectrogramForFile(file);
+      
+      // Generate vibrations if backend is available
+      if (isBackendAvailable) {
+        console.log('🚀 Backend is available, starting vibration generation...');
+        generateVibrations(file);
+      } else {
+        console.log('⚠️ Backend is not available, skipping vibration generation');
+        setVibrationError('Backend service is not available. Please check the connection.');
+      }
+    } catch (error) {
+      console.error('❌ Error processing audio file:', error);
+      setError(`Failed to process audio file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setIsUploading(false);
     }
   };
 
@@ -983,14 +1012,14 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
           ) : (
             <div>
               <p style={{ margin: '5px 0' }}>
-                Python backend service is not running. Please start it to generate vibrations.
+                🔒 Backend connection blocked by browser security (Mixed Content Policy)
               </p>
               <div style={{ fontSize: '12px', marginTop: '10px' }}>
-                <strong>To start the backend:</strong><br/>
-                1. Navigate to the backend directory<br/>
-                2. Run: <code>python start_backend.py</code><br/>
-                3. Or install requirements: <code>pip install -r requirements.txt</code><br/>
-                4. Then run: <code>python app.py</code>
+                <strong>Solutions:</strong><br/>
+                1. <strong>Use HTTP version:</strong> Access via <code>http://localhost:8080</code> instead of HTTPS<br/>
+                2. <strong>Browser settings:</strong> Disable mixed content blocking in your browser<br/>
+                3. <strong>Different browser:</strong> Try a different browser with different security settings<br/>
+                4. <strong>Backend is running:</strong> The backend at <code>http://3.144.145.168</code> is working fine
               </div>
             </div>
           )}
@@ -1235,6 +1264,23 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
             <li>Supported formats: MP3, WAV, OGG, M4A, FLAC, and more</li>
             <li>Maximum file size: 50MB</li>
             </ul>
+          
+          <div style={{
+            backgroundColor: '#fff3cd',
+            color: '#856404',
+            padding: '15px',
+            borderRadius: '4px',
+            border: '1px solid #ffeaa7',
+            marginTop: '20px'
+          }}>
+            <h4 style={{ margin: '0 0 10px 0' }}>🔒 Mixed Content Notice</h4>
+            <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
+              If you see a "Mixed Content Error" when uploading audio, this is because your browser blocks HTTP connections from HTTPS sites for security.
+            </p>
+            <p style={{ margin: '0', fontSize: '14px' }}>
+              <strong>Solutions:</strong> 1) Try a different browser, 2) Disable mixed content blocking in browser settings, or 3) Access via HTTP instead of HTTPS.
+            </p>
+          </div>
           
             {/* 
             <h4 style={{ margin: '20px 0 15px 0' }}>🚀 Starting the Backend</h4>

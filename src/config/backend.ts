@@ -4,7 +4,7 @@
  * 
  * Setup:
  * - Frontend (React): localhost:3000 (dev) → Netlify (prod)
- * - Backend (Flask): localhost:5000 (dev) → EC2 with HTTPS (prod)
+ * - Backend (Flask): localhost:8000 (dev) → EC2 with HTTPS (prod)
  */
 
 // Frontend Configuration
@@ -30,11 +30,11 @@ export const BACKEND_CONFIG = {
       if (isProduction) {
         // Production: Use HTTPS backend (you'll need to set this up)
         console.log('🌐 Production environment detected - using HTTPS backend');
-        return 'https://api.yourdomain.com'; // Replace with your actual backend domain
+        return 'http://3.144.145.168'; // Your actual backend IP
       } else {
         // Development: Use local backend
         console.log('🏠 Development environment detected - using local backend');
-        return 'http://localhost:5000';
+        return 'http://localhost:8000';
       }
     }
     

@@ -1,6 +1,7 @@
 /**
  * Vibration Service - Communicates with Python backend for vibration generation
  */
+import { BACKEND_CONFIG } from '../config/backend';
 
 export interface VibrationResult {
   filename: string;
@@ -32,8 +33,14 @@ class VibrationService {
   private baseUrl: string;
 
   constructor() {
-    // Default to localhost:5000, can be configured via environment variables
-    this.baseUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+    // Use centralized backend configuration
+    this.baseUrl = BACKEND_CONFIG.BASE_URL;
+    
+    // Check if we're in a secure context (HTTPS)
+    if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
+      console.warn('⚠️ Mixed content warning: HTTPS site trying to access HTTP backend');
+      console.warn('Backend URL:', this.baseUrl);
+    }
   }
 
   /**
@@ -41,12 +48,19 @@ class VibrationService {
    */
   async checkHealth(): Promise<BackendHealth> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`);
+      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.HEALTH}`, {
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       return await response.json();
     } catch (error) {
+      console.error('Backend health check failed:', error);
       throw new Error(`Backend health check failed: ${error}`);
     }
   }
@@ -56,21 +70,33 @@ class VibrationService {
    */
   async generateVibrations(audioFile: File): Promise<VibrationGenerationResponse> {
     try {
+      console.log('🎵 Starting vibration generation for file:', audioFile.name);
+      console.log('📡 Backend URL:', this.baseUrl);
+      
       const formData = new FormData();
       formData.append('audio_file', audioFile);
 
-      const response = await fetch(`${this.baseUrl}/generate-vibrations`, {
+      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.GENERATE_VIBRATIONS}`, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         body: formData,
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Backend error:', errorData);
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ Vibration generation successful:', result);
+      return result;
     } catch (error) {
+      console.error('❌ Vibration generation failed:', error);
       throw new Error(`Vibration generation failed: ${error}`);
     }
   }
@@ -80,7 +106,7 @@ class VibrationService {
    */
   async downloadVibration(filename: string): Promise<Blob> {
     try {
-      const response = await fetch(`${this.baseUrl}/download/${filename}`);
+      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.DOWNLOAD}/${filename}`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -99,7 +125,7 @@ class VibrationService {
       formData.append('audio_file', audioFile);
       formData.append('algorithm', algorithm);
 
-      const response = await fetch(`${this.baseUrl}/generate-and-download`, {
+      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.GENERATE_AND_DOWNLOAD}`, {
         method: 'POST',
         body: formData,
       });
@@ -120,7 +146,7 @@ class VibrationService {
    */
   async listOutputs(): Promise<{ outputs: any[]; count: number }> {
     try {
-      const response = await fetch(`${this.baseUrl}/list-outputs`);
+      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.LIST_OUTPUTS}`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -134,7 +160,7 @@ class VibrationService {
    * Get the download URL for a vibration file
    */
   getDownloadUrl(filename: string): string {
-    return `${this.baseUrl}/download/${filename}`;
+    return `${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.DOWNLOAD}/${filename}`;
   }
 
   /**

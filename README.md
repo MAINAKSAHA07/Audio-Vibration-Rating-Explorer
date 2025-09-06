@@ -213,13 +213,11 @@ Audio-Vibration Rating Explorer/
    git clone https://github.com/MAINAKSAHA07/Audio-Vibration-Rating-Explorer.git
    cd Audio-Vibration-Rating-Explorer
    ```
-
 2. **Install dependencies**
 
    ```bash
    npm install
    ```
-
 3. **Process the data**
 
    ```bash
@@ -227,20 +225,17 @@ Audio-Vibration Rating Explorer/
    ```
 
    This converts the Excel file to JSON format.
-
 4. **Generate visualizations** (optional)
 
    ```bash
    npm run generate-visualizations
    npm run generate-structure
    ```
-
 5. **Start development server**
 
    ```bash
    npm start
    ```
-
 6. **Open your browser**
    Navigate to `http://localhost:3000`
 
@@ -251,20 +246,17 @@ Audio-Vibration Rating Explorer/
    ```bash
    cd backend
    ```
-
 2. **Create virtual environment**
 
    ```bash
    python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-
 3. **Install Python dependencies**
 
    ```bash
    pip install -r requirements.txt
    ```
-
 4. **Start backend server**
 
    ```bash
@@ -282,8 +274,8 @@ The neural network models require additional setup:
    ```bash
    pip install encodec
    ```
-
 2. **Model files** (excluded from git due to size):
+
    - `Audioalgo/model_inference/best_model1.pth` (88MB)
    - `Audioalgo/model_inference/best_model2.pth` (145MB)
    - `Audioalgo/model_inference/encodec/` (EnCodec framework)
@@ -449,6 +441,7 @@ python3 generate_audio_vibration_excel.py
 ```
 
 Creates detailed Excel files with multiple sheets:
+
 - **All Files**: Complete list of all files with parsed information
 - **Summary**: Key statistics and metrics
 - **Class Statistics**: Breakdown by class (1-5)
@@ -465,6 +458,7 @@ python3 generate_esc50_csv.py
 ```
 
 Generates CSV files following ESC-50 dataset format:
+
 - **Audio Files CSV**: All audio files with ESC-50 metadata
 - **Vibration Files CSV**: All vibration files with type information
 - **Combined CSV**: Both audio and vibration files in ESC-50 format
@@ -495,12 +489,10 @@ Generates CSV files following ESC-50 dataset format:
 
    - Push code to GitHub/GitLab
    - Connect repository to Netlify
-
 2. **Build settings**
 
    - Build command: `npm run build`
    - Publish directory: `build`
-
 3. **Environment variables** (if needed)
 
    - Configure in Netlify dashboard
@@ -509,10 +501,8 @@ Generates CSV files following ESC-50 dataset format:
 
 The backend can be deployed to various platforms:
 
-1. **AWS EC2** - Use the provided `deploy/ec2-setup.sh`
-2. **Heroku** - Add Procfile and configure buildpacks
-3. **Google Cloud Platform** - Use App Engine or Cloud Run
-4. **Docker** - Containerize the Flask application
+1. **AWS**
+2. **Docker**
 
 ### **Custom Domain**
 
