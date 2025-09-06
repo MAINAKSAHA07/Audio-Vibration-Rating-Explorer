@@ -176,6 +176,13 @@ class VibrationService {
   }
 
   /**
+   * Alias for downloadFile - Download a previously generated vibration file
+   */
+  async downloadVibration(filename: string): Promise<Blob> {
+    return this.downloadFile(filename);
+  }
+
+  /**
    * List all generated output files
    */
   async listOutputs(): Promise<{ outputs: any[]; count: number }> {
