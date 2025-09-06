@@ -61,6 +61,20 @@ except ImportError as e:
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+# Production configuration
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
+
+# Security headers for production
+@app.after_request
+def after_request(response):
+    """Add security headers for production deployment"""
+    if os.getenv('ENVIRONMENT') == 'production':
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
+
 # Initialize neural network models if available
 model1_inference = None
 model2_inference = None
@@ -430,4 +444,4 @@ if __name__ == '__main__':
 #    print(f"📁 Upload folder: {UPLOAD_FOLDER}")
 #    print(f"📁 Output folder: {OUTPUT_FOLDER}")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

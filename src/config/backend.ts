@@ -4,7 +4,7 @@
  * 
  * Setup:
  * - Frontend (React): localhost:3000 (dev) → Netlify (prod)
- * - Backend (Flask): localhost:8000 (dev) → Netlify proxy to EC2 (prod)
+ * - Backend (Flask): EC2 instance at 3.144.145.168:5001 (dev & prod)
  */
 
 // Frontend Configuration
@@ -28,27 +28,27 @@ export const BACKEND_CONFIG = {
                           !window.location.hostname.includes('127.0.0.1:3000');
       
       if (isProduction) {
-        // Production: Use Netlify proxy (same origin, no CORS issues)
-        console.log('🌐 Production environment detected - using Netlify proxy to EC2 backend');
-        return ''; // Empty string for relative URLs
+        // Production: Use EC2 backend directly
+        console.log('🌐 Production environment detected - using EC2 backend');
+        return 'http://3.144.145.168:5001';
       } else {
         // Development: Use local backend
         console.log('🏠 Development environment detected - using local backend');
-        return 'http://localhost:8000';
+        return 'http://localhost:5001';
       }
     }
     
     // Fallback for server-side rendering
-    return 'http://localhost:8000';
+    return 'http://localhost:5001';
   })(),
   
   // API Endpoints
   ENDPOINTS: {
-    HEALTH: '/api/health',
-    GENERATE_VIBRATIONS: '/api/generate-vibrations',
-    GENERATE_AND_DOWNLOAD: '/api/generate-and-download',
-    DOWNLOAD: '/api/download',
-    LIST_OUTPUTS: '/api/list-outputs'
+    HEALTH: '/health',
+    GENERATE_VIBRATIONS: '/generate-vibrations',
+    GENERATE_AND_DOWNLOAD: '/generate-and-download',
+    DOWNLOAD: '/download',
+    LIST_OUTPUTS: '/list-outputs'
   },
   
   // Request Configuration

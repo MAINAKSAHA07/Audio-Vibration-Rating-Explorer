@@ -1288,7 +1288,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
             <li>Open a terminal and navigate to the backend directory</li>
             <li>Install requirements: <code>pip install -r requirements.txt</code></li>
             <li>Start the service: <code>python app.py</code></li>
-            <li>The backend will run on <code>http://localhost:5000</code></li>
+            <li>The backend is running on <code>http://3.144.145.168:5001</code></li>
             </ol>
             */}
         </div>
