@@ -4,7 +4,7 @@
  * 
  * Setup:
  * - Frontend (React): localhost:3000 (dev) → Netlify (prod)
- * - Backend (Flask): localhost:8000 (dev) → EC2 with HTTPS (prod)
+ * - Backend (Flask): localhost:8000 (dev) → EC2 (prod)
  */
 
 // Frontend Configuration
@@ -28,9 +28,10 @@ export const BACKEND_CONFIG = {
                           !window.location.hostname.includes('127.0.0.1:3000');
       
       if (isProduction) {
-        // Production: Use HTTPS backend
-        console.log('🌐 Production environment detected - using HTTPS backend');
-        return 'https://api.audiovibration.com'; // HTTPS backend domain
+        // Production: Use EC2 backend (HTTP - may show mixed content warnings)
+        console.log('🌐 Production environment detected - using EC2 backend');
+        console.warn('⚠️ Using HTTP backend from HTTPS frontend - browsers may show mixed content warnings');
+        return 'http://3.144.145.168:5000'; // Your working EC2 backend
       } else {
         // Development: Use local backend
         console.log('🏠 Development environment detected - using local backend');
