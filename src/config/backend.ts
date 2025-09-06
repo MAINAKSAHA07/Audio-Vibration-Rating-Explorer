@@ -28,9 +28,9 @@ export const BACKEND_CONFIG = {
                           !window.location.hostname.includes('127.0.0.1:3000');
       
       if (isProduction) {
-        // Production: Use HTTPS backend (you'll need to set this up)
+        // Production: Use HTTPS backend
         console.log('🌐 Production environment detected - using HTTPS backend');
-        return 'http://3.144.145.168'; // Your actual backend IP
+        return 'https://api.audiovibration.com'; // HTTPS backend domain
       } else {
         // Development: Use local backend
         console.log('🏠 Development environment detected - using local backend');
@@ -39,7 +39,7 @@ export const BACKEND_CONFIG = {
     }
     
     // Fallback for server-side rendering
-    return 'http://localhost:5000';
+    return 'http://localhost:8000';
   })(),
   
   // API Endpoints
