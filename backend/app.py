@@ -444,4 +444,4 @@ if __name__ == '__main__':
 #    print(f"📁 Upload folder: {UPLOAD_FOLDER}")
 #    print(f"📁 Output folder: {OUTPUT_FOLDER}")
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5000)

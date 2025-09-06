@@ -30,16 +30,16 @@ export const BACKEND_CONFIG = {
       if (isProduction) {
         // Production: Use EC2 backend directly
         console.log('🌐 Production environment detected - using EC2 backend');
-        return 'http://3.144.145.168:5001';
+        return 'http://3.144.145.168:5000';
       } else {
         // Development: Use local backend
         console.log('🏠 Development environment detected - using local backend');
-        return 'http://localhost:5001';
+        return 'http://localhost:5000';
       }
     }
     
     // Fallback for server-side rendering
-    return 'http://localhost:5001';
+    return 'http://localhost:5000';
   })(),
   
   // API Endpoints
