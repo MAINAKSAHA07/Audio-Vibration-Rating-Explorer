@@ -98,18 +98,27 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
+    """Health check endpoint with accurate model status"""
     algorithms = ['freqshift', 'hapticgen', 'percept']
     if PITCH_AVAILABLE:
         algorithms.append('pitch')
-    if NEURAL_MODELS_AVAILABLE:
-        algorithms.extend(['model1', 'model2'])
+    
+    # Only add models if they are actually initialized
+    model1_available = model1_inference is not None
+    model2_available = model2_inference is not None
+    
+    if model1_available:
+        algorithms.append('model1')
+    if model2_available:
+        algorithms.append('model2')
     
     return jsonify({
         'status': 'healthy',
         'algorithms': algorithms,
         'pitch_available': PITCH_AVAILABLE,
         'neural_models_available': NEURAL_MODELS_AVAILABLE,
+        'model1_available': model1_available,
+        'model2_available': model2_available,
         'message': 'Audio-Vibration backend service is running'
     })
 
@@ -229,7 +238,7 @@ def generate_vibrations():
                 results['pitch'] = {'error': str(e)}
             
             # Neural Network Model 1 (Top-Rated Sound2Hap)
-            if NEURAL_MODELS_AVAILABLE and model1_inference:
+            if model1_inference is not None:
                 try:
                     model1_output = temp_path / 'model1_output.wav'
                     vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000)
@@ -241,15 +250,17 @@ def generate_vibrations():
                             'path': str(model1_output),
                             'size': model1_output.stat().st_size
                         }
+                    else:
+                        results['model1'] = {'error': 'Model 1 output file not generated'}
                     
                 except Exception as e:
                     print(f"Error in Model 1 (Top-Rated Sound2Hap): {e}")
                     results['model1'] = {'error': str(e)}
             else:
-                results['model1'] = {'error': 'Model 1 (Top-Rated Sound2Hap) not available'}
+                results['model1'] = {'error': 'Model 1 (Top-Rated Sound2Hap) not available - model file not found or initialization failed'}
             
             # Neural Network Model 2 (Preference-Weighted Sound2Hap)
-            if NEURAL_MODELS_AVAILABLE and model2_inference:
+            if model2_inference is not None:
                 try:
                     model2_output = temp_path / 'model2_output.wav'
                     vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000)
@@ -261,12 +272,14 @@ def generate_vibrations():
                             'path': str(model2_output),
                             'size': model2_output.stat().st_size
                         }
+                    else:
+                        results['model2'] = {'error': 'Model 2 output file not generated'}
                     
                 except Exception as e:
                     print(f"Error in Model 2 (Preference-Weighted Sound2Hap): {e}")
                     results['model2'] = {'error': str(e)}
             else:
-                results['model2'] = {'error': 'Model 2 (Preference-Weighted Sound2Hap) not available'}
+                results['model2'] = {'error': 'Model 2 (Preference-Weighted Sound2Hap) not available - model file not found or initialization failed'}
             
             return jsonify({
                 'success': True,
@@ -308,8 +321,10 @@ def generate_and_download():
         available_algorithms = ['freqshift', 'hapticgen', 'percept']
         if PITCH_AVAILABLE:
             available_algorithms.append('pitch')
-        if NEURAL_MODELS_AVAILABLE:
-            available_algorithms.extend(['model1', 'model2'])
+        if model1_inference is not None:
+            available_algorithms.append('model1')
+        if model2_inference is not None:
+            available_algorithms.append('model2')
         
         if algorithm not in available_algorithms:
             return jsonify({'error': f'Invalid algorithm specified. Available: {available_algorithms}'}), 400
@@ -360,17 +375,17 @@ def generate_and_download():
                     else:
                         return jsonify({'error': 'Pitch algorithm requires MATLAB Engine for Python'}), 400
                 elif algorithm == 'model1':
-                    if NEURAL_MODELS_AVAILABLE and model1_inference:
+                    if model1_inference is not None:
                         vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000)
                         model1_inference.save_vibration(vib_output, str(output_path), 8000)
                     else:
-                        return jsonify({'error': 'Model 1 (Top-Rated Sound2Hap) not available'}), 400
+                        return jsonify({'error': 'Model 1 (Top-Rated Sound2Hap) not available - model file not found or initialization failed'}), 400
                 elif algorithm == 'model2':
-                    if NEURAL_MODELS_AVAILABLE and model2_inference:
+                    if model2_inference is not None:
                         vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000)
                         model2_inference.save_vibration(vib_output, str(output_path), 8000)
                     else:
-                        return jsonify({'error': 'Model 2 (Preference-Weighted Sound2Hap) not available'}), 400
+                        return jsonify({'error': 'Model 2 (Preference-Weighted Sound2Hap) not available - model file not found or initialization failed'}), 400
                 
                 if output_path.exists():
                     return send_file(
@@ -415,4 +430,4 @@ if __name__ == '__main__':
 #    print(f"📁 Upload folder: {UPLOAD_FOLDER}")
 #    print(f"📁 Output folder: {OUTPUT_FOLDER}")
     
-    app.run(debug=True, host='0.0.0.0', port=8000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
