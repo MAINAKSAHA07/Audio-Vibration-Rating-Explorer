@@ -40,6 +40,10 @@ class VibrationService {
     if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
       console.warn('⚠️ Mixed content warning: HTTPS site trying to access HTTP backend');
       console.warn('Backend URL:', this.baseUrl);
+      console.warn('🔧 To fix this:');
+      console.warn('1. Click the shield icon in your browser address bar');
+      console.warn('2. Select "Load unsafe scripts" or "Proceed to site"');
+      console.warn('3. Or use Chrome with --disable-web-security flag for testing');
     }
   }
 
@@ -61,6 +65,14 @@ class VibrationService {
       return await response.json();
     } catch (error) {
       console.error('Backend health check failed:', error);
+      
+      // Check if it's a mixed content error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
+          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser or use HTTPS for the backend.`);
+        }
+      }
+      
       throw new Error(`Backend health check failed: ${error}`);
     }
   }
@@ -70,9 +82,6 @@ class VibrationService {
    */
   async generateVibrations(audioFile: File): Promise<VibrationGenerationResponse> {
     try {
-      console.log('🎵 Starting vibration generation for file:', audioFile.name);
-      console.log('📡 Backend URL:', this.baseUrl);
-      
       const formData = new FormData();
       formData.append('audio_file', audioFile);
 
@@ -83,41 +92,27 @@ class VibrationService {
         body: formData,
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Backend error:', errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      console.log('✅ Vibration generation successful:', result);
-      return result;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Vibration generation failed:', error);
+      console.error('Vibration generation failed:', error);
+      
+      // Check if it's a mixed content error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
+          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+        }
+      }
+      
       throw new Error(`Vibration generation failed: ${error}`);
     }
   }
 
   /**
-   * Download a generated vibration file
-   */
-  async downloadVibration(filename: string): Promise<Blob> {
-    try {
-      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.DOWNLOAD}/${filename}`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      return await response.blob();
-    } catch (error) {
-      throw new Error(`Download failed: ${error}`);
-    }
-  }
-
-  /**
-   * Generate and download a vibration file on-demand without saving
+   * Generate and download a vibration file directly
    */
   async generateAndDownload(audioFile: File, algorithm: string): Promise<Blob> {
     try {
@@ -127,17 +122,56 @@ class VibrationService {
 
       const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.GENERATE_AND_DOWNLOAD}`, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       return await response.blob();
     } catch (error) {
+      console.error('Generate and download failed:', error);
+      
+      // Check if it's a mixed content error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
+          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+        }
+      }
+      
       throw new Error(`Generate and download failed: ${error}`);
+    }
+  }
+
+  /**
+   * Download a previously generated vibration file
+   */
+  async downloadFile(filename: string): Promise<Blob> {
+    try {
+      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.DOWNLOAD}/${filename}`, {
+        mode: 'cors',
+        credentials: 'omit',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error('File download failed:', error);
+      
+      // Check if it's a mixed content error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
+          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+        }
+      }
+      
+      throw new Error(`File download failed: ${error}`);
     }
   }
 
@@ -146,32 +180,30 @@ class VibrationService {
    */
   async listOutputs(): Promise<{ outputs: any[]; count: number }> {
     try {
-      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.LIST_OUTPUTS}`);
+      const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.LIST_OUTPUTS}`, {
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+
       return await response.json();
     } catch (error) {
-      throw new Error(`Failed to list outputs: ${error}`);
-    }
-  }
-
-  /**
-   * Get the download URL for a vibration file
-   */
-  getDownloadUrl(filename: string): string {
-    return `${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.DOWNLOAD}/${filename}`;
-  }
-
-  /**
-   * Check if the backend is accessible
-   */
-  async isBackendAvailable(): Promise<boolean> {
-    try {
-      await this.checkHealth();
-      return true;
-    } catch {
-      return false;
+      console.error('List outputs failed:', error);
+      
+      // Check if it's a mixed content error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
+          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+        }
+      }
+      
+      throw new Error(`List outputs failed: ${error}`);
     }
   }
 }
