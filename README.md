@@ -1,12 +1,12 @@
 # Audio-Vibration Rating Explorer
 
-An advanced interactive web application for exploring how well four vibration designs match real-world sounds, featuring comprehensive data visualization, audio/vibration playback, waveform analysis, and AI-powered research assistance.
+An advanced interactive web application for exploring how well six vibration designs match real-world sounds, featuring comprehensive data visualization, audio/vibration playback, waveform analysis, AI-powered research assistance, and neural network-based vibration generation.
 
 ## 🌐 **Live Demo**
 
 **Visit the live application:** [https://audiovibration.netlify.app/](https://audiovibration.netlify.app/)
 
-Experience all features including the comprehensive dashboard, audio playback, AI research assistant, and interactive visualizations.
+Experience all features including the comprehensive dashboard, audio playback, AI research assistant, interactive visualizations, and neural network vibration generation.
 
 ## 🚀 Features
 
@@ -24,10 +24,18 @@ Experience all features including the comprehensive dashboard, audio playback, A
 
 - **Dual-view audio player** with waveform visualization
 - **Real-time waveform display** using WaveSurfer.js
-- **Vibration design playback** for all 4 designs per audio file
+- **Vibration design playback** for all 6 designs per audio file
 - **Simple and enhanced player modes** with different control interfaces
 - **Time synchronization** between audio and vibration playback
 - **Spectrogram visualization** for frequency analysis
+
+### 🤖 **Neural Network Vibration Generation**
+
+- **Top-Rated Sound2Hap** - AI model trained on high-rated vibration patterns
+- **Preference-Weighted Sound2Hap** - AI model optimized for user preferences
+- **Real-time audio upload** and vibration generation
+- **Single file processing** for immediate results
+- **EnCodec-based architecture** for high-fidelity audio processing
 
 ### 📈 **Data Visualization**
 
@@ -71,6 +79,14 @@ Experience all features including the comprehensive dashboard, audio playback, A
 - **WaveSurfer.js 7.10.1** for audio waveform display
 - **CSS3** with responsive design and animations
 
+### **Backend**
+
+- **Flask** for Python API server
+- **PyTorch** for neural network inference
+- **EnCodec** for audio processing
+- **MATLAB Engine** for pitch matching algorithms
+- **Custom audio processing** algorithms
+
 ### **Data Processing**
 
 - **Node.js** with xlsx for Excel file processing
@@ -107,6 +123,8 @@ Audio-Vibration Rating Explorer/
 │   │   ├── AudioPlayer.tsx            # Audio playback component
 │   │   ├── SimpleAudioPlayer.tsx      # Basic audio controls
 │   │   ├── DualViewPlayer.tsx         # Advanced dual-view player
+│   │   ├── AudioUpload.tsx            # Audio upload and vibration generation
+│   │   ├── DetailedSoundDrawer.tsx    # Detailed sound analysis
 │   │   ├── ResearchChatbot.tsx        # AI assistant (464 lines)
 │   │   ├── VolcanoContourPlot.tsx     # Creative visualization
 │   │   ├── RadialStackedBarChart.tsx  # Radial chart component
@@ -116,13 +134,34 @@ Audio-Vibration Rating Explorer/
 │   │   └── DataTest.tsx               # Data validation component
 │   ├── utils/         # Helper functions
 │   │   ├── api.ts         # Data fetching and interfaces
-│   │   └── dataHelpers.ts # Data processing utilities
+│   │   ├── dataHelpers.ts # Data processing utilities
+│   │   └── vibrationService.ts # Vibration generation service
 │   ├── App.tsx        # Main application component
 │   └── App.css        # Comprehensive styling (2065 lines)
+├── backend/
+│   ├── app.py         # Flask API server
+│   ├── requirements.txt # Python dependencies
+│   └── venv/          # Virtual environment (excluded from git)
+├── Audioalgo/
+│   ├── FreqShift.py   # Frequency shift algorithm
+│   ├── HapticGen.py   # Haptic generation algorithm
+│   ├── Percept.py     # Perceptual mapping algorithm
+│   ├── PitchWrapper.py # Pitch matching algorithm
+│   ├── normalization.py # Audio normalization
+│   └── model_inference/
+│       ├── inference_model1.py # Top-Rated Sound2Hap model
+│       ├── inference_model2.py # Preference-Weighted Sound2Hap model
+│       ├── best_model1.pth     # Model 1 weights (excluded from git)
+│       ├── best_model2.pth     # Model 2 weights (excluded from git)
+│       └── encodec/            # EnCodec framework (excluded from git)
 ├── scripts/
 │   ├── process-data.js                # Excel to JSON conversion
 │   ├── generate-visualizations.js     # Pre-processing analysis
 │   └── generate-visualization-structure.js # Structure generation
+├── Audio Summary/
+│   ├── generate_audio_vibration_excel.py # Excel generator
+│   ├── generate_simple_excel.py        # Simple Excel generator
+│   └── generate_esc50_csv.py           # ESC-50 CSV generator
 ├── audio_vibration/   # Raw audio data
 │   ├── audio/         # Original sound files
 │   └── vibration/     # Vibration design files
@@ -135,7 +174,7 @@ Audio-Vibration Rating Explorer/
 ### **Audio Dataset**
 
 - **1000 real-world sound recordings** with ratings for each design
-- **4 vibration designs**: freqshift, hapticgen, percept, pitchmatch
+- **6 vibration designs**: freqshift, hapticgen, percept, pitchmatch, model1 (Top-Rated Sound2Hap), model2 (Preference-Weighted Sound2Hap)
 - **8 audio classes** (A-H) mapped to categories
 - **Rating scale**: 0-100 for each design
 - **Categories**: Human Speech (78.7%), Music (14.1%), Nature Sounds (4.4%), Machinery (1.6%), Household (0.6%), Electronics (0.3%), Transportation (0.1%), Alarms (0.2%)
@@ -151,7 +190,8 @@ Audio-Vibration Rating Explorer/
 
 ### **Processed Data**
 
-- **4000 total ratings** (1000 files × 4 designs)
+- **4000 total ratings** (1000 files × 4 designs) for traditional algorithms
+- **6000 total ratings** (1000 files × 6 designs) including neural network models
 - **JSON format** for web consumption
 - **CSV backup** for debugging and analysis
 - **Summary statistics** for quick insights
@@ -161,22 +201,25 @@ Audio-Vibration Rating Explorer/
 ### **Prerequisites**
 
 - Node.js (v16 or higher)
+- Python 3.8+ (for backend)
 - npm or yarn
 - Git for version control
 
-### **Installation**
+### **Frontend Installation**
 
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/MAINAKSAHA07/Audio-Vibration-Rating-Explorer.git
    cd Audio-Vibration-Rating-Explorer
    ```
+
 2. **Install dependencies**
 
    ```bash
    npm install
    ```
+
 3. **Process the data**
 
    ```bash
@@ -184,19 +227,68 @@ Audio-Vibration Rating Explorer/
    ```
 
    This converts the Excel file to JSON format.
+
 4. **Generate visualizations** (optional)
 
    ```bash
    npm run generate-visualizations
    npm run generate-structure
    ```
+
 5. **Start development server**
 
    ```bash
    npm start
    ```
+
 6. **Open your browser**
    Navigate to `http://localhost:3000`
+
+### **Backend Installation**
+
+1. **Navigate to backend directory**
+
+   ```bash
+   cd backend
+   ```
+
+2. **Create virtual environment**
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install Python dependencies**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Start backend server**
+
+   ```bash
+   python app.py
+   ```
+
+   The backend will run on `http://localhost:5001`
+
+### **Neural Network Models Setup**
+
+The neural network models require additional setup:
+
+1. **Install EnCodec** (if not already installed)
+
+   ```bash
+   pip install encodec
+   ```
+
+2. **Model files** (excluded from git due to size):
+   - `Audioalgo/model_inference/best_model1.pth` (88MB)
+   - `Audioalgo/model_inference/best_model2.pth` (145MB)
+   - `Audioalgo/model_inference/encodec/` (EnCodec framework)
+
+   These files need to be obtained separately and placed in the correct directories.
 
 ## 📊 Usage Guide
 
@@ -209,6 +301,28 @@ Audio-Vibration Rating Explorer/
 5. **📊 All Visualizations** - Pre-generated waveform analysis
 6. **🎨 Creative Visualizations** - Advanced D3.js charts
 7. **🤖 Research Assistant** - AI-powered data insights
+8. **🎵 Audio Upload** - Upload audio and generate vibrations
+
+### **Audio Upload & Vibration Generation**
+
+#### **Traditional Algorithms**
+
+1. **Frequency Shift** - Frequency-shifted vibration generation
+2. **HapticGen** - Haptic-generated vibration patterns
+3. **Percept** - Perceptual audio-to-vibration translation
+4. **PitchMatch** - Pitch-matched vibration (requires MATLAB)
+
+#### **Neural Network Models**
+
+1. **Top-Rated Sound2Hap** - AI model trained on high-rated patterns
+2. **Preference-Weighted Sound2Hap** - AI model optimized for user preferences
+
+#### **Upload Process**
+
+1. **Select Audio File** - Upload WAV, MP3, OGG, FLAC, or M4A files
+2. **Generate Vibrations** - All 6 algorithms process the audio
+3. **Play & Compare** - Use WaveSurfer players to compare results
+4. **Download** - Save individual vibration files
 
 ### **Dashboard Features**
 
@@ -277,7 +391,7 @@ Audio-Vibration Rating Explorer/
 
 #### **Vibration Design Playback**
 
-- All 4 designs available per audio file
+- All 6 designs available per audio file
 - Synchronized playback controls
 - Individual design rating display
 - A/B comparison capabilities
@@ -303,12 +417,18 @@ Audio-Vibration Rating Explorer/
 ### **Available Scripts**
 
 ```bash
+# Frontend
 npm start              # Start development server
 npm run build          # Build for production
 npm test               # Run tests
 npm run process-data   # Convert Excel to JSON
 npm run generate-visualizations  # Generate analysis files
 npm run generate-structure      # Create visualization structure
+
+# Backend
+cd backend
+source venv/bin/activate
+python app.py          # Start Flask server
 ```
 
 ### **Data Processing**
@@ -319,35 +439,80 @@ The application processes `audio1000_ratings.xlsx` to create:
 - `public/data/summary.json` - Statistical summary
 - `public/data/ratings.csv` - CSV version for debugging
 
+### **Excel Generation Scripts**
+
+#### **Comprehensive Excel Generator**
+
+```bash
+cd "Audio Summary"
+python3 generate_audio_vibration_excel.py
+```
+
+Creates detailed Excel files with multiple sheets:
+- **All Files**: Complete list of all files with parsed information
+- **Summary**: Key statistics and metrics
+- **Class Statistics**: Breakdown by class (1-5)
+- **Vibration Types**: Analysis of vibration file types
+- **Audio Files Only**: Filtered view of audio files
+- **Vibration Files Only**: Filtered view of vibration files
+- **Files with Both Versions**: Files that have both audio and vibration versions
+
+#### **ESC-50 CSV Generator**
+
+```bash
+cd "Audio Summary"
+python3 generate_esc50_csv.py
+```
+
+Generates CSV files following ESC-50 dataset format:
+- **Audio Files CSV**: All audio files with ESC-50 metadata
+- **Vibration Files CSV**: All vibration files with type information
+- **Combined CSV**: Both audio and vibration files in ESC-50 format
+
 ### **Component Architecture**
 
 - **Modular React components** with TypeScript
 - **Custom hooks** for data management
 - **Responsive CSS** with mobile-first design
 - **D3.js integration** for advanced visualizations
-- **Advanced D3.js Features**:
-  - **Gradient overlays** and drop shadows for enhanced visual appeal
-  - **Interactive event handling** with mouseover/mouseout effects
-  - **Dynamic scaling** and responsive chart sizing
-  - **Real-time data updates** with state management
-  - **Custom tooltip system** with detailed information display
-  - **Category-based visual organization** with background bands
+- **Flask API** for backend services
+- **PyTorch models** for neural network inference
+
+### **Advanced D3.js Features**
+
+- **Gradient overlays** and drop shadows for enhanced visual appeal
+- **Interactive event handling** with mouseover/mouseout effects
+- **Dynamic scaling** and responsive chart sizing
+- **Real-time data updates** with state management
+- **Custom tooltip system** with detailed information display
+- **Category-based visual organization** with background bands
 
 ## 🌐 Deployment
 
-### **Netlify Deployment**
+### **Frontend Deployment (Netlify)**
 
 1. **Connect to Git repository**
 
    - Push code to GitHub/GitLab
    - Connect repository to Netlify
+
 2. **Build settings**
 
    - Build command: `npm run build`
    - Publish directory: `build`
+
 3. **Environment variables** (if needed)
 
    - Configure in Netlify dashboard
+
+### **Backend Deployment**
+
+The backend can be deployed to various platforms:
+
+1. **AWS EC2** - Use the provided `deploy/ec2-setup.sh`
+2. **Heroku** - Add Procfile and configure buildpacks
+3. **Google Cloud Platform** - Use App Engine or Cloud Run
+4. **Docker** - Containerize the Flask application
 
 ### **Custom Domain**
 
@@ -362,6 +527,7 @@ The application processes `audio1000_ratings.xlsx` to create:
 - **Pre-processed visualizations** for faster loading
 - **Responsive images** and optimized assets
 - **CDN delivery** for global performance
+- **Neural network caching** for faster inference
 
 ### **Browser Support**
 
@@ -385,6 +551,7 @@ The application processes `audio1000_ratings.xlsx` to create:
 - **ESLint** for code quality
 - **Prettier** for formatting
 - **Component-based** architecture
+- **Python PEP 8** for backend code
 
 ## 📄 License
 
@@ -399,6 +566,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Interactive Data Exploration**: Facilitates hypothesis generation and pattern discovery in audio-vibration research
 - **Real-time Statistical Analysis**: Provides immediate insights for research presentations and publications
 - **Comparative Design Analysis**: Supports A/B testing and performance evaluation of vibration algorithms
+- **Neural Network Integration**: Enables research into AI-powered audio-to-vibration translation
 
 ### **Research Features**
 
@@ -406,7 +574,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Category-based Insights**: Understanding of design performance in different environmental contexts
 - **Interactive Visualization**: Enables researchers to explore data patterns and correlations dynamically
 - **Export-ready Visualizations**: High-quality charts suitable for academic papers and presentations
-- **Comprehensive Data Coverage**: 4000+ ratings providing robust statistical analysis capabilities
+- **Comprehensive Data Coverage**: 6000+ ratings providing robust statistical analysis capabilities
+- **AI Model Comparison**: Direct comparison between traditional algorithms and neural network approaches
 
 ## 👨‍💻 Author
 
@@ -420,8 +589,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **D3.js** for advanced data visualization
 - **WaveSurfer.js** for audio waveform display
 - **React** for the component framework
+- **PyTorch** for neural network capabilities
+- **EnCodec** for audio processing
 - **Netlify** for hosting and deployment
 
 ---
 
-**🎵 Explore the fascinating world of audio-vibration matching with this comprehensive research tool!**
+**🎵 Explore the fascinating world of audio-vibration matching with this comprehensive research tool featuring both traditional algorithms and cutting-edge neural network models!**
