@@ -3,6 +3,12 @@
   publish = "build"
 
 [[redirects]]
+  from = "/api/*"
+  to = "http://3.144.145.168:5000/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
