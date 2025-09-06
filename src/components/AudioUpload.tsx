@@ -832,6 +832,106 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
               <div style={{ color: '#6c757d' }}>No results available</div>
             )}
           </div>
+
+          {/* Model 1 Results (Top-Rated Sound2Hap) */}
+          <div style={{
+            backgroundColor: '#f8f9fa',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #dee2e6'
+          }}>
+            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🤖 Top-Rated Sound2Hap</h4>
+            {vibrationResults.results.model1 && 'error' in vibrationResults.results.model1 ? (
+              <div style={{ color: '#dc3545' }}>
+                ❌ Error: {vibrationResults.results.model1.error}
+              </div>
+                         ) : vibrationResults.results.model1 && !('error' in vibrationResults.results.model1) ? (
+               <div>
+                 <p style={{ margin: '5px 0' }}><strong>File:</strong> {vibrationResults.results.model1.filename}</p>
+                 <p style={{ margin: '5px 0' }}><strong>Size:</strong> {formatFileSize(vibrationResults.results.model1.size)}</p>
+                 
+                 {/* WaveSurfer Player for Vibration */}
+                 <div style={{ marginTop: '15px' }}>
+                   <VibrationWaveSurferPlayer
+                     filename={(vibrationResults.results.model1 as VibrationResult).filename}
+                     title="Top-Rated Sound2Hap Vibration"
+                     onPrepareAudio={prepareVibrationForWaveSurfer}
+                   />
+                 </div>
+                 
+                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                   <button
+                     onClick={() => handleDownloadVibration('model1')}
+                     style={{
+                       backgroundColor: '#007bff',
+                       color: 'white',
+                       border: 'none',
+                       borderRadius: '4px',
+                       padding: '8px 16px',
+                       cursor: 'pointer',
+                       display: 'flex',
+                       alignItems: 'center',
+                       gap: '5px'
+                     }}
+                   >
+                     📥 Download
+                   </button>
+                 </div>
+              </div>
+            ) : (
+              <div style={{ color: '#6c757d' }}>No results available</div>
+            )}
+          </div>
+
+          {/* Model 2 Results (Preference-Weighted Sound2Hap) */}
+          <div style={{
+            backgroundColor: '#f8f9fa',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #dee2e6'
+          }}>
+            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🧠 Preference-Weighted Sound2Hap</h4>
+            {vibrationResults.results.model2 && 'error' in vibrationResults.results.model2 ? (
+              <div style={{ color: '#dc3545' }}>
+                ❌ Error: {vibrationResults.results.model2.error}
+              </div>
+                         ) : vibrationResults.results.model2 && !('error' in vibrationResults.results.model2) ? (
+               <div>
+                 <p style={{ margin: '5px 0' }}><strong>File:</strong> {vibrationResults.results.model2.filename}</p>
+                 <p style={{ margin: '5px 0' }}><strong>Size:</strong> {formatFileSize(vibrationResults.results.model2.size)}</p>
+                 
+                 {/* WaveSurfer Player for Vibration */}
+                 <div style={{ marginTop: '15px' }}>
+                   <VibrationWaveSurferPlayer
+                     filename={(vibrationResults.results.model2 as VibrationResult).filename}
+                     title="Preference-Weighted Sound2Hap Vibration"
+                     onPrepareAudio={prepareVibrationForWaveSurfer}
+                   />
+                 </div>
+                 
+                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                   <button
+                     onClick={() => handleDownloadVibration('model2')}
+                     style={{
+                       backgroundColor: '#007bff',
+                       color: 'white',
+                       border: 'none',
+                       borderRadius: '4px',
+                       padding: '8px 16px',
+                       cursor: 'pointer',
+                       display: 'flex',
+                       alignItems: 'center',
+                       gap: '5px'
+                     }}
+                   >
+                     📥 Download
+                   </button>
+                 </div>
+              </div>
+            ) : (
+              <div style={{ color: '#6c757d' }}>No results available</div>
+            )}
+          </div>
         </div>
       </div>
     );

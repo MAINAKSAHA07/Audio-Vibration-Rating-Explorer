@@ -17,6 +17,8 @@ export interface VibrationGenerationResponse {
     hapticgen?: VibrationResult | { error: string };
     percept?: VibrationResult | { error: string };
     pitch?: VibrationResult | { error: string };
+    model1?: VibrationResult | { error: string };
+    model2?: VibrationResult | { error: string };
   };
 }
 

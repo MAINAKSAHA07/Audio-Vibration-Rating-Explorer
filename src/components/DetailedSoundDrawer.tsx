@@ -1,6 +1,5 @@
 import React from 'react';
 import WaveSurferPlayer from './WaveSurferPlayer';
-import SpectrogramView from './SpectrogramView';
 import colors from '../colors.js';
 
 interface SoundCard {
@@ -122,24 +121,14 @@ const DetailedSoundDrawer: React.FC<DetailedSoundDrawerProps> = ({ sound, isOpen
             </div>
           </div>
           
-          {/* Audio Player with Spectrogram */}
+          {/* Audio Player */}
           <div className="audio-section">
             <h4>🎵 Audio</h4>
-            <div className="audio-spectrogram-container">
-              <div className="audio-player-section">
-                <WaveSurferPlayer 
-                  audioUrl={`/audio/${sound.audioFile}`} 
-                  title={sound.soundname || sound.filename} 
-                />
-              </div>
-              <div className="audio-spectrogram-section">
-                <SpectrogramView 
-                  audioUrl={`/audio/${sound.audioFile}`} 
-                  title={sound.soundname || sound.filename}
-                  width={300}
-                  height={50}
-                />
-              </div>
+            <div className="audio-player-section">
+              <WaveSurferPlayer 
+                audioUrl={`/audio/${sound.audioFile}`} 
+                title={sound.soundname || sound.filename} 
+              />
             </div>
           </div>
           

@@ -1,12 +1,23 @@
+# Production requirements for AWS EC2 deployment
 flask>=2.3.0
 flask-cors>=4.0.0
+gunicorn>=21.2.0
 librosa>=0.10.0
 soundfile>=0.12.0
 torch>=2.0.0
 torchaudio>=2.0.0
 numpy>=1.24.0
 scipy>=1.10.0
+einops>=0.6.0
 pathlib2>=2.3.7
 werkzeug>=2.3.0
 resampy>=0.4.0
 audioread>=3.0.0
+
+# Additional production dependencies
+psutil>=5.9.0
+python-dotenv>=1.0.0
+
+# MATLAB Engine for Python (for Pitch algorithm)
+# Note: This requires MATLAB to be installed on the system
+# Install with: cd /Applications/MATLAB_R2024a.app/extern/engines/python && python setup.py install

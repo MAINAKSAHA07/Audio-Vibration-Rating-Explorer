@@ -23,16 +23,69 @@ try:
     from FreqShift import process_file as freqshift_process
     from HapticGen import process_file as hapticgen_process
     from Percept import process_file as percept_process
-    from PitchWrapper import process_file as pitch_process
     from normalization import normalize_audio
-    print("✅ Successfully imported all algorithms")
+    print("✅ Successfully imported core algorithms")
 except ImportError as e:
-    print(f"❌ Error importing algorithms: {e}")
+    print(f"❌ Error importing core algorithms: {e}")
     print(f"Audioalgo directory: {audioalgo_dir}")
+
+# Import neural network models
+try:
+    # Add model_inference directory to path
+    model_inference_dir = audioalgo_dir / 'model_inference'
+    sys.path.insert(0, str(model_inference_dir))
+    
+    from inference_model1 import AudioToVibrationInference as Model1Inference
+    from inference_model2 import AudioToVibrationInference as Model2Inference
+    print("✅ Successfully imported neural network models")
+    NEURAL_MODELS_AVAILABLE = True
+except ImportError as e:
+    print(f"❌ Error importing neural network models: {e}")
+    print(f"Model inference directory: {model_inference_dir}")
+    NEURAL_MODELS_AVAILABLE = False
     print(f"Available files: {list(audioalgo_dir.glob('*.py'))}")
+
+# Try to import MATLAB-dependent algorithm
+try:
+    from PitchWrapper import process_file as pitch_process
+    PITCH_AVAILABLE = True
+    print("✅ Successfully imported Pitch algorithm")
+except ImportError as e:
+    print(f"⚠️ Pitch algorithm not available: {e}")
+    PITCH_AVAILABLE = False
+    # Create a dummy function for when MATLAB is not available
+    def pitch_process(*args, **kwargs):
+        print("❌ Pitch algorithm requires MATLAB Engine for Python")
+        return False
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# Initialize neural network models if available
+model1_inference = None
+model2_inference = None
+
+if NEURAL_MODELS_AVAILABLE:
+    try:
+        # Get model paths
+        model1_path = model_inference_dir / 'best_model1.pth'
+        model2_path = model_inference_dir / 'best_model2.pth'
+        
+        if model1_path.exists():
+            model1_inference = Model1Inference(str(model1_path))
+            print("✅ Model 1 (Top-Rated Sound2Hap) initialized successfully")
+        else:
+            print(f"❌ Model 1 file not found: {model1_path}")
+            
+        if model2_path.exists():
+            model2_inference = Model2Inference(str(model2_path))
+            print("✅ Model 2 (Preference-Weighted Sound2Hap) initialized successfully")
+        else:
+            print(f"❌ Model 2 file not found: {model2_path}")
+            
+    except Exception as e:
+        print(f"❌ Error initializing neural network models: {e}")
+        NEURAL_MODELS_AVAILABLE = False
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
@@ -46,9 +99,17 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
+    algorithms = ['freqshift', 'hapticgen', 'percept']
+    if PITCH_AVAILABLE:
+        algorithms.append('pitch')
+    if NEURAL_MODELS_AVAILABLE:
+        algorithms.extend(['model1', 'model2'])
+    
     return jsonify({
         'status': 'healthy',
-        'algorithms': ['freqshift', 'hapticgen', 'percept', 'pitch'],
+        'algorithms': algorithms,
+        'pitch_available': PITCH_AVAILABLE,
+        'neural_models_available': NEURAL_MODELS_AVAILABLE,
         'message': 'Audio-Vibration backend service is running'
     })
 
@@ -145,22 +206,67 @@ def generate_vibrations():
             
             try:
                 # Pitch algorithm (MATLAB-based sound-to-touch crossmodal pitch matching)
-                pitch_output = temp_path / 'pitch_output.wav'
-                pitch_process(
-                    in_wav=str(input_path),
-                    out_wav=str(pitch_output)
-                )
-                
-                if pitch_output.exists():
-                    results['pitch'] = {
-                        'filename': f'pitch_{file.filename}',
-                        'path': str(pitch_output),
-                        'size': pitch_output.stat().st_size
-                    }
+                if PITCH_AVAILABLE:
+                    pitch_output = temp_path / 'pitch_output.wav'
+                    success = pitch_process(
+                        in_wav=str(input_path),
+                        out_wav=str(pitch_output)
+                    )
+                    
+                    if success and pitch_output.exists():
+                        results['pitch'] = {
+                            'filename': f'pitch_{file.filename}',
+                            'path': str(pitch_output),
+                            'size': pitch_output.stat().st_size
+                        }
+                    else:
+                        results['pitch'] = {'error': 'Pitch algorithm failed to generate output'}
+                else:
+                    results['pitch'] = {'error': 'Pitch algorithm requires MATLAB Engine for Python'}
                 
             except Exception as e:
                 print(f"Error in Pitch algorithm: {e}")
                 results['pitch'] = {'error': str(e)}
+            
+            # Neural Network Model 1 (Top-Rated Sound2Hap)
+            if NEURAL_MODELS_AVAILABLE and model1_inference:
+                try:
+                    model1_output = temp_path / 'model1_output.wav'
+                    vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000)
+                    model1_inference.save_vibration(vib_output, str(model1_output), 8000)
+                    
+                    if model1_output.exists():
+                        results['model1'] = {
+                            'filename': f'model1_{file.filename}',
+                            'path': str(model1_output),
+                            'size': model1_output.stat().st_size
+                        }
+                    
+                except Exception as e:
+                    print(f"Error in Model 1 (Top-Rated Sound2Hap): {e}")
+                    results['model1'] = {'error': str(e)}
+            else:
+                results['model1'] = {'error': 'Model 1 (Top-Rated Sound2Hap) not available'}
+            
+            # Neural Network Model 2 (Preference-Weighted Sound2Hap)
+            if NEURAL_MODELS_AVAILABLE and model2_inference:
+                try:
+                    model2_output = temp_path / 'model2_output.wav'
+                    vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000)
+                    model2_inference.save_vibration(vib_output, str(model2_output), 8000)
+                    
+                    if model2_output.exists():
+                        results['model2'] = {
+                            'filename': f'model2_{file.filename}',
+                            'path': str(model2_output),
+                            'size': model2_output.stat().st_size
+                        }
+                    
+                except Exception as e:
+                    print(f"Error in Model 2 (Preference-Weighted Sound2Hap): {e}")
+                    results['model2'] = {'error': str(e)}
+            else:
+                results['model2'] = {'error': 'Model 2 (Preference-Weighted Sound2Hap) not available'}
             
             return jsonify({
                 'success': True,
@@ -199,8 +305,14 @@ def generate_and_download():
         
         # Get algorithm type
         algorithm = request.form.get('algorithm', 'freqshift')
-        if algorithm not in ['freqshift', 'hapticgen', 'percept', 'pitch']:
-            return jsonify({'error': 'Invalid algorithm specified'}), 400
+        available_algorithms = ['freqshift', 'hapticgen', 'percept']
+        if PITCH_AVAILABLE:
+            available_algorithms.append('pitch')
+        if NEURAL_MODELS_AVAILABLE:
+            available_algorithms.extend(['model1', 'model2'])
+        
+        if algorithm not in available_algorithms:
+            return jsonify({'error': f'Invalid algorithm specified. Available: {available_algorithms}'}), 400
         
         # Validate file type
         if not file.filename.lower().endswith(('.wav', '.mp3', '.ogg', '.flac', '.m4a')):
@@ -238,10 +350,27 @@ def generate_and_download():
                         content="game"
                     )
                 elif algorithm == 'pitch':
-                    pitch_process(
-                        in_wav=str(input_path),
-                        out_wav=str(output_path)
-                    )
+                    if PITCH_AVAILABLE:
+                        success = pitch_process(
+                            in_wav=str(input_path),
+                            out_wav=str(output_path)
+                        )
+                        if not success:
+                            return jsonify({'error': 'Pitch algorithm failed to generate output'}), 500
+                    else:
+                        return jsonify({'error': 'Pitch algorithm requires MATLAB Engine for Python'}), 400
+                elif algorithm == 'model1':
+                    if NEURAL_MODELS_AVAILABLE and model1_inference:
+                        vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000)
+                        model1_inference.save_vibration(vib_output, str(output_path), 8000)
+                    else:
+                        return jsonify({'error': 'Model 1 (Top-Rated Sound2Hap) not available'}), 400
+                elif algorithm == 'model2':
+                    if NEURAL_MODELS_AVAILABLE and model2_inference:
+                        vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000)
+                        model2_inference.save_vibration(vib_output, str(output_path), 8000)
+                    else:
+                        return jsonify({'error': 'Model 2 (Preference-Weighted Sound2Hap) not available'}), 400
                 
                 if output_path.exists():
                     return send_file(
