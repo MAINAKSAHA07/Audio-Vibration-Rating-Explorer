@@ -6,6 +6,7 @@ import WaveSurferPlayer from './WaveSurferPlayer';
 import SimpleAudioPlayer from './SimpleAudioPlayer';
 import DualViewPlayer from './DualViewPlayer';
 import EC2AudioPlayer from './EC2AudioPlayer';
+import EC2VibrationPlayer from './EC2VibrationPlayer';
 
 interface ClassDetailProps {
   classStats: ClassStats;
@@ -135,13 +136,13 @@ const ClassDetail: React.FC<ClassDetailProps> = ({ classStats, audioFiles, vibra
               <h4>Vibration Designs</h4>
               {getVibrationFilesForAudio(selectedAudio.id).map((vibration) => (
                 <div key={vibration.design} className="vibration-player">
-                  <AWSAudioPlayer
-                    audioFile={vibration.vibrationFile}
+                  <EC2VibrationPlayer
+                    vibrationFile={vibration.vibrationFile}
                     title={`${vibration.design.charAt(0).toUpperCase() + vibration.design.slice(1)}: ${vibration.rating.toFixed(1)}/100`}
                     height={100}
                     showSource={true}
-                    onLoad={(url, source) => {
-                      console.log(`Vibration loaded from ${source}: ${url}`);
+                    onLoad={(url) => {
+                      console.log(`Vibration loaded from EC2: ${url}`);
                     }}
                     onError={(error) => {
                       console.error('Vibration loading error:', error);
