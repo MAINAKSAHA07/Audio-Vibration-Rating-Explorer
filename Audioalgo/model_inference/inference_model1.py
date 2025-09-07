@@ -16,8 +16,19 @@ current_dir = Path(__file__).parent
 encodec_path = current_dir / 'encodec'
 sys.path.insert(0, str(encodec_path))
 
-from encodec.model import EncodecModel
-from encodec.modules.seanet import SEANetDecoder
+# Try different import paths depending on execution context
+try:
+    from encodec.encodec.model import EncodecModel
+    from encodec.encodec.modules.seanet import SEANetDecoder
+except ImportError:
+    try:
+        from encodec.model import EncodecModel
+        from encodec.modules.seanet import SEANetDecoder
+    except ImportError:
+        # If running from model_inference directory
+        sys.path.insert(0, str(encodec_path / 'encodec'))
+        from model import EncodecModel
+        from modules.seanet import SEANetDecoder
 
 class Model1Inference:
     def __init__(self, model_path, device='auto'):
@@ -147,7 +158,9 @@ class Model1Inference:
         return vib_output
     
     def save_vibration(self, vib_tensor, output_path, sample_rate):
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        output_dir = os.path.dirname(output_path)
+        if output_dir:  # Only create directory if there is one
+            os.makedirs(output_dir, exist_ok=True)
         torchaudio.save(output_path, vib_tensor, sample_rate)
         print(f"Vibration saved to: {output_path}")
     
