@@ -7,6 +7,10 @@ Integrates the Python algorithms for vibration generation
 import os
 import tempfile
 import shutil
+import signal
+import threading
+import hashlib
+import time
 from pathlib import Path
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -106,6 +110,60 @@ if NEURAL_MODELS_AVAILABLE:
 
 # Configuration
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+
+# Simple in-memory cache for generated vibrations
+vibration_cache = {}
+CACHE_MAX_SIZE = 100  # Maximum number of cached items
+CACHE_EXPIRY = 3600  # Cache expiry time in seconds (1 hour)
+
+def get_file_hash(file_path):
+    """Generate a hash for the file content"""
+    hasher = hashlib.md5()
+    with open(file_path, 'rb') as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+def get_cache_key(file_path, algorithm):
+    """Generate a cache key for the file and algorithm combination"""
+    file_hash = get_file_hash(file_path)
+    return f"{algorithm}_{file_hash}"
+
+def cleanup_cache():
+    """Remove expired entries from cache"""
+    current_time = time.time()
+    expired_keys = []
+    for key, value in vibration_cache.items():
+        if current_time - value['timestamp'] > CACHE_EXPIRY:
+            expired_keys.append(key)
+    
+    for key in expired_keys:
+        del vibration_cache[key]
+    
+    # If cache is still too large, remove oldest entries
+    if len(vibration_cache) > CACHE_MAX_SIZE:
+        sorted_items = sorted(vibration_cache.items(), key=lambda x: x[1]['timestamp'])
+        items_to_remove = len(vibration_cache) - CACHE_MAX_SIZE
+        for i in range(items_to_remove):
+            del vibration_cache[sorted_items[i][0]]
+
+def get_cached_vibration(file_path, algorithm):
+    """Get cached vibration if available"""
+    cache_key = get_cache_key(file_path, algorithm)
+    if cache_key in vibration_cache:
+        entry = vibration_cache[cache_key]
+        if time.time() - entry['timestamp'] < CACHE_EXPIRY:
+            return entry['file_path']
+    return None
+
+def cache_vibration(file_path, algorithm, output_path):
+    """Cache the generated vibration"""
+    cleanup_cache()
+    cache_key = get_cache_key(file_path, algorithm)
+    vibration_cache[cache_key] = {
+        'file_path': str(output_path),
+        'timestamp': time.time()
+    }
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -254,7 +312,7 @@ def generate_vibrations():
             if model1_inference is not None:
                 try:
                     model1_output = temp_path / 'model1_output.wav'
-                    vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000)
+                    vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000, max_duration=10.0)
                     model1_inference.save_vibration(vib_output, str(model1_output), 8000)
                     
                     if model1_output.exists():
@@ -276,7 +334,7 @@ def generate_vibrations():
             if model2_inference is not None:
                 try:
                     model2_output = temp_path / 'model2_output.wav'
-                    vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000)
+                    vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000, max_duration=10.0)
                     model2_inference.save_vibration(vib_output, str(model2_output), 8000)
                     
                     if model2_output.exists():
@@ -321,10 +379,17 @@ def generate_vibrations():
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 
+def timeout_handler(signum, frame):
+    """Handle timeout for long-running operations"""
+    raise TimeoutError("Operation timed out")
+
 @app.route('/generate-and-download', methods=['POST'])
 def generate_and_download():
     """Generate vibration file on-demand and return it without saving"""
     try:
+        # Set a timeout for the entire operation (30 seconds)
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(30)
         # Check if file is present
         if 'audio_file' not in request.files:
             return jsonify({'error': 'No audio file provided'}), 400
@@ -357,6 +422,17 @@ def generate_and_download():
             # Save uploaded file
             input_path = temp_path / 'input_audio.wav'
             file.save(str(input_path))
+            
+            # Check cache first
+            cached_path = get_cached_vibration(str(input_path), algorithm)
+            if cached_path and Path(cached_path).exists():
+                print(f"Using cached vibration for {algorithm}")
+                signal.alarm(0)
+                return send_file(
+                    cached_path, 
+                    as_attachment=True, 
+                    download_name=f'{algorithm}_{file.filename}'
+                )
             
             # Generate vibration file based on algorithm
             output_path = temp_path / f'{algorithm}_output.wav'
@@ -393,31 +469,49 @@ def generate_and_download():
                         return jsonify({'error': 'Pitch algorithm requires MATLAB Engine for Python (not available - this is normal if MATLAB is not installed)'}), 400
                 elif algorithm == 'model1':
                     if model1_inference is not None:
-                        vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000)
+                        # Use optimized inference with shorter duration for faster processing
+                        vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000, max_duration=10.0)
                         model1_inference.save_vibration(vib_output, str(output_path), 8000)
                     else:
                         return jsonify({'error': 'Model 1 (Top-Rated Sound2Hap) not available - model file not found or initialization failed'}), 400
                 elif algorithm == 'model2':
                     if model2_inference is not None:
-                        vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000)
+                        # Use optimized inference with shorter duration for faster processing
+                        vib_output = model2_inference.inference(str(input_path), output_sample_rate=8000, max_duration=10.0)
                         model2_inference.save_vibration(vib_output, str(output_path), 8000)
                     else:
                         return jsonify({'error': 'Model 2 (Preference-Weighted Sound2Hap) not available - model file not found or initialization failed'}), 400
                 
                 if output_path.exists():
+                    # Cache the generated vibration
+                    cache_vibration(str(input_path), algorithm, str(output_path))
+                    
+                    # Cancel the alarm before sending the file
+                    signal.alarm(0)
                     return send_file(
                         str(output_path), 
                         as_attachment=True, 
                         download_name=f'{algorithm}_{file.filename}'
                     )
                 else:
+                    signal.alarm(0)
                     return jsonify({'error': f'Failed to generate {algorithm} vibration'}), 500
                     
+            except TimeoutError:
+                signal.alarm(0)
+                print(f"Timeout in {algorithm} algorithm")
+                return jsonify({'error': f'{algorithm} algorithm timed out. Please try with a shorter audio file or use a different algorithm.'}), 408
             except Exception as e:
+                signal.alarm(0)
                 print(f"Error in {algorithm} algorithm: {e}")
                 return jsonify({'error': f'Algorithm error: {str(e)}'}), 500
                 
+    except TimeoutError:
+        signal.alarm(0)
+        print("Overall timeout in generate_and_download")
+        return jsonify({'error': 'Request timed out. Please try with a shorter audio file or use a different algorithm.'}), 408
     except Exception as e:
+        signal.alarm(0)
         print(f"Error in generate_and_download: {e}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 

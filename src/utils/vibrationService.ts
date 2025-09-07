@@ -114,26 +114,41 @@ class VibrationService {
   /**
    * Generate and download a vibration file directly
    */
-  async generateAndDownload(audioFile: File, algorithm: string): Promise<Blob> {
+  async generateAndDownload(audioFile: File, algorithm: string, timeoutMs: number = 35000): Promise<Blob> {
     try {
       const formData = new FormData();
       formData.append('audio_file', audioFile);
       formData.append('algorithm', algorithm);
+
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       const response = await fetch(`${this.baseUrl}${BACKEND_CONFIG.ENDPOINTS.GENERATE_AND_DOWNLOAD}`, {
         method: 'POST',
         mode: 'cors',
         credentials: 'omit',
         body: formData,
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
+        if (response.status === 408) {
+          throw new Error(`Request timed out. The ${algorithm} algorithm is taking too long. Please try with a shorter audio file or use a different algorithm.`);
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       return await response.blob();
     } catch (error) {
       console.error('Generate and download failed:', error);
+      
+      // Handle timeout errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Request timed out after ${timeoutMs/1000} seconds. The ${algorithm} algorithm is taking too long. Please try with a shorter audio file or use a different algorithm.`);
+      }
       
       // Check if it's a mixed content error
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {

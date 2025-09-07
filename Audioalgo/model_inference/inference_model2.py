@@ -48,7 +48,6 @@ class Model2Inference:
         ### END MODIFICATION ###
         
         print(f"Loading model from: {model_path}")
-        # Load with weights_only=False for compatibility with older model formats
         checkpoint = torch.load(model_path, map_location=self.device, weights_only=False)
         
         if isinstance(checkpoint, dict) and 'model_state' in checkpoint:
@@ -58,7 +57,7 @@ class Model2Inference:
             state_dict = checkpoint
             print("   Loaded direct state_dict checkpoint")
         
-        self.model.load_state_dict(state_dict, strict=False)
+        self.model.load_state_dict(state_dict)
         self.model.eval()
         
         self.audio_resampler = torchaudio.transforms.Resample(
@@ -67,11 +66,17 @@ class Model2Inference:
         
         print("Model loaded and ready for inference!")
     
-    def preprocess_audio(self, audio_path):
-        # This function remains the same, using peak normalization for the input audio
+    def preprocess_audio(self, audio_path, max_duration=10.0):
+        # Optimized preprocessing with duration limiting for faster inference
         audio, sr = torchaudio.load(audio_path)
         if audio.shape[0] > 1:
             audio = audio.mean(dim=0, keepdim=True)
+        
+        # Limit audio duration to prevent long processing times
+        max_samples = int(max_duration * sr)
+        if audio.shape[1] > max_samples:
+            audio = audio[:, :max_samples]
+            print(f"   Truncated audio to {max_duration}s for faster processing")
         
         audio = audio.to(self.device)
         if sr != 24000:
@@ -85,9 +90,11 @@ class Model2Inference:
     
     def generate_vibration(self, audio_tensor):
         with torch.no_grad():
+            # Enable optimizations for faster inference
+            torch.backends.cudnn.benchmark = True if self.device.type == 'cuda' else False
+            
             z = self.model.encoder(audio_tensor)
-            # Fix: Add sample_rate parameter for ResidualVectorQuantizer
-            quantized_result = self.model.quantizer(z, 24000)
+            quantized_result = self.model.quantizer(z, frame_rate=self.model.frame_rate)
             zq = quantized_result.quantized
             vib_pred = self.model.decoder(zq)
         return vib_pred
@@ -124,9 +131,9 @@ class Model2Inference:
         return vib
     ### END MODIFICATION ###
 
-    def inference(self, audio_path, output_path=None, output_sample_rate=8000):
+    def inference(self, audio_path, output_path=None, output_sample_rate=8000, max_duration=10.0):
         print(f"\nStarting inference for: {audio_path}")
-        audio_tensor = self.preprocess_audio(audio_path)
+        audio_tensor = self.preprocess_audio(audio_path, max_duration)
         vib_tensor = self.generate_vibration(audio_tensor)
         vib_output = self.postprocess_vibration(vib_tensor, output_sample_rate)
         if output_path:
