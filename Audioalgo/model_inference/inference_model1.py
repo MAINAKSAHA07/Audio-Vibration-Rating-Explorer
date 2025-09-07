@@ -77,7 +77,8 @@ class AudioToVibrationInference:
     def generate_vibration(self, audio_tensor):
         with torch.no_grad():
             z = self.model.encoder(audio_tensor)
-            quantized_result = self.model.quantizer(z, frame_rate=self.model.frame_rate)
+            # Fix: Remove frame_rate parameter as it's not supported in this version
+            quantized_result = self.model.quantizer(z)
             zq = quantized_result.quantized
             vib_pred = self.model.decoder(zq)
         return vib_pred

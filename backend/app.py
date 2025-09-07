@@ -46,16 +46,19 @@ except ImportError as e:
     print(f"Available files: {list(audioalgo_dir.glob('*.py'))}")
 
 # Try to import MATLAB-dependent algorithm
+# Note: MATLAB Engine for Python is optional - if not available, the pitch algorithm will be disabled
 try:
     from PitchWrapper import process_file as pitch_process
     PITCH_AVAILABLE = True
-    print("✅ Successfully imported Pitch algorithm")
+    print("✅ Successfully imported Pitch algorithm (MATLAB Engine available)")
 except ImportError as e:
-    print(f"⚠️ Pitch algorithm not available: {e}")
+    print(f"⚠️ MATLAB Engine for Python not available - Pitch algorithm will be disabled")
+    print(f"   Error details: {e}")
+    print("   This is normal if MATLAB is not installed. The backend will continue without the pitch algorithm.")
     PITCH_AVAILABLE = False
     # Create a dummy function for when MATLAB is not available
     def pitch_process(*args, **kwargs):
-        print("❌ Pitch algorithm requires MATLAB Engine for Python")
+        print("❌ Pitch algorithm requires MATLAB Engine for Python (not available)")
         return False
 
 app = Flask(__name__)
@@ -127,7 +130,9 @@ def health_check():
         'neural_models_available': NEURAL_MODELS_AVAILABLE,
         'model1_available': model1_available,
         'model2_available': model2_available,
-        'message': 'Audio-Vibration backend service is running'
+        'matlab_engine_available': PITCH_AVAILABLE,
+        'message': 'Audio-Vibration backend service is running',
+        'note': 'MATLAB Engine is optional - pitch algorithm disabled if not available'
     })
 
 @app.route('/generate-vibrations', methods=['POST'])
@@ -239,7 +244,7 @@ def generate_vibrations():
                     else:
                         results['pitch'] = {'error': 'Pitch algorithm failed to generate output'}
                 else:
-                    results['pitch'] = {'error': 'Pitch algorithm requires MATLAB Engine for Python'}
+                    results['pitch'] = {'error': 'Pitch algorithm requires MATLAB Engine for Python (not available - this is normal if MATLAB is not installed)'}
                 
             except Exception as e:
                 print(f"Error in Pitch algorithm: {e}")
@@ -385,7 +390,7 @@ def generate_and_download():
                         if not success:
                             return jsonify({'error': 'Pitch algorithm failed to generate output'}), 500
                     else:
-                        return jsonify({'error': 'Pitch algorithm requires MATLAB Engine for Python'}), 400
+                        return jsonify({'error': 'Pitch algorithm requires MATLAB Engine for Python (not available - this is normal if MATLAB is not installed)'}), 400
                 elif algorithm == 'model1':
                     if model1_inference is not None:
                         vib_output = model1_inference.inference(str(input_path), output_sample_rate=8000)

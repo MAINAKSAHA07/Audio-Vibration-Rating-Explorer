@@ -4,7 +4,7 @@
  * 
  * Setup:
  * - Frontend (React): localhost:3000 (dev) → Netlify (prod)
- * - Backend (Flask): EC2 instance at 3.144.145.168:5000 (dev & prod)
+ * - Backend (Flask): EC2 instance at 3.138.192.243:5000 (dev & prod)
  */
 
 // Frontend Configuration
@@ -28,18 +28,18 @@ export const BACKEND_CONFIG = {
                           !window.location.hostname.includes('127.0.0.1:3000');
       
       if (isProduction) {
-        // Production: Use Netlify redirects to avoid mixed content issues
-        console.log('🌐 Production environment detected - using Netlify redirects');
-        return '/api';
+        // Production: Use AWS EC2 backend
+        console.log('🌐 Production environment detected - using AWS EC2 backend');
+        return 'http://3.138.192.243:5000';
       } else {
-        // Development: Use local backend
-        console.log('🏠 Development environment detected - using local backend');
-        return 'http://localhost:5000';
+        // Development: Use AWS EC2 backend for testing
+        console.log('🏠 Development environment detected - using AWS EC2 backend');
+        return 'http://3.138.192.243:5000';
       }
     }
     
     // Fallback for server-side rendering
-    return 'http://localhost:5000';
+    return 'http://3.138.192.243:5000';
   })(),
   
   // API Endpoints
