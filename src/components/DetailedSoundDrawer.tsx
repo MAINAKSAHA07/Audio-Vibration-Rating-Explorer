@@ -1,6 +1,7 @@
 import React from 'react';
 import WaveSurferPlayer from './WaveSurferPlayer';
 import colors from '../colors.js';
+import { BACKEND_CONFIG } from '../config/backend';
 
 interface SoundCard {
   id: string;
@@ -68,6 +69,15 @@ const DetailedSoundDrawer: React.FC<DetailedSoundDrawerProps> = ({ sound, isOpen
     return category;
   };
 
+  // Build URLs for audio and vibration files served from EC2 backend
+  const getAudioUrl = (filename: string) => {
+    return `${BACKEND_CONFIG.BASE_URL}/audio/${filename}`;
+  };
+
+  const getVibrationUrl = (filename: string) => {
+    return `${BACKEND_CONFIG.BASE_URL}/vibration/${filename}`;
+  };
+
   return (
     <div className={`detailed-sound-drawer-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
       <div className="detailed-sound-drawer" onClick={(e) => e.stopPropagation()}>
@@ -126,8 +136,9 @@ const DetailedSoundDrawer: React.FC<DetailedSoundDrawerProps> = ({ sound, isOpen
             <h4>🎵 Audio</h4>
             <div className="audio-player-section">
               <WaveSurferPlayer 
-                audioUrl={`/audio/${sound.audioFile}`} 
-                title={sound.soundname || sound.filename} 
+                audioUrl={getAudioUrl(sound.audioFile)} 
+                title={sound.soundname || sound.filename}
+                height={120}
               />
             </div>
           </div>
@@ -149,8 +160,9 @@ const DetailedSoundDrawer: React.FC<DetailedSoundDrawerProps> = ({ sound, isOpen
                   <div className="vibration-content">
                     <div className="vibration-player-section">
                       <WaveSurferPlayer 
-                        audioUrl={`/vibration/${vibrationFile}`} 
-                        title={`${sound.soundname || sound.filename} - ${design}`} 
+                        audioUrl={getVibrationUrl(vibrationFile)} 
+                        title={`${sound.soundname || sound.filename} - ${design}`}
+                        height={100}
                       />
                     </div>
                   </div>
