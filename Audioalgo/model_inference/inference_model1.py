@@ -1,4 +1,4 @@
-# File: inference.py
+# File: inference_model1.py
 # MODIFIED VERSION:
 # 1. Architecture matches the new training script.
 # 2. Post-processing is replaced with a DC-block, band-pass, and soft limiter.
@@ -16,8 +16,8 @@ current_dir = Path(__file__).parent
 encodec_path = current_dir / 'encodec'
 sys.path.insert(0, str(encodec_path))
 
-from encodec.model import EncodecModel
-from encodec.modules.seanet import SEANetDecoder
+from encodec.encodec.model import EncodecModel
+from encodec.encodec.modules.seanet import SEANetDecoder
 
 class Model1Inference:
     def __init__(self, model_path, device='auto'):
