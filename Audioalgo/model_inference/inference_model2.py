@@ -68,7 +68,10 @@ class Model2Inference:
             state_dict = checkpoint
             print("   Loaded direct state_dict checkpoint")
         
-        self.model.load_state_dict(state_dict)
+        # Fix weight normalization keys for compatibility
+        fixed_state_dict = self._fix_state_dict_keys(state_dict)
+        
+        self.model.load_state_dict(fixed_state_dict)
         self.model.eval()
         
         self.audio_resampler = torchaudio.transforms.Resample(
@@ -76,6 +79,27 @@ class Model2Inference:
         ).to(self.device)
         
         print("Model loaded and ready for inference!")
+    
+    def _fix_state_dict_keys(self, state_dict):
+        """Fix weight normalization keys in state dict for compatibility"""
+        new_state_dict = {}
+        
+        for key, value in state_dict.items():
+            new_key = key
+            
+            # Fix weight normalization keys
+            if key.endswith('.weight_g'):
+                # Convert weight_g to parametrizations.weight.original0
+                base_key = key[:-8]  # Remove '.weight_g'
+                new_key = f"{base_key}.parametrizations.weight.original0"
+            elif key.endswith('.weight_v'):
+                # Convert weight_v to parametrizations.weight.original1
+                base_key = key[:-8]  # Remove '.weight_v'
+                new_key = f"{base_key}.parametrizations.weight.original1"
+            
+            new_state_dict[new_key] = value
+        
+        return new_state_dict
     
     def preprocess_audio(self, audio_path, max_duration=10.0):
         # Optimized preprocessing with duration limiting for faster inference
