@@ -16,8 +16,8 @@ current_dir = Path(__file__).parent
 encodec_path = current_dir / 'encodec'
 sys.path.insert(0, str(encodec_path))
 
-from encodec.encodec.model import EncodecModel
-from encodec.encodec.modules.seanet import SEANetDecoder
+from encodec.model import EncodecModel
+from encodec.modules.seanet import SEANetDecoder
 
 class Model1Inference:
     def __init__(self, model_path, device='auto'):
