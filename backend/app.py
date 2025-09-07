@@ -12,7 +12,7 @@ import threading
 import hashlib
 import time
 from pathlib import Path
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 import werkzeug
 import sys
@@ -71,6 +71,24 @@ CORS(app)  # Enable CORS for all routes
 # Production configuration
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
+
+# Define file paths
+PROJECT_ROOT = Path(__file__).parent.parent
+AUDIO_DIR = PROJECT_ROOT / 'audio_vibration' / 'audio'
+VIBRATION_DIR = PROJECT_ROOT / 'audio_vibration' / 'vibration'
+
+# Check if directories exist
+print(f"🔍 Checking audio directory: {AUDIO_DIR}")
+print(f"   Exists: {AUDIO_DIR.exists()}")
+if AUDIO_DIR.exists():
+    audio_files = list(AUDIO_DIR.glob('*.wav'))
+    print(f"   Audio files found: {len(audio_files)}")
+
+print(f"🔍 Checking vibration directory: {VIBRATION_DIR}")
+print(f"   Exists: {VIBRATION_DIR.exists()}")
+if VIBRATION_DIR.exists():
+    vibration_files = list(VIBRATION_DIR.glob('*.wav'))
+    print(f"   Vibration files found: {len(vibration_files)}")
 
 # Security headers for production
 @app.after_request
@@ -165,6 +183,39 @@ def cache_vibration(file_path, algorithm, output_path):
         'timestamp': time.time()
     }
 
+# Static file serving routes
+@app.route('/audio/<filename>')
+def serve_audio(filename):
+    """Serve audio files from the audio directory"""
+    try:
+        if not AUDIO_DIR.exists():
+            return jsonify({'error': 'Audio directory not found'}), 404
+        
+        file_path = AUDIO_DIR / filename
+        if not file_path.exists():
+            return jsonify({'error': f'Audio file not found: {filename}'}), 404
+        
+        return send_file(str(file_path), mimetype='audio/wav')
+    except Exception as e:
+        print(f"Error serving audio file {filename}: {e}")
+        return jsonify({'error': f'Error serving audio file: {str(e)}'}), 500
+
+@app.route('/vibration/<filename>')
+def serve_vibration(filename):
+    """Serve vibration files from the vibration directory"""
+    try:
+        if not VIBRATION_DIR.exists():
+            return jsonify({'error': 'Vibration directory not found'}), 404
+        
+        file_path = VIBRATION_DIR / filename
+        if not file_path.exists():
+            return jsonify({'error': f'Vibration file not found: {filename}'}), 404
+        
+        return send_file(str(file_path), mimetype='audio/wav')
+    except Exception as e:
+        print(f"Error serving vibration file {filename}: {e}")
+        return jsonify({'error': f'Error serving vibration file: {str(e)}'}), 500
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint with accurate model status"""
@@ -190,7 +241,15 @@ def health_check():
         'model2_available': model2_available,
         'matlab_engine_available': PITCH_AVAILABLE,
         'message': 'Audio-Vibration backend service is running',
-        'note': 'MATLAB Engine is optional - pitch algorithm disabled if not available'
+        'note': 'MATLAB Engine is optional - pitch algorithm disabled if not available',
+        'file_serving': {
+            'audio_directory': str(AUDIO_DIR),
+            'audio_directory_exists': AUDIO_DIR.exists(),
+            'vibration_directory': str(VIBRATION_DIR),
+            'vibration_directory_exists': VIBRATION_DIR.exists(),
+            'audio_files_count': len(list(AUDIO_DIR.glob('*.wav'))) if AUDIO_DIR.exists() else 0,
+            'vibration_files_count': len(list(VIBRATION_DIR.glob('*.wav'))) if VIBRATION_DIR.exists() else 0
+        }
     })
 
 @app.route('/generate-vibrations', methods=['POST'])

@@ -5,7 +5,7 @@ import { RatingData } from '../utils/api';
 import WaveSurferPlayer from './WaveSurferPlayer';
 import SimpleAudioPlayer from './SimpleAudioPlayer';
 import DualViewPlayer from './DualViewPlayer';
-import AWSAudioPlayer from './AWSAudioPlayer';
+import EC2AudioPlayer from './EC2AudioPlayer';
 
 interface ClassDetailProps {
   classStats: ClassStats;
@@ -116,13 +116,13 @@ const ClassDetail: React.FC<ClassDetailProps> = ({ classStats, audioFiles, vibra
             
             {/* Original Audio */}
             <div className="player-container">
-              <AWSAudioPlayer
+              <EC2AudioPlayer
                 audioFile={selectedAudio.audioFile}
                 title={`Original Audio: ${selectedAudio.id}`}
                 height={120}
                 showSource={true}
-                onLoad={(url, source) => {
-                  console.log(`Audio loaded from ${source}: ${url}`);
+                onLoad={(url) => {
+                  console.log(`Audio loaded from EC2: ${url}`);
                 }}
                 onError={(error) => {
                   console.error('Audio loading error:', error);

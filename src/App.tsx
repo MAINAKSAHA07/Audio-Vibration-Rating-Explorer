@@ -25,7 +25,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import DetailView from './components/DetailView';
 import AudioUpload from './components/AudioUpload';
 import AlgorithmPerformanceSunburst from './components/AlgorithmPerformanceSunburst';
-import AWSAudioPlayer from './components/AWSAudioPlayer';
 
 import { getAWSS3Service, getAWSS3Config } from './utils/awsS3';
 import { AWS_CONFIG } from './config/aws';
