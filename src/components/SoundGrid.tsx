@@ -4,7 +4,6 @@ import { FilterState } from './FilterPanel';
 import colors from '../colors.js';
 import DetailedSoundDrawer from './DetailedSoundDrawer';
 import WaveSurferPlayer from './WaveSurferPlayer';
-import LazyWaveSurferPlayer from './LazyWaveSurferPlayer';
 import OverviewChart from './OverviewChart';
 
 interface SoundCard {
@@ -388,7 +387,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
         </div>
         
         <div className="mini-chart">
-          <LazyWaveSurferPlayer 
+          <WaveSurferPlayer 
             audioUrl={`/audio/${sound.audioFile}`} 
             title={sound.filename}
             height={130}
