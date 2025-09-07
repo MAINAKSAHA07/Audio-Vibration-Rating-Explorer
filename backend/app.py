@@ -102,13 +102,7 @@ if NEURAL_MODELS_AVAILABLE:
         NEURAL_MODELS_AVAILABLE = False
 
 # Configuration
-UPLOAD_FOLDER = 'uploads'
-OUTPUT_FOLDER = 'outputs'
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
-
-# Ensure directories exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -295,28 +289,32 @@ def generate_vibrations():
             else:
                 results['model2'] = {'error': 'Model 2 (Preference-Weighted Sound2Hap) not available - model file not found or initialization failed'}
             
+            # Return file data as base64 encoded strings instead of file paths
+            import base64
+            file_data = {}
+            
+            for algorithm, result in results.items():
+                if 'path' in result and Path(result['path']).exists():
+                    with open(result['path'], 'rb') as f:
+                        file_data[algorithm] = {
+                            'filename': result['filename'],
+                            'size': result['size'],
+                            'data': base64.b64encode(f.read()).decode('utf-8')
+                        }
+                elif 'error' in result:
+                    file_data[algorithm] = {'error': result['error']}
+            
             return jsonify({
                 'success': True,
                 'message': 'Vibration generation completed',
                 'original_file': file.filename,
-                'results': results
+                'results': file_data
             })
             
     except Exception as e:
         print(f"Error in generate_vibrations: {e}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
-@app.route('/download/<filename>', methods=['GET'])
-def download_file(filename):
-    """Download a generated vibration file"""
-    try:
-        file_path = Path(OUTPUT_FOLDER) / filename
-        if file_path.exists():
-            return send_file(str(file_path), as_attachment=True)
-        else:
-            return jsonify({'error': 'File not found'}), 404
-    except Exception as e:
-        return jsonify({'error': f'Download error: {str(e)}'}), 500
 
 @app.route('/generate-and-download', methods=['POST'])
 def generate_and_download():
@@ -418,30 +416,6 @@ def generate_and_download():
         print(f"Error in generate_and_download: {e}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
-@app.route('/list-outputs', methods=['GET'])
-def list_outputs():
-    """List all generated output files"""
-    try:
-        output_files = []
-        for file_path in Path(OUTPUT_FOLDER).glob('*'):
-            if file_path.is_file():
-                output_files.append({
-                    'filename': file_path.name,
-                    'size': file_path.stat().st_size,
-                    'modified': file_path.stat().st_mtime
-                })
-        
-        return jsonify({
-            'outputs': output_files,
-            'count': len(output_files)
-        })
-    except Exception as e:
-        return jsonify({'error': f'Error listing outputs: {str(e)}'}), 500
 
 if __name__ == '__main__':
-#   print("🚀 Starting Audio-Vibration Backend Service...")
-#    print(f"📁 Audioalgo directory: {audioalgo_dir}")
-#    print(f"📁 Upload folder: {UPLOAD_FOLDER}")
-#    print(f"📁 Output folder: {OUTPUT_FOLDER}")
-    
     app.run(debug=True, host='0.0.0.0', port=5000)
