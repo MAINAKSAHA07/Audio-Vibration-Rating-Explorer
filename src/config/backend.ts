@@ -19,28 +19,11 @@ export const FRONTEND_CONFIG = {
 
 export const BACKEND_CONFIG = {
   // Backend URL configuration
-  // Automatically detect environment and use appropriate backend URL
-  BASE_URL: process.env.REACT_APP_BACKEND_URL || (() => {
-    // Check if we're in production (Netlify) or development
-    if (typeof window !== 'undefined') {
-      const isProduction = window.location.hostname !== 'localhost' && 
-                          !window.location.hostname.includes('127.0.0.1') &&
-                          !window.location.hostname.includes('127.0.0.1:3000');
-      
-      if (isProduction) {
-        // Production: Use AWS EC2 backend
-        console.log('🌐 Production environment detected - using AWS EC2 backend');
-        return 'http://3.138.192.243:5000';
-      } else {
-        // Development: Use AWS EC2 backend for testing
-        console.log('🏠 Development environment detected - using AWS EC2 backend');
-        return 'http://3.138.192.243:5000';
-      }
-    }
-    
-    // Fallback for server-side rendering
-    return 'http://3.138.192.243:5000';
-  })(),
+  // Development: Direct access to EC2 backend
+  // Production: Use Netlify proxy to avoid mixed content issues
+  BASE_URL: process.env.NODE_ENV === 'production' 
+    ? '/api'  // Use Netlify proxy in production
+    : (process.env.REACT_APP_BACKEND_URL || 'http://3.138.192.243:5000'),
   
   // API Endpoints
   ENDPOINTS: {

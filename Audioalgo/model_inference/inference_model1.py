@@ -19,7 +19,7 @@ sys.path.insert(0, str(encodec_path))
 from encodec.model import EncodecModel
 from encodec.modules.seanet import SEANetDecoder
 
-class AudioToVibrationInference:
+class Model1Inference:
     def __init__(self, model_path, device='auto'):
         if device == 'auto':
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -77,8 +77,8 @@ class AudioToVibrationInference:
     def generate_vibration(self, audio_tensor):
         with torch.no_grad():
             z = self.model.encoder(audio_tensor)
-            # Fix: Remove frame_rate parameter as it's not supported in this version
-            quantized_result = self.model.quantizer(z)
+            # Fix: Add sample_rate parameter for ResidualVectorQuantizer
+            quantized_result = self.model.quantizer(z, 24000)
             zq = quantized_result.quantized
             vib_pred = self.model.decoder(zq)
         return vib_pred
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch', action='store_true', help='Batch mode for folder processing')
     args = parser.parse_args()
     
-    inference_model = AudioToVibrationInference(args.model)
+    inference_model = Model1Inference(args.model)
     if args.batch:
         inference_model.batch_inference(args.input, args.output, args.sample_rate)
     else:

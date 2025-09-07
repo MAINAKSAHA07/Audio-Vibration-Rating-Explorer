@@ -35,8 +35,8 @@ try:
     model_inference_dir = audioalgo_dir / 'model_inference'
     sys.path.insert(0, str(model_inference_dir))
     
-    from inference_model1 import AudioToVibrationInference as Model1Inference
-    from inference_model2 import AudioToVibrationInference as Model2Inference
+    from inference_model1 import Model1Inference
+    from inference_model2 import Model2Inference
     print("✅ Successfully imported neural network models")
     NEURAL_MODELS_AVAILABLE = True
 except ImportError as e:
@@ -423,4 +423,4 @@ def generate_and_download():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=8000)

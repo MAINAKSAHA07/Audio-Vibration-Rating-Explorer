@@ -7,6 +7,7 @@
   to = "http://3.138.192.243:5000/:splat"
   status = 200
   force = true
+  headers = {X-From = "Netlify"}
 
 [[redirects]]
   from = "/*"

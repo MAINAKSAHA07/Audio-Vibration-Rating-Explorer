@@ -22,10 +22,12 @@ REACT_APP_PRELOAD_AUDIO=false
 
 ## For Netlify Deployment
 
-Add these environment variables in your Netlify dashboard:
+The app is configured to automatically use Netlify's proxy in production to avoid mixed content issues. No additional environment variables are needed for the backend connection.
+
+If you need to override the backend URL, add these environment variables in your Netlify dashboard:
 
 1. Go to Site Settings → Environment Variables
-2. Add the following variables:
+2. Add the following variables (optional):
 
 ```
 REACT_APP_BACKEND_URL = http://3.138.192.243:5000
@@ -33,6 +35,8 @@ REACT_APP_AWS_ENABLED = false
 REACT_APP_FALLBACK_TO_LOCAL = true
 REACT_APP_PRELOAD_AUDIO = false
 ```
+
+**Note:** The app automatically uses `/api` proxy in production, which routes to your EC2 backend through Netlify's secure proxy.
 
 ## Testing the Connection
 
@@ -63,7 +67,7 @@ REACT_APP_PRELOAD_AUDIO = false
 If you get mixed content errors (HTTPS frontend trying to access HTTP backend):
 
 1. **For Development:** Allow mixed content in your browser
-2. **For Production:** Set up HTTPS for your backend or use a proxy
+2. **For Production:** The app now uses Netlify's proxy feature to route API calls through HTTPS, avoiding mixed content issues
 
 ### CORS Issues
 Make sure your backend has CORS enabled for your frontend domain.
