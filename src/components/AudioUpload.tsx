@@ -1273,13 +1273,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
             border: '1px solid #ffeaa7',
             marginTop: '20px'
           }}>
-            <h4 style={{ margin: '0 0 10px 0' }}>🔒 Mixed Content Notice</h4>
-            <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
-              If you see a "Mixed Content Error" when uploading audio, this is because your browser blocks HTTP connections from HTTPS sites for security.
-            </p>
-            <p style={{ margin: '0', fontSize: '14px' }}>
-              <strong>Solutions:</strong> 1) Try a different browser, 2) Disable mixed content blocking in browser settings, or 3) Access via HTTP instead of HTTPS.
-            </p>
+            
           </div>
           
             {/* 
