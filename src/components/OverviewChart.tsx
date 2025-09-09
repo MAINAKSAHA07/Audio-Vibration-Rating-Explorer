@@ -135,7 +135,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
       
       console.log('Line chart rendering:', { containerWidth, width, ratingsCount: filteredRatings.length });
     const height = 500;
-    const margin = { top: 80, right: 150, bottom: 100, left: 80 };
+    const margin = { top: 120, right: 50, bottom: 80, left: 80 };
 
     // Set the SVG size
     svg.attr("width", width).attr("height", height);
@@ -299,18 +299,18 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
           .datum(sortedData)
           .attr("fill", "none")
           .attr("stroke", methodColors[method as keyof typeof methodColors])
-          .attr("stroke-width", selectedAlgorithm === method ? 3 : (hoveredMethod === method ? 2.5 : 1.5))
+          .attr("stroke-width", 5)
           .attr("stroke-opacity", selectedAlgorithm === method ? 1 : (hoveredMethod && hoveredMethod !== method ? 0.3 : 0.8))
           .attr("d", line)
           .style("cursor", "pointer")
           .on("mouseover", function(event) {
             setHoveredMethod(method);
-            d3.select(this).attr("stroke-width", 2.5);
+            d3.select(this).attr("stroke-width", 6);
             d3.select(this).attr("stroke-opacity", 1);
           })
           .on("mouseout", function() {
             setHoveredMethod(null);
-            d3.select(this).attr("stroke-width", selectedAlgorithm === method ? 3 : 1.5);
+            d3.select(this).attr("stroke-width", 5);
             d3.select(this).attr("stroke-opacity", selectedAlgorithm === method ? 1 : (hoveredMethod && hoveredMethod !== method ? 0.3 : 0.8));
           })
           .on("click", function() {
@@ -336,7 +336,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
         .attr("stroke-width", selectedAlgorithm === method ? 2 : 1)
         .style("cursor", "pointer")
                  .on("mouseover", function(event, d: any) {
-           d3.select(this).attr("r", 6);
+           d3.select(this).attr("r", 7);
            setHoveredMethod(method);
            
            // Get specific category name
@@ -407,7 +407,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
              .text("Wins for individual sounds");
          })
                  .on("mouseout", function() {
-           d3.select(this).attr("r", 3);
+           d3.select(this).attr("r", selectedAlgorithm === method ? 5 : 3);
            setHoveredMethod(null);
            svg.selectAll(".tooltip").remove();
          })
@@ -490,7 +490,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
     // Add title
     svg.append("text")
       .attr("x", width / 2)
-      .attr("y", 30)
+      .attr("y", 20)
       .attr("text-anchor", "middle")
       .style("font-size", "16px")
       .style("font-weight", "700")
@@ -500,16 +500,16 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
     // Add subtitle
     svg.append("text")
       .attr("x", width / 2)
-      .attr("y", 50)
+      .attr("y", 35)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
       .style("font-weight", "400")
       .style("fill", "#666")
       .text("Lines connect winning points for each algorithm across classes");
 
-    // Add legend
+    // Add legend above the chart
     const legend = svg.append("g")
-      .attr("transform", `translate(${width - margin.right + 10}, ${margin.top})`);
+      .attr("transform", `translate(${margin.left}, 65)`);
 
     // Method name mapping for display
     const methodDisplayNames = {
@@ -519,40 +519,40 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
       'pitchmatch': 'Pitch Match'
     };
 
+    // Calculate spacing for horizontal legend - better distribution
+    const legendItemWidth = chartWidth / methods.length;
+    const legendLineLength = 40;
+    const legendLineStart = -legendLineLength / 2;
+    const legendLineEnd = legendLineLength / 2;
+    
     methods.forEach((method, i) => {
       const legendItem = legend.append("g")
-        .attr("transform", `translate(0, ${i * 25})`);
+        .attr("transform", `translate(${i * legendItemWidth + legendItemWidth/2}, 0)`);
 
-      legendItem.append("line")
-        .attr("x1", 0)
-        .attr("y1", 0)
-        .attr("x2", 20)
-        .attr("y2", 0)
-        .attr("stroke", methodColors[method as keyof typeof methodColors])
-        .attr("stroke-width", selectedAlgorithm === method ? 3 : (hoveredMethod === method ? 2.5 : 1.5))
+      // Create a group for the entire legend item to handle hover effects
+      const legendGroup = legendItem.append("g")
         .style("cursor", "pointer")
         .on("mouseover", function() {
           setHoveredMethod(method);
-          d3.select(this).attr("stroke-width", 2.5);
+          // Highlight the line
+          legendItem.select("line")
+            .attr("stroke-width", 6)
+            .attr("stroke-opacity", 1);
+          // Highlight the text
+          legendItem.select("text")
+            .style("font-weight", "600")
+            .style("fill", methodColors[method as keyof typeof methodColors]);
         })
         .on("mouseout", function() {
           setHoveredMethod(null);
-          d3.select(this).attr("stroke-width", selectedAlgorithm === method ? 3 : 1.5);
-        });
-
-      legendItem.append("text")
-        .attr("x", 25)
-        .attr("y", 4)
-        .style("font-size", "12px")
-        .style("font-weight", selectedAlgorithm === method ? "700" : (hoveredMethod === method ? "600" : "500"))
-        .style("fill", selectedAlgorithm === method ? methodColors[method as keyof typeof methodColors] : (hoveredMethod === method ? methodColors[method as keyof typeof methodColors] : "#333"))
-        .style("cursor", "pointer")
-        .text(methodDisplayNames[method as keyof typeof methodDisplayNames])
-        .on("mouseover", () => {
-          setHoveredMethod(method);
-        })
-        .on("mouseout", () => {
-          setHoveredMethod(null);
+          // Reset the line
+          legendItem.select("line")
+            .attr("stroke-width", 5)
+            .attr("stroke-opacity", 0.8);
+          // Reset the text
+          legendItem.select("text")
+            .style("font-weight", "500")
+            .style("fill", "rgb(51, 51, 51)");
         })
         .on("click", () => {
           const newAlgorithm = selectedAlgorithm === method ? '' : method;
@@ -561,6 +561,24 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
             onAlgorithmSelect(newAlgorithm);
           }
         });
+
+      legendGroup.append("line")
+        .attr("x1", legendLineStart)
+        .attr("y1", 0)
+        .attr("x2", legendLineEnd)
+        .attr("y2", 0)
+        .attr("stroke", methodColors[method as keyof typeof methodColors])
+        .attr("stroke-width", 5)
+        .attr("stroke-opacity", 0.8);
+
+      legendGroup.append("text")
+        .attr("x", 0)
+        .attr("y", -8)
+        .attr("text-anchor", "middle")
+        .style("font-size", "15px")
+        .style("font-weight", "500")
+        .style("fill", "rgb(51, 51, 51)")
+        .text(methodDisplayNames[method as keyof typeof methodDisplayNames]);
     });
     }, 100); // 100ms delay
 

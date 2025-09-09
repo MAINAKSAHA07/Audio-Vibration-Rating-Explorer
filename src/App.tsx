@@ -183,6 +183,8 @@ function App() {
   const handleCategorySelect = (category: string) => {
     console.log('🔄 handleCategorySelect called:', {
       category,
+      categoryLength: category.length,
+      isEmpty: category === '',
       currentConnectedCategory: connectedCategory,
       currentConnectedAlgorithm: connectedAlgorithm,
       currentFilterCategories: filterState.categories
@@ -265,24 +267,14 @@ function App() {
       });
     } else {
       // Clear subcategory selection
-      // If we have a connected category, restore it; otherwise clear all categories
-      if (connectedCategory) {
-        setFilterState(prev => ({
-          ...prev,
-          categories: [connectedCategory]
-        }));
-        
-        console.log('✅ Subcategory cleared, category restored:', {
-          restoredCategory: connectedCategory
-        });
-      } else {
-        setFilterState(prev => ({
-          ...prev,
-          categories: []
-        }));
-        
-        console.log('✅ Subcategory and categories cleared');
-      }
+      // Don't try to restore parent category here - let the AlgorithmPerformanceSunburst handle it
+      // by calling onCategorySelect(selectedCategory) after clearing the subcategory
+      setFilterState(prev => ({
+        ...prev,
+        categories: []
+      }));
+      
+      console.log('✅ Subcategory cleared, categories cleared (parent category will be restored by AlgorithmPerformanceSunburst)');
     }
   };
 
@@ -544,7 +536,7 @@ function App() {
               onClick={() => setCurrentView('filtered')}
               className={currentView === 'filtered' ? 'active' : ''}
             >
-              📈 Audio dashboard
+              📈 Dataset Visualization
             </button>
             <button
               onClick={() => setCurrentView('upload')}

@@ -141,10 +141,27 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           filterPanelCategory: filterPanelCategoryName,
           selectedSubcategories: categoryGroup.sounds
         });
+      } else {
+        // Handle individual subcategory selection
+        setLocalFilters(prev => ({
+          ...prev,
+          categories: [selectedCategory]
+        }));
+        
+        console.log('✅ FilterPanel updated categories from Sunburst subcategory:', {
+          sunburstCategory: selectedCategory,
+          selectedSubcategories: [selectedCategory]
+        });
       }
     } else {
       console.log('🔄 FilterPanel received category deselection from Sunburst');
-      // Don't clear categories here - let the parent handle it
+      // Clear categories when deselection occurs
+      setLocalFilters(prev => ({
+        ...prev,
+        categories: []
+      }));
+      
+      console.log('✅ FilterPanel cleared categories from Sunburst deselection');
     }
   }, [selectedCategory]);
 
@@ -165,7 +182,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       });
     } else {
       console.log('🔄 FilterPanel received subcategory deselection from Sunburst');
-      // Don't clear categories here - let the parent handle it
+      // Clear categories when subcategory deselection occurs
+      setLocalFilters(prev => ({
+        ...prev,
+        categories: []
+      }));
+      
+      console.log('✅ FilterPanel cleared categories from Sunburst subcategory deselection');
     }
   }, [selectedSubcategory]);
 

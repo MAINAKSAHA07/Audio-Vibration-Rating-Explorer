@@ -1006,7 +1006,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
           {isBackendAvailable && backendHealth ? (
             <div>
               <p style={{ margin: '5px 0' }}><strong>Status:</strong> {backendHealth.status}</p>
-              <p style={{ margin: '5px 0' }}><strong>Algorithms:</strong> {backendHealth.algorithms.join(', ')}</p>
+              <p style={{ margin: '5px 0' }}><strong>Algorithms:</strong> Frequency Shift, HapticGen, Perceptual Mapping, Pitch Match, Top-Rated Sound2Hap, Preference-Weighted Sound2Hap</p>
               <p style={{ margin: '5px 0' }}>{backendHealth.message}</p>
             </div>
           ) : (
@@ -1014,13 +1014,6 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
               <p style={{ margin: '5px 0' }}>
                 🔒 Backend connection blocked by browser security (Mixed Content Policy)
               </p>
-              <div style={{ fontSize: '12px', marginTop: '10px' }}>
-                <strong>Solutions:</strong><br/>
-                1. <strong>Use HTTP version:</strong> Access via <code>http://localhost:8080</code> instead of HTTPS<br/>
-                2. <strong>Browser settings:</strong> Disable mixed content blocking in your browser<br/>
-                3. <strong>Different browser:</strong> Try a different browser with different security settings<br/>
-                4. <strong>Backend is running:</strong> The backend at <code>http://3.144.145.168</code> is working fine
-              </div>
             </div>
           )}
         </div>
@@ -1276,15 +1269,6 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
             
           </div>
           
-            {/* 
-            <h4 style={{ margin: '20px 0 15px 0' }}>🚀 Starting the Backend</h4>
-            <ol style={{ margin: '0', paddingLeft: '20px' }}>
-            <li>Open a terminal and navigate to the backend directory</li>
-            <li>Install requirements: <code>pip install -r requirements.txt</code></li>
-            <li>Start the service: <code>python app.py</code></li>
-            <li>The backend is running on <code>http://3.144.145.168:5001</code></li>
-            </ol>
-            */}
         </div>
       )}
     </div>
