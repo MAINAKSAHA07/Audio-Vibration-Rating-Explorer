@@ -899,10 +899,18 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
     } else if (currentLevel === 'level2') {
       if (params.data && params.data.isCenter) {
         setCurrentLevel('level1');
-        // Clear selectedAlgorithm and trigger bidirectional connection
+        // Clear all selections and trigger bidirectional connections
         setSelectedAlgorithm('');
+        setSelectedCategory('');
+        setSelectedSubcategory('');
         if (onAlgorithmSelect) {
           onAlgorithmSelect('');
+        }
+        if (onCategorySelect) {
+          onCategorySelect('');
+        }
+        if (onSubcategorySelect) {
+          onSubcategorySelect('');
         }
       } else if (params.data && params.data.name) {
         // Preserve the selectedAlgorithm when navigating to level 3
@@ -923,10 +931,14 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
       if (params.data && params.data.isCenter) {
         setCurrentLevel('level2');
         setSelectedCategory('');
+        setSelectedSubcategory('');
         
-        // Trigger bidirectional connection
+        // Trigger bidirectional connections
         if (onCategorySelect) {
           onCategorySelect('');
+        }
+        if (onSubcategorySelect) {
+          onSubcategorySelect('');
         }
       } else if (params.data && params.data.isSubcategory) {
         console.log('🔍 Navigating to Level 4:', {

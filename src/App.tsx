@@ -221,7 +221,34 @@ function App() {
   };
 
   const handleSubcategorySelect = (subcategory: string) => {
+    console.log('🔄 handleSubcategorySelect called:', {
+      subcategory,
+      currentConnectedSubcategory: connectedSubcategory,
+      currentFilterCategories: filterState.categories
+    });
+    
     setConnectedSubcategory(subcategory);
+    
+    if (subcategory) {
+      // Update filter state to include only this subcategory
+      setFilterState(prev => ({
+        ...prev,
+        categories: [subcategory]
+      }));
+      
+      console.log('✅ Subcategory selection updated:', {
+        connectedSubcategory: subcategory,
+        filterCategories: [subcategory]
+      });
+    } else {
+      // Clear subcategory selection
+      setFilterState(prev => ({
+        ...prev,
+        categories: []
+      }));
+      
+      console.log('✅ Subcategory selection cleared');
+    }
   };
 
   const handleFilterChange = (filters: FilterState) => {

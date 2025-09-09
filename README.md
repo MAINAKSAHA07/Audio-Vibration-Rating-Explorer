@@ -46,6 +46,12 @@ Experience all features including the comprehensive dashboard, audio playback, A
   - **Interactive Tooltips** - Detailed information on hover including specific category names and ratings
   - **Method Highlighting** - Dynamic line thickness and opacity changes for focused analysis
   - **Real-time Statistics** - Live data summary with total files, classes, ratings, and categories
+- **Algorithm Performance Sunburst** - Interactive hierarchical visualization featuring:
+  - **Multi-level Navigation** - Drill down from algorithms to categories to subcategories to individual sounds
+  - **Algorithm Win Rate Analysis** - Shows which algorithms win for each sound category
+  - **Bidirectional Filter Integration** - Seamlessly connected with FilterPanel for synchronized exploration
+  - **Real-time Performance Calculation** - Dynamic win rate computation based on selected algorithms
+  - **Interactive Tooltips** - Detailed win statistics and sound counts for each segment
 - **Category Analysis** - Detailed ratings by sound categories
 - **Class Detail View** - Deep dive into specific audio classes
 - **Creative Visualizations** - Advanced D3.js charts including:
@@ -62,12 +68,12 @@ Experience all features including the comprehensive dashboard, audio playback, A
 - **Statistical analysis** with correlation data
 - **Design performance comparisons** across different sound types
 
-### 🎯 **Interactive Navigation**
+### 🔗 **Bidirectional Filter Integration**
 
-- **7 main views** with emoji-enhanced navigation
-- **Filter controls** for category and class selection
-- **Responsive design** for desktop and mobile devices
-- **Real-time data loading** with progress indicators
+- **Seamless FilterPanel ↔ AlgorithmPerformanceSunburst Connection**
+- **Multi-level Navigation** - Drill down from algorithms to categories to subcategories with synchronized filtering
+- **Smart State Management** - Automatic navigation reset and context preservation
+- **Visual Feedback** - Connected selections highlighted with special styling
 
 ## 🛠️ Tech Stack
 
@@ -116,8 +122,10 @@ Audio-Vibration Rating Explorer/
 ├── src/
 │   ├── components/     # React components
 │   │   ├── DashboardOverview.tsx      # Main dashboard (6 charts)
-│   │   ├── FilterControls.tsx         # Navigation controls
-│   │   ├── OverviewChart.tsx          # Overview visualization
+│   │   ├── FilterPanel.tsx            # Advanced filter panel with bidirectional connections
+│   │   ├── SoundGrid.tsx              # Sound grid with integrated visualizations
+│   │   ├── AlgorithmPerformanceSunburst.tsx # Interactive sunburst chart (1300+ lines)
+│   │   ├── OverviewChart.tsx          # Overview visualization with line chart
 │   │   ├── CategoryChart.tsx          # Category analysis
 │   │   ├── ClassDetail.tsx            # Class-specific view
 │   │   ├── AudioPlayer.tsx            # Audio playback component
@@ -318,91 +326,33 @@ The neural network models require additional setup:
 
 ### **Dashboard Features**
 
-#### **Overview Chart - Advanced Dual Visualization**
+- **Overview Chart** - Advanced dual visualization with vibrant color box plot and hierarchical line chart
+- **Category Distribution** - Interactive pie chart with sound type breakdown
+- **Rating Distribution** - Histogram showing rating frequency patterns
+- **Top & Bottom Performers** - Bar chart comparing class performance
+- **Performance Heatmap** - Color-coded matrix showing design-category interactions
+- **Rating vs Frequency** - Scatter plot with trend analysis
+- **Design Correlations** - Correlation matrix between vibration designs
 
-- **Vibrant Color Box Plot**:
-  - Interactive bar chart with gradient overlays and drop shadows
-  - Hover effects with enhanced visual feedback
-  - Color-coded design performance with consistent branding
-  - Real-time value labels on each bar
-- **Hierarchical Line Chart**:
-  - ESC-50 class-based performance tracking (Classes 0-49)
-  - Category background bands for visual organization
-  - Method highlighting with dynamic line thickness
-  - Interactive tooltips with detailed category information
-  - Click selection for class-specific analysis
-- **Real-time Statistics Panel**:
-  - Live data summary with total files, classes, and ratings
-  - Category and method breakdown information
-  - Selected class tracking and display
+### **Bidirectional Filter Integration**
 
-#### **Category Distribution**
-
-- Interactive pie chart showing sound type breakdown
-- Color-coded segments with percentage labels
-- Legend with detailed category information
-
-#### **Rating Distribution**
-
-- Histogram showing rating frequency patterns
-- Interactive bars with hover effects
-- Statistical analysis of rating distribution
-
-#### **Top & Bottom Performers**
-
-- Bar chart comparing class performance
-- Color-coded top performers (red) vs bottom performers (blue)
-- Value labels on each bar for precise reading
-
-#### **Performance Heatmap**
-
-- Color-coded matrix showing design-category interactions
-- Interactive cells with tooltips
-- Gradient legend for rating interpretation
-
-#### **Rating vs Frequency**
-
-- Scatter plot showing rating trends
-- Trend line for pattern analysis
-- Interactive points with detailed information
-
-#### **Design Correlations**
-
-- Correlation matrix between vibration designs
-- Color-coded correlation strength
-- Statistical significance indicators
+- **Algorithm Selection**: Select algorithms in FilterPanel to see performance in AlgorithmPerformanceSunburst
+- **Category Navigation**: Navigate categories in AlgorithmPerformanceSunburst to filter results in FilterPanel
+- **Subcategory Selection**: Click subcategories (e.g., "dog") to show only those sounds in FilterPanel
+- **Multi-level Navigation**: Level 1 (Overview) → Level 2 (Algorithm) → Level 3 (Category) → Level 4 (Subcategory)
+- **Smart State Management**: Automatic reset, context preservation, and visual feedback
 
 ### **Audio Playback Features**
 
-#### **Dual-View Player**
-
-- **Simple Mode**: Basic play/pause controls with time display
-- **Enhanced Mode**: Full waveform visualization with real-time cursor
-- **Dual View**: Side-by-side audio and vibration comparison
-- **Spectrogram**: Frequency analysis visualization
-
-#### **Vibration Design Playback**
-
-- All 6 designs available per audio file
-- Synchronized playback controls
-- Individual design rating display
-- A/B comparison capabilities
+- **Dual-View Player** - Simple and enhanced modes with waveform visualization
+- **Vibration Design Playback** - All 6 designs per audio file with synchronized controls
+- **A/B Comparison** - Side-by-side audio and vibration comparison
 
 ### **Research Assistant**
 
-#### **Quick Questions**
-
-- "Which vibration design is most preferred overall?"
-- "What are the top performing designs by category?"
-- "Show me the most consistent vibration design"
-- "Which design works best for human speech?"
-
-#### **Interactive Analysis**
-
-- Real-time statistical calculations
-- Category-specific insights
-- Design performance comparisons
-- Correlation analysis
+- **Quick Questions** - Pre-built queries for common research questions
+- **Interactive Analysis** - Real-time statistical calculations and insights
+- **Category-specific Insights** - Design performance comparisons across sound types
 
 ## 🔧 Development
 
@@ -431,37 +381,11 @@ The application processes `audio1000_ratings.xlsx` to create:
 - `public/data/summary.json` - Statistical summary
 - `public/data/ratings.csv` - CSV version for debugging
 
-### **Excel Generation Scripts**
+### **Data Generation Scripts**
 
-#### **Comprehensive Excel Generator**
-
-```bash
-cd "Audio Summary"
-python3 generate_audio_vibration_excel.py
-```
-
-Creates detailed Excel files with multiple sheets:
-
-- **All Files**: Complete list of all files with parsed information
-- **Summary**: Key statistics and metrics
-- **Class Statistics**: Breakdown by class (1-5)
-- **Vibration Types**: Analysis of vibration file types
-- **Audio Files Only**: Filtered view of audio files
-- **Vibration Files Only**: Filtered view of vibration files
-- **Files with Both Versions**: Files that have both audio and vibration versions
-
-#### **ESC-50 CSV Generator**
-
-```bash
-cd "Audio Summary"
-python3 generate_esc50_csv.py
-```
-
-Generates CSV files following ESC-50 dataset format:
-
-- **Audio Files CSV**: All audio files with ESC-50 metadata
-- **Vibration Files CSV**: All vibration files with type information
-- **Combined CSV**: Both audio and vibration files in ESC-50 format
+- **Excel Generator** - Creates detailed Excel files with multiple analysis sheets
+- **ESC-50 CSV Generator** - Generates CSV files following ESC-50 dataset format
+- **Data Processing** - Converts Excel to JSON format for web consumption
 
 ### **Component Architecture**
 
@@ -472,76 +396,38 @@ Generates CSV files following ESC-50 dataset format:
 - **Flask API** for backend services
 - **PyTorch models** for neural network inference
 
+### **Bidirectional Connection Implementation**
+
+- **Centralized State Management** in App.tsx with `connectedAlgorithm`, `connectedCategory`, `connectedSubcategory`
+- **Event Handlers** for algorithm, category, and subcategory selection/deselection
+- **Multi-level Navigation System** with automatic reset and context preservation
+- **Smart Data Processing** with full dataset integration and real-time performance calculation
+- **Visual Feedback System** with CSS classes for connected selections
+- **Comprehensive Debug Logging** and error handling
+
 ### **Advanced D3.js Features**
 
-- **Gradient overlays** and drop shadows for enhanced visual appeal
-- **Interactive event handling** with mouseover/mouseout effects
+- **Interactive visualizations** with gradient overlays and hover effects
 - **Dynamic scaling** and responsive chart sizing
-- **Real-time data updates** with state management
-- **Custom tooltip system** with detailed information display
-- **Category-based visual organization** with background bands
+- **Real-time data updates** with custom tooltip system
 
 ## 🌐 Deployment
 
-### **Frontend Deployment (Netlify)**
-
-1. **Connect to Git repository**
-
-   - Push code to GitHub/GitLab
-   - Connect repository to Netlify
-2. **Build settings**
-
-   - Build command: `npm run build`
-   - Publish directory: `build`
-3. **Environment variables** (if needed)
-
-   - Configure in Netlify dashboard
-
-### **Backend Deployment**
-
-The backend can be deployed to various platforms:
-
-1. **AWS**
-2. **Docker**
-
-### **Custom Domain**
-
-- Configure in Netlify DNS settings
-- SSL certificate automatically provided
+- **Frontend**: Netlify with Git-based deployment and automatic builds
+- **Backend**: Deployable to AWS, Docker, or other platforms
+- **Custom Domain**: Configure in Netlify DNS settings with automatic SSL
 
 ## 📈 Performance
 
-### **Optimizations**
-
-- **Lazy loading** for large audio files
-- **Pre-processed visualizations** for faster loading
-- **Responsive images** and optimized assets
-- **CDN delivery** for global performance
-- **Neural network caching** for faster inference
-
-### **Browser Support**
-
-- **Modern browsers** (Chrome, Firefox, Safari, Edge)
-- **Mobile responsive** design
-- **Progressive Web App** features
+- **Optimizations**: Lazy loading, pre-processed visualizations, CDN delivery
+- **Browser Support**: Modern browsers with mobile responsive design
+- **Neural Network Caching** for faster inference
 
 ## 🤝 Contributing
 
-### **Development Setup**
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-### **Code Style**
-
-- **TypeScript** for type safety
-- **ESLint** for code quality
-- **Prettier** for formatting
-- **Component-based** architecture
-- **Python PEP 8** for backend code
+- **Development Setup**: Fork repository, create feature branch, submit pull request
+- **Code Style**: TypeScript, ESLint, Prettier, component-based architecture
+- **Backend**: Python PEP 8 standards
 
 ## 📄 License
 
@@ -560,12 +446,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### **Research Features**
 
-- **Class-specific Performance Tracking**: Detailed analysis of vibration design effectiveness across 50 ESC-50 classes
-- **Category-based Insights**: Understanding of design performance in different environmental contexts
-- **Interactive Visualization**: Enables researchers to explore data patterns and correlations dynamically
-- **Export-ready Visualizations**: High-quality charts suitable for academic papers and presentations
-- **Comprehensive Data Coverage**: 6000+ ratings providing robust statistical analysis capabilities
-- **AI Model Comparison**: Direct comparison between traditional algorithms and neural network approaches
+- **Class-specific Performance Tracking** across 50 ESC-50 classes
+- **Bidirectional Filter Integration** for seamless data exploration
+- **Algorithm Win Rate Analysis** with real-time calculations
+- **Multi-level Data Exploration** from algorithm overview to individual sounds
+- **Export-ready Visualizations** for academic papers
+- **Comprehensive Data Coverage** with 6000+ ratings
+- **AI Model Comparison** between traditional algorithms and neural networks
 
 ## 👨‍💻 Author
 
