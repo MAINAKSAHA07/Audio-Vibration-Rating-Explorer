@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { fetchRatings, fetchSummary, fetchMetadata, RatingData, SummaryData, MetadataData } from './utils/api';
+import { fetchRatings, fetchSummary, RatingData, SummaryData } from './utils/api';
 import { 
-  getCategoryStats, 
   getClassStats, 
   getUniqueCategories, 
   getUniqueClasses,
   getAudioFilesForClass
 } from './utils/dataHelpers';
 import OverviewChart from './components/OverviewChart';
-import CategoryChart from './components/CategoryChart';
 import CategoryGrid from './components/CategoryGrid';
 import ClassDetail from './components/ClassDetail';
 
@@ -26,15 +24,12 @@ import DetailView from './components/DetailView';
 import AudioUpload from './components/AudioUpload';
 import AlgorithmPerformanceSunburst from './components/AlgorithmPerformanceSunburst';
 
-import { getAWSS3Service, getAWSS3Config } from './utils/awsS3';
-import { AWS_CONFIG } from './config/aws';
 
 type ViewType = 'overview' | 'category' | 'class' | 'visualization' | 'creative' | 'chatbot' | 'dashboard' | 'enhanced' | 'filtered' | 'upload' | 'connected';
 
 function App() {
   const [ratings, setRatings] = useState<RatingData[]>([]);
   const [summary, setSummary] = useState<SummaryData | null>(null);
-  const [metadata, setMetadata] = useState<MetadataData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -72,19 +67,16 @@ function App() {
       try {
         setLoading(true);
         console.log('Loading enhanced data...');
-        const [ratingsData, summaryData, metadataData] = await Promise.all([
+        const [ratingsData, summaryData] = await Promise.all([
           fetchRatings(),
-          fetchSummary(),
-          fetchMetadata()
+          fetchSummary()
         ]);
         console.log('Enhanced data loaded successfully:', {
           ratingsCount: ratingsData.length,
-          summary: summaryData,
-          metadata: metadataData
+          summary: summaryData
         });
         setRatings(ratingsData);
         setSummary(summaryData);
-        setMetadata(metadataData);
       } catch (err) {
         console.error('Error loading data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -96,27 +88,6 @@ function App() {
     loadData();
   }, []);
 
-  // Initialize AWS S3 service
-  useEffect(() => {
-    if (AWS_CONFIG.FEATURES.AWS_ENABLED) {
-      console.log('🚀 Initializing AWS S3 service...');
-      try {
-        const config = getAWSS3Config();
-        const service = getAWSS3Service();
-        console.log('✅ AWS S3 service initialized successfully');
-        console.log('📋 AWS Config:', { 
-          bucketName: config.bucketName, 
-          region: config.region,
-          cloudfrontEnabled: AWS_CONFIG.CLOUDFRONT.ENABLED,
-          baseUrl: service.getAudioUrl('test.wav').replace('/test.wav', '')
-        });
-      } catch (error) {
-        console.error('❌ Failed to initialize AWS S3 service:', error);
-      }
-    } else {
-      console.log('⚠️ AWS S3 disabled, using local files only');
-    }
-  }, []);
 
   if (loading) {
     return (

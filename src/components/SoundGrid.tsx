@@ -43,6 +43,17 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
   const [localSortOrder, setLocalSortOrder] = useState<'asc' | 'desc'>(filterState.sortOrder);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Batching state for performance optimization
+  const [displayedSounds, setDisplayedSounds] = useState<SoundCard[]>([]);
+  const [currentBatch, setCurrentBatch] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [backgroundBatches, setBackgroundBatches] = useState<SoundCard[][]>([]);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
+  
+  const BATCH_SIZE = 100; // Load 100 sounds per batch
+  const BACKGROUND_LOAD_DELAY = 4000; // Start background loading after 4 seconds
 
   // Sync local sort state with filterState
   useEffect(() => {
@@ -80,7 +91,10 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
   // Process and filter sounds with error handling and performance optimization
   const processedSounds = useMemo(() => {
     try {
-      setIsProcessing(true);
+      // Only set processing state if we're not already processing
+      if (!isProcessing) {
+        setIsProcessing(true);
+      }
       setError(null);
       
       console.log('🔍 Filtering with state:', filterState);
@@ -88,6 +102,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       
       if (ratings.length === 0) {
         console.warn('⚠️ No ratings data available');
+        setIsProcessing(false);
         return [];
       }
       
@@ -326,6 +341,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       });
 
       setIsProcessing(false);
+      setRetryCount(0); // Reset retry count on successful processing
       return soundCards;
       
     } catch (err) {
@@ -335,6 +351,84 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       return [];
     }
   }, [ratings, filterState, categoryGroups]);
+
+  // Initialize display with first batch when processedSounds changes
+  useEffect(() => {
+    if (processedSounds.length > 0) {
+      const firstBatch = processedSounds.slice(0, BATCH_SIZE);
+      setDisplayedSounds(firstBatch);
+      setCurrentBatch(1);
+      setBackgroundBatches([]);
+      setBackgroundLoading(false);
+      
+      // Start background loading after delay
+      const backgroundTimer = setTimeout(() => {
+        startBackgroundLoading();
+      }, BACKGROUND_LOAD_DELAY);
+      
+      return () => clearTimeout(backgroundTimer);
+    } else {
+      setDisplayedSounds([]);
+      setCurrentBatch(0);
+      setBackgroundBatches([]);
+      setBackgroundLoading(false);
+    }
+  }, [processedSounds, BATCH_SIZE, BACKGROUND_LOAD_DELAY]);
+
+  // Background loading function
+  const startBackgroundLoading = useCallback(() => {
+    if (processedSounds.length <= BATCH_SIZE) {
+      return;
+    }
+    
+    setBackgroundLoading(true);
+    
+    const remainingSounds = processedSounds.slice(BATCH_SIZE);
+    const batches: SoundCard[][] = [];
+    
+    // Create batches
+    for (let i = 0; i < remainingSounds.length; i += BATCH_SIZE) {
+      batches.push(remainingSounds.slice(i, i + BATCH_SIZE));
+    }
+    
+    // Load batches progressively
+    let batchIndex = 0;
+    const loadNextBatch = () => {
+      if (batchIndex < batches.length) {
+        setBackgroundBatches(prev => [...prev, batches[batchIndex]]);
+        batchIndex++;
+        
+        // Load next batch after a small delay
+        setTimeout(loadNextBatch, 500);
+      } else {
+        setBackgroundLoading(false);
+      }
+    };
+    
+    loadNextBatch();
+  }, [processedSounds, BATCH_SIZE]);
+
+  // Load more function for user interaction
+  const loadMoreSounds = useCallback(() => {
+    if (isLoadingMore || backgroundBatches.length === 0) return;
+    
+    setIsLoadingMore(true);
+    
+    // Add next batch from backgroundBatches
+    const nextBatch = backgroundBatches[0];
+    const remainingBatches = backgroundBatches.slice(1);
+    
+    setDisplayedSounds(prev => [...prev, ...nextBatch]);
+    setBackgroundBatches(remainingBatches);
+    setCurrentBatch(prev => prev + 1);
+    
+    setTimeout(() => setIsLoadingMore(false), 100);
+  }, [isLoadingMore, backgroundBatches, displayedSounds.length]);
+
+  // Check if more sounds can be loaded
+  const canLoadMore = backgroundBatches.length > 0 || (processedSounds.length > displayedSounds.length && !backgroundLoading);
+  const totalAvailable = processedSounds.length;
+  const totalDisplayed = displayedSounds.length;
 
   // Memoized sound card component to prevent unnecessary re-renders
   const SoundCard = useCallback<React.FC<{ sound: SoundCard }>>(({ sound }) => {
@@ -397,6 +491,20 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
     );
   }, [categoryGroups]);
 
+  // Retry function to clear error and reprocess data
+  const handleRetry = useCallback(() => {
+    if (retryCount >= 3) {
+      setError('Maximum retry attempts reached. Please refresh the page or check your data source.');
+      return;
+    }
+    
+    setError(null);
+    setIsProcessing(false);
+    setRetryCount(prev => prev + 1);
+    // Force a re-render by updating a dummy state or just clearing the error
+    // The useMemo will automatically recalculate when error is cleared
+  }, [retryCount]);
+
   // Error state
   if (error) {
     return (
@@ -404,7 +512,28 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
         <div className="error-message">
           <h3>Error Loading Sounds</h3>
           <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
+          {retryCount > 0 && (
+            <p className="retry-info">
+              Retry attempts: {retryCount}/3
+            </p>
+          )}
+          <div className="error-actions">
+            <button 
+              onClick={handleRetry} 
+              className="retry-button"
+              disabled={retryCount >= 3}
+            >
+              {retryCount >= 3 ? 'Max Retries Reached' : 'Retry'}
+            </button>
+            {retryCount >= 3 && (
+              <button 
+                onClick={() => window.location.reload()} 
+                className="refresh-button"
+              >
+                Refresh Page
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -527,7 +656,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
           <div className="results-header-left">
             <h2>Filtered Results</h2>
             {/* No results message moved here for better layout */}
-            {!isProcessing && processedSounds.length === 0 && (
+            {!isProcessing && totalAvailable === 0 && (
               <p className="no-results">
                 {filterState.search 
                   ? `No sounds found for "${filterState.search}". Try a different search term or clear the search.`
@@ -543,14 +672,16 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
               {isProcessing ? (
                 <span className="processing-indicator">Processing sounds...</span>
               ) : (
-                <span className="results-count">
-                  {processedSounds.length} sounds found
-                  {filterState.search && (
-                    <span className="search-highlight">
-                      {' '}for "{filterState.search}"
-                    </span>
-                  )}
-                </span>
+                <div className="results-count">
+                  <span className="main-count">
+                    Showing {totalDisplayed} of {totalAvailable} sounds
+                    {filterState.search && (
+                      <span className="search-highlight">
+                        {' '}for "{filterState.search}"
+                      </span>
+                    )}
+                  </span>
+                </div>
               )}
             </div>
             
@@ -591,11 +722,39 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
             <div className="loading-spinner">Processing sounds...</div>
           </div>
         ) : (
-          <div className="sound-grid">
-            {processedSounds.map(sound => (
-              <SoundCard key={sound.id} sound={sound} />
-            ))}
-          </div>
+          <>
+            <div className="sound-grid">
+              {displayedSounds.map(sound => (
+                <SoundCard key={sound.id} sound={sound} />
+              ))}
+            </div>
+            
+            {/* Load More Section */}
+            {canLoadMore && (
+              <div className="load-more-section">
+                <button 
+                  onClick={loadMoreSounds}
+                  disabled={isLoadingMore || backgroundBatches.length === 0}
+                  className="load-more-button"
+                >
+                  {isLoadingMore ? (
+                    <span>⏳ Loading...</span>
+                  ) : backgroundBatches.length > 0 ? (
+                    <span>📈 Load More</span>
+                  ) : backgroundLoading ? (
+                    <span>📈 Load More</span>
+                  ) : (
+                    <span>📈 Load More</span>
+                  )}
+                </button>
+                
+                
+                <div className="load-more-info">
+                  <span>Showing {totalDisplayed} of {totalAvailable} total sounds</span>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

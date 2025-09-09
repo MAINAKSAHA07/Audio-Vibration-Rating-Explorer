@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { awsS3Service } from '../utils/awsS3';
 
 export interface AudioFileState {
   url: string | null;
   loading: boolean;
   error: string | null;
-  source: 'aws' | 'local' | null;
+  source: 'local' | null;
 }
 
 export interface UseAudioFilesReturn {
@@ -44,17 +43,15 @@ export const useAudioFiles = (): UseAudioFilesReturn => {
     console.log(`🔍 useAudioFiles: Setting loading state for ${filename}`);
 
     try {
-      console.log(`🔍 useAudioFiles: Calling awsS3Service.getAudioFileWithFallback for ${filename}`);
-      const url = await awsS3Service.getAudioFileWithFallback(filename);
-      const source = url.includes('s3.amazonaws.com') ? 'aws' : 'local';
-      
-      console.log(`🔍 useAudioFiles: Successfully got URL for ${filename}: ${url} (source: ${source})`);
+      // Use local audio files only
+      const url = `/audio/${filename}`;
+      console.log(`🔍 useAudioFiles: Using local audio file: ${url}`);
       
       updateFileState(filename, { 
         url, 
         loading: false, 
         error: null, 
-        source 
+        source: 'local'
       });
       
       return url;
@@ -82,14 +79,14 @@ export const useAudioFiles = (): UseAudioFilesReturn => {
     updateFileState(filename, { loading: true, error: null });
 
     try {
-      const url = await awsS3Service.getVibrationFileWithFallback(filename);
-      const source = url.includes('s3.amazonaws.com') ? 'aws' : 'local';
+      // Use local vibration files only
+      const url = `/vibration/${filename}`;
       
       updateFileState(filename, { 
         url, 
         loading: false, 
         error: null, 
-        source 
+        source: 'local'
       });
       
       return url;

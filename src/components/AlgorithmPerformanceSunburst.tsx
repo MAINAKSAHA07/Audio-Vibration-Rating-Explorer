@@ -143,7 +143,10 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
   // Calculate algorithm performance from ratings data
   const calculateAlgorithmPerformance = async () => {
     try {
-      setIsLoading(true);
+      // Only show loading if we don't have data yet
+      if (!performanceData) {
+        setIsLoading(true);
+      }
       setError(null);
       
       // Use ratings prop if available, otherwise fetch from CSV
@@ -318,11 +321,17 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
 
       setPerformanceData(performance);
       setSoundData(allSoundData);
-      setIsLoading(false);
+      // Only set loading to false if we were actually loading
+      if (isLoading) {
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error('Error calculating algorithm performance:', error);
       setError(error instanceof Error ? error.message : 'Unknown error occurred');
-      setIsLoading(false);
+      // Only set loading to false if we were actually loading
+      if (isLoading) {
+        setIsLoading(false);
+      }
     }
   };
 

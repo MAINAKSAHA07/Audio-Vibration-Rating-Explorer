@@ -8,12 +8,6 @@ Create a `.env.local` file in your project root with the following variables:
 # Backend Configuration
 REACT_APP_BACKEND_URL=http://3.138.192.243:5000
 
-# AWS Configuration (if using S3 for audio files)
-REACT_APP_AWS_ENABLED=false
-REACT_APP_AWS_BUCKET_NAME=aduiovibrations
-REACT_APP_AWS_REGION=us-east-2
-REACT_APP_AWS_ACCESS_KEY_ID=
-REACT_APP_AWS_SECRET_ACCESS_KEY=
 
 # Feature Flags
 REACT_APP_FALLBACK_TO_LOCAL=true
@@ -31,7 +25,6 @@ If you need to override the backend URL, add these environment variables in your
 
 ```
 REACT_APP_BACKEND_URL = http://3.138.192.243:5000
-REACT_APP_AWS_ENABLED = false
 REACT_APP_FALLBACK_TO_LOCAL = true
 REACT_APP_PRELOAD_AUDIO = false
 ```
