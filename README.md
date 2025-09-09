@@ -154,7 +154,8 @@ Audio-Vibration Rating Explorer/
 │   ├── FreqShift.py   # Frequency shift algorithm
 │   ├── HapticGen.py   # Haptic generation algorithm
 │   ├── Percept.py     # Perceptual mapping algorithm
-│   ├── PitchWrapper.py # Pitch matching algorithm
+│   ├── Pitch.py        # Python pitch matching algorithm
+│   ├── PitchWrapper.py # Legacy MATLAB wrapper (deprecated)
 │   ├── normalization.py # Audio normalization
 │   └── model_inference/
 │       ├── inference_model1.py # Top-Rated Sound2Hap model

@@ -17,7 +17,7 @@ audioread>=3.0.0
 # Additional production dependencies
 psutil>=5.9.0
 python-dotenv>=1.0.0
-
+mosqito>=1.0.0
 # MATLAB Engine for Python (for Pitch algorithm)
 # Note: This requires MATLAB to be installed on the system
 # Install with: cd /Applications/MATLAB_R2024a.app/extern/engines/python && python setup.py install

@@ -49,20 +49,32 @@ except ImportError as e:
     NEURAL_MODELS_AVAILABLE = False
     print(f"Available files: {list(audioalgo_dir.glob('*.py'))}")
 
-# Try to import MATLAB-dependent algorithm
-# Note: MATLAB Engine for Python is optional - if not available, the pitch algorithm will be disabled
+# Try to import Python Pitch algorithm
+# Note: This is now a pure Python implementation, no MATLAB required
 try:
-    from PitchWrapper import process_file as pitch_process
+    from Pitch import process_audio_file, get_config
     PITCH_AVAILABLE = True
-    print("✅ Successfully imported Pitch algorithm (MATLAB Engine available)")
+    print("✅ Successfully imported Python Pitch algorithm")
+    
+    # Create a wrapper function that matches the expected interface
+    def pitch_process(in_wav, out_wav, **kwargs):
+        """Wrapper function to match the expected interface"""
+        try:
+            config = get_config()
+            success, result = process_audio_file(in_wav, out_wav, config)
+            return success
+        except Exception as e:
+            print(f"❌ Error in Python Pitch algorithm: {e}")
+            return False
+            
 except ImportError as e:
-    print(f"⚠️ MATLAB Engine for Python not available - Pitch algorithm will be disabled")
+    print(f"⚠️ Python Pitch algorithm not available - Pitch algorithm will be disabled")
     print(f"   Error details: {e}")
-    print("   This is normal if MATLAB is not installed. The backend will continue without the pitch algorithm.")
+    print("   This may be due to missing dependencies (numpy, scipy, soundfile, mosqito).")
     PITCH_AVAILABLE = False
-    # Create a dummy function for when MATLAB is not available
+    # Create a dummy function for when dependencies are not available
     def pitch_process(*args, **kwargs):
-        print("❌ Pitch algorithm requires MATLAB Engine for Python (not available)")
+        print("❌ Pitch algorithm requires Python dependencies (not available)")
         return False
 
 app = Flask(__name__)
@@ -344,7 +356,7 @@ def generate_vibrations():
                 results['percept'] = {'error': str(e)}
             
             try:
-                # Pitch algorithm (MATLAB-based sound-to-touch crossmodal pitch matching)
+                # Pitch algorithm (Python-based sound-to-touch crossmodal pitch matching)
                 if PITCH_AVAILABLE:
                     pitch_output = temp_path / 'pitch_output.wav'
                     success = pitch_process(
@@ -361,7 +373,7 @@ def generate_vibrations():
                     else:
                         results['pitch'] = {'error': 'Pitch algorithm failed to generate output'}
                 else:
-                    results['pitch'] = {'error': 'Pitch algorithm requires MATLAB Engine for Python (not available - this is normal if MATLAB is not installed)'}
+                    results['pitch'] = {'error': 'Pitch algorithm requires Python dependencies (numpy, scipy, soundfile, mosqito) - not available'}
                 
             except Exception as e:
                 print(f"Error in Pitch algorithm: {e}")

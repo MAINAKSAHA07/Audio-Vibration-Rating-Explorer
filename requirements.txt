@@ -1,2 +1,8 @@
 pandas>=1.5.0
-openpyxl>=3.0.0 
+openpyxl>=3.0.0
+
+# Python Pitch algorithm dependencies
+numpy>=1.24.0
+scipy>=1.10.0
+soundfile>=0.12.0
+mosqito>=1.0.0 
