@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { RatingData } from '../utils/api';
 import colors from '../colors.js';
+import SelectionConflictPopup from './SelectionConflictPopup';
 
 interface AlgorithmPerformanceSunburstProps {
   onDetailView?: (data: DetailViewData) => void;
@@ -87,6 +88,7 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  const [showConflictPopup, setShowConflictPopup] = useState(false);
   
   console.log('🔍 AlgorithmPerformanceSunburst props:', {
     externalSelectedAlgorithm,
@@ -863,6 +865,13 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
 
   // Handle chart click events
   const handleChartClick = (params: any) => {
+    // Check if there's a selected point from the line graph
+    if (selectedPoint) {
+      console.log('⚠️ Line graph point is selected, showing conflict popup');
+      setShowConflictPopup(true);
+      return;
+    }
+    
     if (currentLevel === 'level1') {
       if (params.data && params.data.algorithm && !params.data.category) {
         // Clicked on algorithm (inner ring) - go to level 2
@@ -1317,16 +1326,74 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
         )}
         
         {!isLoading && !error && (
-          <ReactECharts 
-            option={sunburstOption} 
-            style={{ height: '400px', width: '100%' }}
-            opts={{ renderer: 'canvas' }}
-            onEvents={{
-              click: handleChartClick
-            }}
-          />
+          <div style={{ position: 'relative' }}>
+            <ReactECharts 
+              option={sunburstOption} 
+              style={{ 
+                height: '400px', 
+                width: '100%',
+                opacity: selectedPoint ? 0.5 : 1,
+                transition: 'opacity 0.3s ease'
+              }}
+              opts={{ renderer: 'canvas' }}
+              onEvents={{
+                click: handleChartClick
+              }}
+            />
+            {selectedPoint && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+                borderRadius: '8px'
+              }}>
+                <div style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  color: 'white',
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  textAlign: 'center'
+                }}>
+                  🔒 Sunburst disabled<br/>
+                  <span style={{ fontSize: '12px', opacity: 0.8 }}>
+                    Deselect line graph point to use
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
+      
+      {/* Selection Conflict Popup */}
+      {selectedPoint && (
+        <SelectionConflictPopup
+          isOpen={showConflictPopup}
+          onClose={() => setShowConflictPopup(false)}
+          onDeselectPoint={() => {
+            // Clear the selected point by calling the algorithm select with empty string
+            if (onAlgorithmSelect) {
+              onAlgorithmSelect('');
+            }
+            if (onCategorySelect) {
+              onCategorySelect('');
+            }
+            if (onSubcategorySelect) {
+              onSubcategorySelect('');
+            }
+          }}
+          selectedPoint={selectedPoint}
+        />
+      )}
     </div>
   );
 };

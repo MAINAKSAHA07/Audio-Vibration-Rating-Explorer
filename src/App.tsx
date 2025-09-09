@@ -356,13 +356,9 @@ function App() {
           onNavigateToFiltered={() => setCurrentView('filtered')} 
           filterState={filterState}
           ratings={ratings}
-          onAlgorithmSelect={(algorithm) => {
-            if (algorithm) {
-              setFilterState(prev => ({ ...prev, algorithms: [algorithm] }));
-            } else {
-              setFilterState(prev => ({ ...prev, algorithms: [] }));
-            }
-          }}
+          onAlgorithmSelect={handleAlgorithmSelect}
+          onCategorySelect={handleCategorySelect}
+          onSubcategorySelect={handleSubcategorySelect}
         />;
       
       case 'enhanced':

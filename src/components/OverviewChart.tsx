@@ -129,6 +129,14 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
     const svg = d3.select(lineChartRef.current);
     svg.selectAll("*").remove();
 
+    // Method name mapping for display
+    const methodDisplayNames = {
+      'freqshift': 'Frequency Shifting',
+      'hapticgen': 'HapticGen', 
+      'percept': 'Perception-Level Mapping',
+      'pitchmatch': 'Pitch Matching'
+    };
+
       // Get the container width for responsive design
       const containerWidth = lineChartRef.current.parentElement?.clientWidth || 800;
       const width = Math.max(Math.min(containerWidth - 40, 1200), 800); // Max width of 1200px, min 800px
@@ -330,11 +338,36 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
         .attr("class", `point-${method}`)
         .attr("cx", (d: any) => xScale(d.class))
         .attr("cy", (d: any) => yScale(d.rating))
-        .attr("r", selectedAlgorithm === method ? 5 : 3)
+        .attr("r", (d: any) => {
+          // Check if this point is connected to filter panel
+          const isConnected = selectedPoint && 
+            selectedPoint.algorithm === method && 
+            selectedPoint.class === d.class;
+          return isConnected ? 6 : (selectedAlgorithm === method ? 5 : 3);
+        })
         .attr("fill", methodColors[method as keyof typeof methodColors])
-        .attr("stroke", "#fff")
-        .attr("stroke-width", selectedAlgorithm === method ? 2 : 1)
+        .attr("stroke", (d: any) => {
+          // Check if this point is connected to filter panel
+          const isConnected = selectedPoint && 
+            selectedPoint.algorithm === method && 
+            selectedPoint.class === d.class;
+          return isConnected ? "#ff6b6b" : "#fff"; // Red stroke for connected points
+        })
+        .attr("stroke-width", (d: any) => {
+          // Check if this point is connected to filter panel
+          const isConnected = selectedPoint && 
+            selectedPoint.algorithm === method && 
+            selectedPoint.class === d.class;
+          return isConnected ? 3 : (selectedAlgorithm === method ? 2 : 1);
+        })
         .style("cursor", "pointer")
+        .style("filter", (d: any) => {
+          // Add glow effect for connected points
+          const isConnected = selectedPoint && 
+            selectedPoint.algorithm === method && 
+            selectedPoint.class === d.class;
+          return isConnected ? "drop-shadow(0 0 8px #ff6b6b)" : "none";
+        })
                  .on("mouseover", function(event, d: any) {
            d3.select(this).attr("r", 7);
            setHoveredMethod(method);
@@ -354,10 +387,15 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
              .attr("class", "tooltip")
              .attr("transform", `translate(${mousePos[0] + 10}, ${mousePos[1] - 30})`);
            
+           // Check if this point is connected to filter panel
+           const isConnected = selectedPoint && 
+             selectedPoint.algorithm === method && 
+             selectedPoint.class === d.class;
+           
            // Tooltip background
            tooltip.append("rect")
              .attr("width", 220)
-             .attr("height", 80)
+             .attr("height", isConnected ? 95 : 80)
              .attr("fill", "white")
              .attr("stroke", "#ddd")
              .attr("stroke-width", 1)
@@ -372,7 +410,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
              .style("font-size", "12px")
              .style("font-weight", "bold")
              .style("fill", methodColors[method as keyof typeof methodColors])
-             .text(method);
+             .text(methodDisplayNames[method as keyof typeof methodDisplayNames]);
            
            // Rating value
            tooltip.append("text")
@@ -405,9 +443,24 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
              .style("font-size", "9px")
              .style("fill", "#666")
              .text("Wins for individual sounds");
+           
+           // Connection status indicator
+           if (isConnected) {
+             tooltip.append("text")
+               .attr("x", 10)
+               .attr("y", 90)
+               .style("font-size", "9px")
+               .style("fill", "#ff6b6b")
+               .style("font-weight", "bold")
+               .text("🔗 Connected to Filter Panel");
+           }
          })
-                 .on("mouseout", function() {
-           d3.select(this).attr("r", selectedAlgorithm === method ? 5 : 3);
+                 .on("mouseout", function(event, d: any) {
+           // Check if this point is connected to filter panel
+           const isConnected = selectedPoint && 
+             selectedPoint.algorithm === method && 
+             selectedPoint.class === d.class;
+           d3.select(this).attr("r", isConnected ? 6 : (selectedAlgorithm === method ? 5 : 3));
            setHoveredMethod(null);
            svg.selectAll(".tooltip").remove();
          })
@@ -435,12 +488,37 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
               if (onAlgorithmSelect) {
                 onAlgorithmSelect(newAlgorithm);
               }
+              // Clear category selection when deselecting point
+              if (onCategorySelect) {
+                onCategorySelect('');
+              }
+              if (onSubcategorySelect) {
+                onSubcategorySelect('');
+              }
             } else {
               setSelectedPoint(newSelectedPoint);
               const newAlgorithm = method;
               setSelectedAlgorithm(newAlgorithm);
               if (onAlgorithmSelect) {
                 onAlgorithmSelect(newAlgorithm);
+              }
+              
+              // Update category selection to match the clicked point
+              if (onCategorySelect) {
+                // Map the category to the appropriate filter panel category
+                const categoryGroup = getCategoryForClass(d.class);
+                const filterPanelCategoryName = categoryGroup === 'Natural Soundscapes' ? 'Natural soundscapes & water' :
+                                              categoryGroup === 'Human Non-Speech' ? 'Human, non-speech' :
+                                              categoryGroup === 'Interior Domestic' ? 'Interior/domestic' :
+                                              categoryGroup === 'Exterior Urban' ? 'Exterior/urban' :
+                                              categoryGroup; // Animals stays the same
+                onCategorySelect(filterPanelCategoryName);
+              }
+              
+              // Update subcategory selection to match the clicked point
+              if (onSubcategorySelect) {
+                const specificName = getSpecificCategoryName(d.class);
+                onSubcategorySelect(specificName);
               }
             }
           }
@@ -497,6 +575,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
       .style("fill", "#2c3e50")
       .text("Algorithm Wins Across Classes");
     
+    
     // Add subtitle
     {/*svg.append("text")
       .attr("x", width / 2)
@@ -510,14 +589,6 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
     // Add legend above the chart
     const legend = svg.append("g")
       .attr("transform", `translate(${margin.left}, 65)`);
-
-    // Method name mapping for display
-    const methodDisplayNames = {
-      'freqshift': 'Frequency Shifting',
-      'hapticgen': 'HapticGen', 
-      'percept': 'Perception-Level Mapping',
-      'pitchmatch': 'Pitch Matching'
-    };
 
     // Calculate spacing for horizontal legend - better distribution
     const legendItemWidth = chartWidth / methods.length;
