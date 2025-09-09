@@ -14,6 +14,11 @@ interface OverviewChartProps {
   ratings?: RatingData[];
   onAlgorithmSelect?: (algorithm: string) => void;
   onSoundSelect?: (sound: any) => void;
+  selectedAlgorithm?: string;
+  selectedCategory?: string;
+  onCategorySelect?: (category: string) => void;
+  selectedSubcategory?: string;
+  onSubcategorySelect?: (subcategory: string) => void;
 }
 
 const OverviewChart: React.FC<OverviewChartProps> = ({ 
@@ -22,7 +27,12 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
   filterState,
   ratings: externalRatings,
   onAlgorithmSelect,
-  onSoundSelect
+  onSoundSelect,
+  selectedAlgorithm: externalSelectedAlgorithm,
+  selectedCategory: externalSelectedCategory,
+  onCategorySelect,
+  selectedSubcategory: externalSelectedSubcategory,
+  onSubcategorySelect
 }) => {
   const lineChartRef = useRef<SVGSVGElement>(null);
   const [ratings, setRatings] = useState<RatingData[]>([]);
@@ -579,10 +589,13 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
           <AlgorithmPerformanceSunburst 
             onDetailView={(data) => setDetailViewData(data)} 
             onSoundSelect={onSoundSelect}
-            selectedAlgorithm={selectedAlgorithm}
+            selectedAlgorithm={externalSelectedAlgorithm || selectedAlgorithm}
             selectedPoint={selectedPoint}
             hoveredMethod={hoveredMethod}
-            ratings={filteredRatings}
+            ratings={ratings}
+            onAlgorithmSelect={onAlgorithmSelect}
+            onCategorySelect={onCategorySelect}
+            onSubcategorySelect={onSubcategorySelect}
           />
       </div>
       

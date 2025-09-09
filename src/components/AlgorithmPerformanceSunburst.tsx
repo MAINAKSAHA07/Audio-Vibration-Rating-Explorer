@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { RatingData } from '../utils/api';
 import colors from '../colors.js';
@@ -10,6 +10,9 @@ interface AlgorithmPerformanceSunburstProps {
   selectedPoint?: {algorithm: string, class: number, category: string, subcategory: string} | null;
   ratings?: RatingData[];
   hoveredMethod?: string | null;
+  onAlgorithmSelect?: (algorithm: string) => void;
+  onCategorySelect?: (category: string) => void;
+  onSubcategorySelect?: (subcategory: string) => void;
 }
 
 export interface DetailViewData {
@@ -68,30 +71,57 @@ interface SoundData {
 
 type NavigationLevel = 'level1' | 'level2' | 'level3' | 'level4';
 
-const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> = ({ onDetailView, onSoundSelect, selectedAlgorithm: externalSelectedAlgorithm, selectedPoint, ratings, hoveredMethod }) => {
+const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> = ({ 
+  onDetailView, 
+  onSoundSelect, 
+  selectedAlgorithm: externalSelectedAlgorithm, 
+  selectedPoint, 
+  ratings, 
+  hoveredMethod,
+  onAlgorithmSelect,
+  onCategorySelect,
+  onSubcategorySelect
+}) => {
   const [performanceData, setPerformanceData] = useState<PerformanceData | null>(null);
   const [currentLevel, setCurrentLevel] = useState<NavigationLevel>('level1');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  
+  console.log('🔍 AlgorithmPerformanceSunburst props:', {
+    externalSelectedAlgorithm,
+    ratingsLength: ratings?.length,
+    selectedPoint,
+    hoveredMethod,
+    currentLevel
+  });
   const [chartData, setChartData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [soundData, setSoundData] = useState<SoundData[]>([]);
 
-  // Update selected algorithm when external prop changes (but don't force navigation)
+  // Update selected algorithm when external prop changes
   useEffect(() => {
-    if (externalSelectedAlgorithm && externalSelectedAlgorithm !== selectedAlgorithm) {
-      // Only update if we're at level 1 (overview) to show the algorithm is selected in line chart
-      // Don't force navigation to level 2 - let user control the sunburst independently
-      if (currentLevel === 'level1') {
-        setSelectedAlgorithm(externalSelectedAlgorithm);
+    console.log('🔍 AlgorithmPerformanceSunburst - externalSelectedAlgorithm changed:', {
+      externalSelectedAlgorithm,
+      selectedAlgorithm,
+      currentLevel,
+      previousValue: selectedAlgorithm
+    });
+    
+    if (externalSelectedAlgorithm !== selectedAlgorithm) {
+      console.log('🔄 Setting selectedAlgorithm to:', externalSelectedAlgorithm);
+      setSelectedAlgorithm(externalSelectedAlgorithm || '');
+      
+      // If algorithm is deselected (empty string), navigate back to level 1
+      if (!externalSelectedAlgorithm) {
+        console.log('🔄 Algorithm deselected, navigating back to level 1');
+        setCurrentLevel('level1');
+        setSelectedCategory('');
+        setSelectedSubcategory('');
       }
-    } else if (!externalSelectedAlgorithm && selectedAlgorithm && currentLevel === 'level1') {
-      // Clear selection only if we're at level 1 and no external selection
-      setSelectedAlgorithm('');
     }
-  }, [externalSelectedAlgorithm, selectedAlgorithm, currentLevel]);
+  }, [externalSelectedAlgorithm, selectedAlgorithm]);
 
   // Handle selected point from line chart
   useEffect(() => {
@@ -319,6 +349,29 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
         });
       });
 
+      console.log('📊 Performance calculation results:', {
+        totalSounds,
+        categoryCounts,
+        performance: {
+          freqshift: {
+            overall: performance.freqshift.overall,
+            categories: performance.freqshift.categories
+          },
+          hapticgen: {
+            overall: performance.hapticgen.overall,
+            categories: performance.hapticgen.categories
+          },
+          percept: {
+            overall: performance.percept.overall,
+            categories: performance.percept.categories
+          },
+          pitchmatch: {
+            overall: performance.pitchmatch.overall,
+            categories: performance.pitchmatch.categories
+          }
+        }
+      });
+
       setPerformanceData(performance);
       setSoundData(allSoundData);
       // Only set loading to false if we were actually loading
@@ -339,17 +392,48 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
     calculateAlgorithmPerformance();
   }, [ratings]); // Recalculate when ratings change
 
-  // Determine which algorithms to show based on filtered ratings
+  // Determine which algorithms to show based on available ratings and selected algorithm
   const availableAlgorithms = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
-  const algorithmsToShow = ratings && ratings.length > 0 
-    ? availableAlgorithms.filter(alg => 
-        ratings.some(r => r.design === alg)
-      )
-    : availableAlgorithms; // Show all if no ratings prop (using CSV data)
+  const algorithmsToShow = useMemo(() => {
+    console.log('🔍 Calculating algorithmsToShow:', {
+      ratingsLength: ratings?.length,
+      selectedAlgorithm,
+      availableAlgorithms
+    });
+    
+    if (!ratings || ratings.length === 0) {
+      console.log('📊 No ratings, showing all algorithms');
+      return availableAlgorithms; // Show all if no ratings prop (using CSV data)
+    }
+    
+    // If an algorithm is selected (from FilterPanel), show only that algorithm
+    if (selectedAlgorithm) {
+      console.log('🎯 Algorithm selected, showing only:', selectedAlgorithm);
+      return [selectedAlgorithm];
+    }
+    
+    // Otherwise, show all available algorithms
+    const filtered = availableAlgorithms.filter(alg => 
+      ratings.some(r => r.design === alg)
+    );
+    console.log('📊 No algorithm selected, showing all available:', filtered);
+    return filtered;
+  }, [ratings, selectedAlgorithm]);
+
 
   // Generate chart data based on current level
   useEffect(() => {
     if (!performanceData) return;
+
+    console.log('🔄 Generating chart data:', {
+      currentLevel,
+      selectedAlgorithm,
+      selectedCategory,
+      selectedSubcategory,
+      externalSelectedAlgorithm,
+      algorithmsToShow,
+      performanceDataKeys: performanceData ? Object.keys(performanceData) : []
+    });
 
     let data: any[] = [];
 
@@ -510,12 +594,51 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
                 sound.ratings.percept,
                 sound.ratings.pitchmatch
               );
-              return algorithmRating === maxRating;
+              const isWinner = algorithmRating === maxRating;
+              
+              // Debug the first few sounds to see what's happening
+              if (categorySounds.indexOf(sound) < 3) {
+                console.log('🔍 Win calculation debug:', {
+                  soundname: sound.soundname,
+                  selectedAlgorithm,
+                  algorithmRating,
+                  maxRating,
+                  isWinner,
+                  allRatings: sound.ratings
+                });
+              }
+              
+              return isWinner;
             }).length;
             
             const winPercentage = (wins / categorySounds.length) * 100;
             
-            if (winPercentage > 0) {
+            console.log('🔍 Level 3 Debug - Subcategory:', {
+              subcategoryName,
+              totalSounds: categorySounds.length,
+              wins,
+              winPercentage,
+              selectedAlgorithm,
+              sampleSound: categorySounds[0] ? {
+                soundname: categorySounds[0].soundname,
+                ratings: categorySounds[0].ratings,
+                target: categorySounds[0].target
+              } : null,
+              allSoundsInCategory: categorySounds.map(s => ({
+                soundname: s.soundname,
+                target: s.target,
+                ratings: s.ratings
+              }))
+            });
+            
+            // Only show subcategories where the selected algorithm has wins
+            if (selectedAlgorithm && wins > 0) {
+              console.log('✅ Adding subcategory with wins:', {
+                subcategoryName,
+                wins,
+                winPercentage,
+                selectedAlgorithm
+              });
               soundsData.push({
                 name: subcategoryName,
                 value: winPercentage,
@@ -525,9 +648,46 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
                 soundCount: categorySounds.length,
                 winCount: wins
               });
+            } else if (!selectedAlgorithm && winPercentage > 0) {
+              // Show all subcategories when no algorithm is selected
+              console.log('✅ Adding subcategory (no algorithm selected):', {
+                subcategoryName,
+                winPercentage
+              });
+              soundsData.push({
+                name: subcategoryName,
+                value: winPercentage,
+                itemStyle: { color: getSubcategoryColor(selectedCategory) },
+                classNum: i,
+                isSubcategory: true,
+                soundCount: categorySounds.length,
+                winCount: wins
+              });
+            } else {
+              console.log('❌ Skipping subcategory:', {
+                subcategoryName,
+                selectedAlgorithm,
+                wins,
+                winPercentage,
+                reason: !selectedAlgorithm ? 'No algorithm selected' : 'No wins for selected algorithm'
+              });
             }
           }
         }
+
+        console.log('🔍 Level 3 Final Data:', {
+          selectedCategory,
+          selectedAlgorithm,
+          externalSelectedAlgorithm,
+          soundsDataLength: soundsData.length,
+          soundsData: soundsData.map(s => ({
+            name: s.name,
+            value: s.value,
+            soundCount: s.soundCount,
+            winCount: s.winCount
+          })),
+          currentLevel
+        });
 
         data = [
           {
@@ -572,6 +732,14 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
           sound.target === classNum
         );
         
+        console.log('🔍 Level 4 Debug:', {
+          selectedAlgorithm,
+          selectedSubcategory,
+          classNum,
+          totalSounds: subcategorySounds.length,
+          algorithm: selectedAlgorithm
+        });
+        
         // Get sounds where this algorithm wins
         const winningSounds = subcategorySounds.filter(sound => {
           const algorithmRating = sound.ratings[selectedAlgorithm as keyof typeof sound.ratings];
@@ -581,10 +749,41 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
             sound.ratings.percept,
             sound.ratings.pitchmatch
           );
-          return algorithmRating === maxRating;
+          const isWinner = algorithmRating === maxRating;
+          
+          if (isWinner) {
+            console.log('🏆 Winning sound:', {
+              soundname: sound.soundname,
+              algorithm: selectedAlgorithm,
+              algorithmRating,
+              maxRating,
+              allRatings: sound.ratings
+            });
+          }
+          
+          return isWinner;
         });
         
-        const individualSoundsData = winningSounds.map(sound => ({
+        console.log('🎯 Level 4 Results:', {
+          totalSounds: subcategorySounds.length,
+          winningSounds: winningSounds.length,
+          selectedAlgorithm
+        });
+        
+        // If no algorithm is selected, show a message
+        if (!selectedAlgorithm) {
+          data = [{
+            name: selectedSubcategory,
+            itemStyle: { color: getSubcategoryColor(selectedCategory) },
+            isCenter: true,
+            children: [{
+              name: "No algorithm selected",
+              value: 1,
+              itemStyle: { color: '#ccc' }
+            }]
+          }];
+        } else {
+          const individualSoundsData = winningSounds.map(sound => ({
           name: sound.soundname,
           value: sound.ratings[selectedAlgorithm as keyof typeof sound.ratings],
           itemStyle: { color: getSubcategoryColor(selectedCategory) },
@@ -602,14 +801,15 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
           isIndividualSound: true
         }));
 
-        data = [
-          {
-            name: selectedSubcategory,
-            itemStyle: { color: getSubcategoryColor(selectedCategory) },
-            isCenter: true,
-            children: individualSoundsData
-          }
-        ];
+          data = [
+            {
+              name: selectedSubcategory,
+              itemStyle: { color: getSubcategoryColor(selectedCategory) },
+              isCenter: true,
+              children: individualSoundsData
+            }
+          ];
+        }
       }
     }
 
@@ -666,37 +866,93 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
     if (currentLevel === 'level1') {
       if (params.data && params.data.algorithm && !params.data.category) {
         // Clicked on algorithm (inner ring) - go to level 2
+        console.log('🔍 Level 1 to Level 2 navigation:', {
+          algorithm: params.data.algorithm
+        });
+        
         setSelectedAlgorithm(params.data.algorithm);
         setCurrentLevel('level2');
+        
+        // Trigger bidirectional connection
+        if (onAlgorithmSelect) {
+          onAlgorithmSelect(params.data.algorithm);
+        }
       } else if (params.data && params.data.algorithm && params.data.category) {
         // Clicked on category (outer ring) - go to level 3
+        console.log('🔍 Level 1 to Level 3 navigation:', {
+          algorithm: params.data.algorithm,
+          category: params.data.category
+        });
+        
         setSelectedAlgorithm(params.data.algorithm);
         setSelectedCategory(params.data.category);
         setCurrentLevel('level3');
+        
+        // Trigger bidirectional connections
+        if (onAlgorithmSelect) {
+          onAlgorithmSelect(params.data.algorithm);
+        }
+        if (onCategorySelect) {
+          onCategorySelect(params.data.category);
+        }
       }
     } else if (currentLevel === 'level2') {
       if (params.data && params.data.isCenter) {
         setCurrentLevel('level1');
-        // Don't clear selectedAlgorithm if it's from external selection
-        if (!externalSelectedAlgorithm) {
-          setSelectedAlgorithm('');
+        // Clear selectedAlgorithm and trigger bidirectional connection
+        setSelectedAlgorithm('');
+        if (onAlgorithmSelect) {
+          onAlgorithmSelect('');
         }
       } else if (params.data && params.data.name) {
+        // Preserve the selectedAlgorithm when navigating to level 3
+        console.log('🔍 Level 2 to Level 3 navigation:', {
+          selectedAlgorithm,
+          category: params.data.name
+        });
+        
         setSelectedCategory(params.data.name);
         setCurrentLevel('level3');
+        
+        // Trigger bidirectional connection
+        if (onCategorySelect) {
+          onCategorySelect(params.data.name);
+        }
       }
     } else if (currentLevel === 'level3') {
       if (params.data && params.data.isCenter) {
         setCurrentLevel('level2');
         setSelectedCategory('');
+        
+        // Trigger bidirectional connection
+        if (onCategorySelect) {
+          onCategorySelect('');
+        }
       } else if (params.data && params.data.isSubcategory) {
+        console.log('🔍 Navigating to Level 4:', {
+          selectedAlgorithm,
+          selectedCategory,
+          subcategory: params.data.name,
+          classNum: params.data.classNum
+        });
+        
         setSelectedSubcategory(params.data.name);
         setCurrentLevel('level4');
+        
+        // Trigger bidirectional connection
+        if (onSubcategorySelect) {
+          onSubcategorySelect(params.data.name);
+        }
       }
     } else if (currentLevel === 'level4') {
       if (params.data && params.data.isCenter) {
         setCurrentLevel('level3');
         setSelectedSubcategory('');
+        
+        // Trigger bidirectional connection
+        if (onSubcategorySelect) {
+          onSubcategorySelect('');
+        }
       } else if (params.data && params.data.isIndividualSound && onSoundSelect) {
         // Individual sound clicked - open detailed sound drawer
         console.log('🎯 Individual sound clicked:', params.data);
@@ -757,7 +1013,11 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
           if (params.data && params.data.isCenter) {
             return `${params.name}<br/>Click to go back to categories`;
           } else {
-            return `${params.name}<br/>Win Rate: ${params.value.toFixed(1)}%<br/>Wins: ${params.data.winCount}/${params.data.soundCount} sounds<br/>Click to see individual sounds`;
+            const algorithmName = selectedAlgorithm === 'freqshift' ? 'Frequency Shift' : 
+                                   selectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
+                                   selectedAlgorithm === 'percept' ? 'Perceptual Mapping' : 
+                                   selectedAlgorithm === 'pitchmatch' ? 'Pitch Match' : 'Unknown';
+            return `${params.name}<br/>${algorithmName} Win Rate: ${params.value.toFixed(1)}%<br/>Wins: ${params.data.winCount}/${params.data.soundCount} sounds<br/>Click to see individual sounds`;
           }
         } else if (currentLevel === 'level4') {
           if (params.data && params.data.isCenter) {

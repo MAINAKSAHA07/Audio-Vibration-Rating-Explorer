@@ -48,6 +48,33 @@ function App() {
     if (classNum >= 40 && classNum <= 49) return 'Exterior Urban';
     return 'Unknown';
   };
+
+  // Category mapping between FilterPanel and Sunburst
+  const getSunburstCategoryName = (filterPanelCategory: string): string => {
+    const categoryMap: Record<string, string> = {
+      'Animals': 'Animals',
+      'Natural soundscapes & water': 'Natural\nSoundscapes',
+      'Human, non-speech': 'Human\nNon-Speech',
+      'Interior/domestic': 'Interior\nDomestic',
+      'Exterior/urban': 'Exterior\nUrban'
+    };
+    return categoryMap[filterPanelCategory] || filterPanelCategory;
+  };
+
+  const getFilterPanelCategoryName = (sunburstCategory: string): string => {
+    const categoryMap: Record<string, string> = {
+      'Animals': 'Animals',
+      'Natural\nSoundscapes': 'Natural soundscapes & water',
+      'Natural Soundscapes': 'Natural soundscapes & water',
+      'Human\nNon-Speech': 'Human, non-speech',
+      'Human Non-Speech': 'Human, non-speech',
+      'Interior\nDomestic': 'Interior/domestic',
+      'Interior Domestic': 'Interior/domestic',
+      'Exterior\nUrban': 'Exterior/urban',
+      'Exterior Urban': 'Exterior/urban'
+    };
+    return categoryMap[sunburstCategory] || sunburstCategory;
+  };
   
   // Filter state
   const [filterState, setFilterState] = useState<FilterState>({
@@ -60,6 +87,11 @@ function App() {
     sortBy: 'average',
     sortOrder: 'desc'
   });
+
+  // Bidirectional connection state
+  const [connectedAlgorithm, setConnectedAlgorithm] = useState<string>('');
+  const [connectedCategory, setConnectedCategory] = useState<string>('');
+  const [connectedSubcategory, setConnectedSubcategory] = useState<string>('');
 
   // Load data on component mount
   useEffect(() => {
@@ -126,6 +158,125 @@ function App() {
   const categories = getUniqueCategories(ratings);
   const classes = getUniqueClasses(ratings);
 
+  // Bidirectional connection handlers
+  const handleAlgorithmSelect = (algorithm: string) => {
+    console.log('🔄 handleAlgorithmSelect called:', {
+      algorithm,
+      currentConnectedAlgorithm: connectedAlgorithm,
+      currentFilterAlgorithms: filterState.algorithms
+    });
+    
+    setConnectedAlgorithm(algorithm);
+    
+    // Update filter state to reflect the selected algorithm
+    setFilterState(prev => ({
+      ...prev,
+      algorithms: algorithm ? [algorithm] : []
+    }));
+    
+    console.log('✅ Algorithm selection updated:', {
+      connectedAlgorithm: algorithm,
+      filterAlgorithms: algorithm ? [algorithm] : []
+    });
+  };
+
+  const handleCategorySelect = (category: string) => {
+    setConnectedCategory(category);
+    
+    if (category) {
+      // Convert sunburst category name to filter panel category name
+      const filterPanelCategory = getFilterPanelCategoryName(category);
+      
+      // Get the category group from FilterPanel
+      const categoryGroups = [
+        { name: 'Animals', sounds: ['dog', 'rooster', 'pig', 'cow', 'frog', 'cat', 'hen', 'insects', 'sheep', 'crow'] },
+        { name: 'Natural soundscapes & water', sounds: ['rain', 'sea_waves', 'crackling_fire', 'crickets', 'chirping_birds', 'water_drops', 'wind', 'pouring_water', 'toilet_flush', 'thunderstorm'] },
+        { name: 'Human, non-speech', sounds: ['crying_baby', 'sneezing', 'clapping', 'breathing', 'coughing', 'footsteps', 'laughing', 'brushing_teeth', 'snoring', 'drinking_sipping'] },
+        { name: 'Interior/domestic', sounds: ['door_wood_knock', 'mouse_click', 'keyboard_typing', 'door_wood_creaks', 'can_opening', 'washing_machine', 'vacuum_cleaner', 'clock_alarm', 'clock_tick', 'glass_breaking'] },
+        { name: 'Exterior/urban', sounds: ['helicopter', 'chainsaw', 'siren', 'car_horn', 'engine', 'train', 'church_bells', 'airplane', 'fireworks', 'hand_saw'] }
+      ];
+      
+      const categoryGroup = categoryGroups.find(cg => cg.name === filterPanelCategory);
+      
+      if (categoryGroup) {
+        // Select all subcategories in the group
+        setFilterState(prev => ({
+          ...prev,
+          categories: categoryGroup.sounds
+        }));
+      } else {
+        // Handle individual subcategory selection
+        setFilterState(prev => ({
+          ...prev,
+          categories: [category]
+        }));
+      }
+    } else {
+      // Clear category selection
+      setFilterState(prev => ({
+        ...prev,
+        categories: []
+      }));
+    }
+  };
+
+  const handleSubcategorySelect = (subcategory: string) => {
+    setConnectedSubcategory(subcategory);
+  };
+
+  const handleFilterChange = (filters: FilterState) => {
+    console.log('🔄 handleFilterChange called:', {
+      newAlgorithms: filters.algorithms,
+      currentConnectedAlgorithm: connectedAlgorithm,
+      currentFilterAlgorithms: filterState.algorithms
+    });
+    
+    setFilterState(filters);
+    
+    // Update selected algorithm based on filter changes
+    if (filters.algorithms.length === 1) {
+      console.log('✅ Single algorithm selected:', filters.algorithms[0]);
+      setConnectedAlgorithm(filters.algorithms[0]);
+    } else if (filters.algorithms.length === 0) {
+      console.log('✅ All algorithms deselected');
+      setConnectedAlgorithm('');
+    } else {
+      console.log('⚠️ Multiple algorithms selected, clearing connection');
+      setConnectedAlgorithm('');
+    }
+    
+    // Update selected category based on filter changes
+    if (filters.categories.length > 0) {
+      // Check if all categories belong to the same group
+      const categoryGroups = [
+        { name: 'Animals', sounds: ['dog', 'rooster', 'pig', 'cow', 'frog', 'cat', 'hen', 'insects', 'sheep', 'crow'] },
+        { name: 'Natural soundscapes & water', sounds: ['rain', 'sea_waves', 'crackling_fire', 'crickets', 'chirping_birds', 'water_drops', 'wind', 'pouring_water', 'toilet_flush', 'thunderstorm'] },
+        { name: 'Human, non-speech', sounds: ['crying_baby', 'sneezing', 'clapping', 'breathing', 'coughing', 'footsteps', 'laughing', 'brushing_teeth', 'snoring', 'drinking_sipping'] },
+        { name: 'Interior/domestic', sounds: ['door_wood_knock', 'mouse_click', 'keyboard_typing', 'door_wood_creaks', 'can_opening', 'washing_machine', 'vacuum_cleaner', 'clock_alarm', 'clock_tick', 'glass_breaking'] },
+        { name: 'Exterior/urban', sounds: ['helicopter', 'chainsaw', 'siren', 'car_horn', 'engine', 'train', 'church_bells', 'airplane', 'fireworks', 'hand_saw'] }
+      ];
+      
+      // Find which category group contains all the selected categories
+      const matchingGroup = categoryGroups.find(group => 
+        filters.categories.every(cat => group.sounds.includes(cat))
+      );
+      
+      if (matchingGroup && filters.categories.length === matchingGroup.sounds.length) {
+        // All subcategories of a group are selected, set the group category
+        const sunburstCategory = getSunburstCategoryName(matchingGroup.name);
+        setConnectedCategory(sunburstCategory);
+      } else if (filters.categories.length === 1) {
+        // Single category selected
+        setConnectedCategory(filters.categories[0]);
+      } else {
+        // Multiple categories from different groups, clear connected category
+        setConnectedCategory('');
+      }
+    } else {
+      setConnectedCategory('');
+    }
+  };
+
   const renderContent = () => {
     switch (currentView) {
       case 'filtered':
@@ -134,7 +285,13 @@ function App() {
             <SoundGrid 
               ratings={ratings} 
               filterState={filterState} 
-              onFilterChange={(updates) => setFilterState(prev => ({ ...prev, ...updates }))} 
+              onFilterChange={(updates) => setFilterState(prev => ({ ...prev, ...updates }))}
+              selectedAlgorithm={connectedAlgorithm}
+              onAlgorithmSelect={handleAlgorithmSelect}
+              selectedCategory={connectedCategory}
+              onCategorySelect={handleCategorySelect}
+              selectedSubcategory={connectedSubcategory}
+              onSubcategorySelect={handleSubcategorySelect}
             />
           </ErrorBoundary>
         );
@@ -345,9 +502,13 @@ function App() {
               <FilterPanel
                 ratings={ratings}
                 filterState={filterState}
-                onFilterChange={(filters) => setFilterState(filters)}
+                onFilterChange={handleFilterChange}
                 isOpen={true}
                 onToggle={() => {}} // No-op since filters are always visible
+                selectedAlgorithm={connectedAlgorithm}
+                onAlgorithmSelect={handleAlgorithmSelect}
+                selectedCategory={connectedCategory}
+                onCategorySelect={handleCategorySelect}
               />
             </aside>
           )}

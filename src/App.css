@@ -2738,3 +2738,70 @@ body {
   color: #007bff;
   font-style: italic;
 }
+
+/* Bidirectional Connection Visual Feedback */
+.category-connected {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+  border: 2px solid #2196f3 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
+  transform: translateY(-1px) !important;
+  transition: all 0.3s ease !important;
+}
+
+.category-connected .category-name {
+  color: #1976d2 !important;
+  font-weight: 600 !important;
+}
+
+.category-connected .category-checkbox {
+  position: relative;
+}
+
+.category-connected .category-checkbox::before {
+  content: "🔗";
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.algorithm-selected {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%) !important;
+  border: 2px solid #9c27b0 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(156, 39, 176, 0.3) !important;
+  transform: translateY(-1px) !important;
+  transition: all 0.3s ease !important;
+}
+
+.algorithm-selected .algorithm-name {
+  color: #7b1fa2 !important;
+  font-weight: 600 !important;
+}
+
+.algorithm-connected {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%) !important;
+  border: 2px solid #4caf50 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3) !important;
+  transform: translateY(-1px) !important;
+  transition: all 0.3s ease !important;
+}
+
+.algorithm-connected .algorithm-name {
+  color: #2e7d32 !important;
+  font-weight: 600 !important;
+}
+
+.algorithm-connected::before {
+  content: "🔗";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  opacity: 0.8;
+}

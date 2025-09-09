@@ -34,9 +34,25 @@ interface SoundGridProps {
   ratings: RatingData[];
   filterState: FilterState;
   onFilterChange?: (updates: Partial<FilterState>) => void;
+  selectedAlgorithm?: string;
+  onAlgorithmSelect?: (algorithm: string) => void;
+  selectedCategory?: string;
+  onCategorySelect?: (category: string) => void;
+  selectedSubcategory?: string;
+  onSubcategorySelect?: (subcategory: string) => void;
 }
 
-const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterChange }) => {
+const SoundGrid: React.FC<SoundGridProps> = ({ 
+  ratings, 
+  filterState, 
+  onFilterChange,
+  selectedAlgorithm,
+  onAlgorithmSelect,
+  selectedCategory,
+  onCategorySelect,
+  selectedSubcategory,
+  onSubcategorySelect
+}) => {
   const [selectedSound, setSelectedSound] = useState<SoundCard | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [localSortBy, setLocalSortBy] = useState<'average' | 'variance' | 'filename'>(filterState.sortBy);
@@ -52,7 +68,8 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
   const [backgroundBatches, setBackgroundBatches] = useState<SoundCard[][]>([]);
   const [backgroundLoading, setBackgroundLoading] = useState(false);
   
-  const BATCH_SIZE = 100; // Load 100 sounds per batch
+  const INITIAL_BATCH_SIZE = 100; // Load 100 sounds for initial display
+  const BACKGROUND_BATCH_SIZE = 500; // Load 500 sounds per batch in background
   const BACKGROUND_LOAD_DELAY = 4000; // Start background loading after 4 seconds
 
   // Sync local sort state with filterState
@@ -355,7 +372,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
   // Initialize display with first batch when processedSounds changes
   useEffect(() => {
     if (processedSounds.length > 0) {
-      const firstBatch = processedSounds.slice(0, BATCH_SIZE);
+      const firstBatch = processedSounds.slice(0, INITIAL_BATCH_SIZE);
       setDisplayedSounds(firstBatch);
       setCurrentBatch(1);
       setBackgroundBatches([]);
@@ -373,22 +390,22 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
       setBackgroundBatches([]);
       setBackgroundLoading(false);
     }
-  }, [processedSounds, BATCH_SIZE, BACKGROUND_LOAD_DELAY]);
+  }, [processedSounds, INITIAL_BATCH_SIZE, BACKGROUND_LOAD_DELAY]);
 
   // Background loading function
   const startBackgroundLoading = useCallback(() => {
-    if (processedSounds.length <= BATCH_SIZE) {
+    if (processedSounds.length <= INITIAL_BATCH_SIZE) {
       return;
     }
     
     setBackgroundLoading(true);
     
-    const remainingSounds = processedSounds.slice(BATCH_SIZE);
+    const remainingSounds = processedSounds.slice(INITIAL_BATCH_SIZE);
     const batches: SoundCard[][] = [];
     
-    // Create batches
-    for (let i = 0; i < remainingSounds.length; i += BATCH_SIZE) {
-      batches.push(remainingSounds.slice(i, i + BATCH_SIZE));
+    // Create batches using background batch size
+    for (let i = 0; i < remainingSounds.length; i += BACKGROUND_BATCH_SIZE) {
+      batches.push(remainingSounds.slice(i, i + BACKGROUND_BATCH_SIZE));
     }
     
     // Load batches progressively
@@ -406,7 +423,7 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
     };
     
     loadNextBatch();
-  }, [processedSounds, BATCH_SIZE]);
+  }, [processedSounds, INITIAL_BATCH_SIZE, BACKGROUND_BATCH_SIZE]);
 
   // Load more function for user interaction
   const loadMoreSounds = useCallback(() => {
@@ -576,7 +593,13 @@ const SoundGrid: React.FC<SoundGridProps> = ({ ratings, filterState, onFilterCha
           }}
           onNavigateToFiltered={() => {}} // No-op since we're already in filtered view
           filterState={filterState}
-          ratings={filteredRatings}
+          ratings={ratings}
+          selectedAlgorithm={selectedAlgorithm}
+          onAlgorithmSelect={onAlgorithmSelect}
+          selectedCategory={selectedCategory}
+          onCategorySelect={onCategorySelect}
+          selectedSubcategory={selectedSubcategory}
+          onSubcategorySelect={onSubcategorySelect}
           onSoundSelect={(sound) => {
             console.log('🎯 Sunburst sound selected in SoundGrid:', sound);
             console.log('🔍 Available ratings:', ratings.slice(0, 5).map(r => ({ audioFile: r.audioFile, category: r.category, class: r.class })));

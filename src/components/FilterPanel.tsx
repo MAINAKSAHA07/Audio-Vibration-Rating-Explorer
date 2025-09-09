@@ -19,6 +19,10 @@ interface FilterPanelProps {
   onFilterChange: (filters: FilterState) => void;
   isOpen: boolean;
   onToggle: () => void;
+  selectedAlgorithm?: string;
+  onAlgorithmSelect?: (algorithm: string) => void;
+  selectedCategory?: string;
+  onCategorySelect?: (category: string) => void;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -26,7 +30,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   filterState,
   onFilterChange,
   isOpen,
-  onToggle
+  onToggle,
+  selectedAlgorithm,
+  onAlgorithmSelect,
+  selectedCategory,
+  onCategorySelect
 }) => {
   console.log('🔍 FilterPanel rendering with:', { ratings: ratings.length, filterState, isOpen });
   const [localFilters, setLocalFilters] = useState<FilterState>(filterState);
@@ -159,6 +167,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         updateFilter({
           categories: newCategories
         });
+        
+        // Trigger bidirectional connection - clear category selection
+        if (onCategorySelect) {
+          onCategorySelect('');
+        }
       } else {
         // If group is not selected, select only the subcategories (not the group name)
         const newCategories = [
@@ -168,6 +181,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         updateFilter({
           categories: newCategories
         });
+        
+        // Trigger bidirectional connection - select category group
+        if (onCategorySelect) {
+          // Map FilterPanel category name to Sunburst category name
+          const sunburstCategoryName = categoryName === 'Natural soundscapes & water' ? 'Natural\nSoundscapes' :
+                                      categoryName === 'Human, non-speech' ? 'Human\nNon-Speech' :
+                                      categoryName === 'Interior/domestic' ? 'Interior\nDomestic' :
+                                      categoryName === 'Exterior/urban' ? 'Exterior\nUrban' :
+                                      categoryName; // Animals stays the same
+          onCategorySelect(sunburstCategoryName);
+        }
       }
     } else {
       // Handle individual subcategory selection
@@ -178,6 +202,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       updateFilter({
         categories: newCategories
       });
+      
+      // Trigger bidirectional connection for individual subcategory
+      if (onCategorySelect) {
+        if (localFilters.categories.includes(categoryName)) {
+          onCategorySelect(''); // Clear selection
+        } else {
+          onCategorySelect(categoryName); // Select subcategory
+        }
+      }
     }
   };
 
@@ -202,6 +235,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     updateFilter({
       categories: newCategories
     });
+    
+    // Trigger bidirectional connection for subcategory
+    if (onCategorySelect) {
+      if (isSubcategorySelected) {
+        onCategorySelect(''); // Clear selection
+      } else {
+        onCategorySelect(subcategoryName); // Select subcategory
+      }
+    }
   };
 
 
@@ -218,6 +260,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       sortOrder: 'desc'
     };
     setLocalFilters(clearedFilters);
+    
+    // Clear bidirectional selections
+    if (onAlgorithmSelect) {
+      onAlgorithmSelect('');
+    }
+    if (onCategorySelect) {
+      onCategorySelect('');
+    }
   };
 
   const getFilteredCount = () => {
@@ -275,6 +325,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             ].map(algorithm => {
               const isSelected = localFilters.algorithms.includes(algorithm.key);
               
+              // Check if this algorithm is connected from Sunburst
+              const isConnectedFromSunburst = selectedAlgorithm === algorithm.key;
+              
               // Count sounds where this algorithm is the best performer
               const algorithmCount = ratings.filter(r => {
                 // Group by audio file to get unique sounds
@@ -289,7 +342,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               }).length;
               
               return (
-                <label key={algorithm.key} className={`algorithm-checkbox ${isSelected ? 'algorithm-selected' : ''}`}>
+                <label key={algorithm.key} className={`algorithm-checkbox ${isSelected ? 'algorithm-selected' : ''} ${isConnectedFromSunburst ? 'algorithm-connected' : ''}`}>
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -298,6 +351,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                         ? localFilters.algorithms.filter(a => a !== algorithm.key)
                         : [algorithm.key]; // Only select this algorithm, deselect others
                       updateFilter({ algorithms: newAlgorithms });
+                      
+                      // Trigger bidirectional connection
+                      if (onAlgorithmSelect) {
+                        if (isSelected) {
+                          onAlgorithmSelect(''); // Clear selection
+                        } else {
+                          onAlgorithmSelect(algorithm.key); // Select algorithm
+                        }
+                      }
                     }}
                   />
                   <span className="checkmark"></span>
@@ -354,8 +416,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 category.sounds.includes(r.category)
               ).length / 4; // Divide by 4 since each sound has 4 ratings (one per design)
 
+              // Check if this category is connected from Sunburst
+              const isConnectedFromSunburst = selectedCategory && (
+                (category.name === 'Animals' && selectedCategory === 'Animals') ||
+                (category.name === 'Natural soundscapes & water' && selectedCategory === 'Natural\nSoundscapes') ||
+                (category.name === 'Human, non-speech' && selectedCategory === 'Human\nNon-Speech') ||
+                (category.name === 'Interior/domestic' && selectedCategory === 'Interior\nDomestic') ||
+                (category.name === 'Exterior/urban' && selectedCategory === 'Exterior\nUrban')
+              );
+
               return (
-                <div key={category.name} className="category-item">
+                <div key={category.name} className={`category-item ${isConnectedFromSunburst ? 'category-connected' : ''}`}>
                   <label className="category-checkbox">
                     <input
                       type="checkbox"
