@@ -769,7 +769,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
             borderRadius: '8px',
             border: '1px solid #dee2e6'
           }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🧠 Percept Algorithm</h4>
+            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🧠 Perception-Level Mapping Algorithm</h4>
             {vibrationResults.results.percept && 'error' in vibrationResults.results.percept ? (
               <div style={{ color: '#dc3545' }}>
                 ❌ Error: {vibrationResults.results.percept.error}
@@ -783,7 +783,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
                  <div style={{ marginTop: '15px' }}>
                    <VibrationWaveSurferPlayer
                      filename={(vibrationResults.results.percept as VibrationResult).filename}
-                     title="Percept Vibration"
+                     title="Perception-Based Vibration"
                      onPrepareAudio={prepareVibrationForWaveSurfer}
                    />
                  </div>
@@ -819,7 +819,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
             borderRadius: '8px',
             border: '1px solid #dee2e6'
           }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🎼 PitchMatch Algorithm</h4>
+            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🎼 Pitch Matching Algorithm</h4>
             {vibrationResults.results.pitch && 'error' in vibrationResults.results.pitch ? (
               <div style={{ color: '#dc3545' }}>
                 ❌ Error: {vibrationResults.results.pitch.error}
@@ -833,7 +833,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
                  <div style={{ marginTop: '15px' }}>
                    <VibrationWaveSurferPlayer
                      filename={(vibrationResults.results.pitch as VibrationResult).filename}
-                     title="Pitch Vibration"
+                     title="Pitch Matching Vibration"
                      onPrepareAudio={prepareVibrationForWaveSurfer}
                    />
                  </div>
@@ -869,7 +869,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
             borderRadius: '8px',
             border: '1px solid #dee2e6'
           }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🤖 Top-Rated Sound2Hap</h4>
+            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🤖 Top-Pair Sound2Hap </h4>
             {vibrationResults.results.model1 && 'error' in vibrationResults.results.model1 ? (
               <div style={{ color: '#dc3545' }}>
                 ❌ Error: {vibrationResults.results.model1.error}
@@ -883,7 +883,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
                  <div style={{ marginTop: '15px' }}>
                    <VibrationWaveSurferPlayer
                      filename={(vibrationResults.results.model1 as VibrationResult).filename}
-                     title="Top-Rated Sound2Hap Vibration"
+                     title="Top-Pair Sound2Hap Vibration"
                      onPrepareAudio={prepareVibrationForWaveSurfer}
                    />
                  </div>
@@ -1006,7 +1006,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
           {isBackendAvailable && backendHealth ? (
             <div>
               <p style={{ margin: '5px 0' }}><strong>Status:</strong> {backendHealth.status}</p>
-              <p style={{ margin: '5px 0' }}><strong>Algorithms:</strong> Frequency Shifting, HapticGen, Perception-Level Mapping, Pitch Matching, Top-Pair Sound2Hap, Preference-Weighted Sound2Hap</p>
+              <p style={{ margin: '5px 0' }}><strong>Algorithms:</strong> Frequency Shifting Algorithm, HapticGen Algorithm, Perception-Level Mapping Algorithm, Pitch Matching Algorithm, Top-Pair Sound2Hap, Preference-Weighted Sound2Hap</p>
               <p style={{ margin: '5px 0' }}>{backendHealth.message}</p>
             </div>
           ) : (
@@ -1125,6 +1125,78 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
         </div>
       )}
 
+      {/* Spectrogram Analysis */}
+      {audioUrl && (
+        <div className="spectrogram-section" style={{ marginTop: '30px' }}>
+          <h3 style={{
+            color: '#333',
+            marginBottom: '15px'
+          }}>
+            📊 Spectrogram Analysis
+          </h3>
+          
+          {isGeneratingSpectrogram && (
+            <div style={{
+              backgroundColor: '#e2e3e5',
+              color: '#383d41',
+              padding: '15px',
+              borderRadius: '4px',
+              border: '1px solid #d6d8db',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '20px', marginBottom: '8px' }}>⏳</div>
+              <p style={{ margin: '0', fontSize: '14px' }}>Generating spectrogram analysis...</p>
+            </div>
+          )}
+          
+          {spectrogramError && (
+            <div style={{
+              backgroundColor: '#f8d7da',
+              color: '#721c24',
+              padding: '12px',
+              borderRadius: '4px',
+              border: '1px solid #f5c6cb'
+            }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>⚠️ Spectrogram Error</h4>
+              <p style={{ margin: '0', fontSize: '13px' }}>{spectrogramError}</p>
+            </div>
+          )}
+          
+          {spectrogramData.length > 0 && !isGeneratingSpectrogram && (
+            <div style={{
+              backgroundColor: '#f8f9fa',
+              padding: '15px',
+              borderRadius: '8px',
+              border: '1px solid #dee2e6'
+            }}>
+              <h4 style={{ margin: '0 0 10px 0', color: '#333', fontSize: '16px' }}>🎵 Frequency Analysis</h4>
+              <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '12px' }}>
+                This spectrogram shows the frequency content of your audio over time. 
+                Brighter colors indicate stronger frequencies at that time and frequency.
+              </p>
+              <canvas
+                ref={spectrogramCanvasRef}
+                width={400}
+                height={200}
+                style={{
+                  width: '100%',
+                  maxWidth: '400px',
+                  height: 'auto',
+                  borderRadius: '4px',
+                  border: '1px solid #dee2e6',
+                  backgroundColor: '#000'
+                }}
+              />
+              <div style={{ marginTop: '8px', fontSize: '11px', color: '#666' }}>
+                <p style={{ margin: '3px 0' }}><strong>X-axis:</strong> Time (left to right)</p>
+                <p style={{ margin: '3px 0' }}><strong>Y-axis:</strong> Frequency (bottom to top)</p>
+                <p style={{ margin: '3px 0' }}><strong>Colors:</strong> Blue (low energy) → Green → Yellow → Red (high energy)</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Vibration Generation Status */}
       {isGeneratingVibrations && (
         <div className="vibration-generation" style={{ marginTop: '30px' }}>
@@ -1169,77 +1241,6 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
 
       {/* Vibration Results */}
       {renderVibrationResults()}
-
-      {/* Spectrogram Analysis */}
-      {audioUrl && (
-        <div className="spectrogram-section" style={{ marginTop: '30px' }}>
-          <h3 style={{
-            color: '#333',
-            marginBottom: '15px'
-          }}>
-            📊 Spectrogram Analysis
-          </h3>
-          
-          {isGeneratingSpectrogram && (
-            <div style={{
-              backgroundColor: '#e2e3e5',
-              color: '#383d41',
-              padding: '20px',
-              borderRadius: '4px',
-              border: '1px solid #d6d8db',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
-              <p style={{ margin: '0' }}>Generating spectrogram analysis...</p>
-            </div>
-          )}
-          
-          {spectrogramError && (
-            <div style={{
-              backgroundColor: '#f8d7da',
-              color: '#721c24',
-              padding: '15px',
-              borderRadius: '4px',
-              border: '1px solid #f5c6cb'
-            }}>
-              <h4 style={{ margin: '0 0 10px 0' }}>⚠️ Spectrogram Error</h4>
-              <p style={{ margin: '0' }}>{spectrogramError}</p>
-            </div>
-          )}
-          
-          {spectrogramData.length > 0 && !isGeneratingSpectrogram && (
-            <div style={{
-              backgroundColor: '#f8f9fa',
-              padding: '20px',
-              borderRadius: '8px',
-              border: '1px solid #dee2e6'
-            }}>
-              <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🎵 Frequency Analysis</h4>
-              <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px' }}>
-                This spectrogram shows the frequency content of your audio over time. 
-                Brighter colors indicate stronger frequencies at that time and frequency.
-              </p>
-              <canvas
-                ref={spectrogramCanvasRef}
-                width={600}
-                height={300}
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  borderRadius: '4px',
-                  border: '1px solid #dee2e6',
-                  backgroundColor: '#000'
-                }}
-              />
-              <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-                <p style={{ margin: '5px 0' }}><strong>X-axis:</strong> Time (left to right)</p>
-                <p style={{ margin: '5px 0' }}><strong>Y-axis:</strong> Frequency (bottom to top)</p>
-                <p style={{ margin: '5px 0' }}><strong>Colors:</strong> Blue (low energy) → Green → Yellow → Red (high energy)</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Instructions */}
       {!audioUrl && (
