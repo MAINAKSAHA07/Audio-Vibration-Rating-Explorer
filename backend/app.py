@@ -283,7 +283,7 @@ def generate_vibrations():
             results = {}
             
             try:
-                # Frequency Shift algorithm
+                # Frequency Shifting algorithm
                 freqshift_output = temp_path / 'freqshift_output.wav'
                 freqshift_process(
                     in_wav=str(input_path),

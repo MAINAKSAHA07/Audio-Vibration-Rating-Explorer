@@ -494,10 +494,10 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
       
       // Create algorithm data dynamically based on filtered algorithms
       const algorithmConfigs = {
-        freqshift: { name: "Frequency Shift", data: performanceData.freqshift },
+        freqshift: { name: "Frequency Shifting", data: performanceData.freqshift },
         hapticgen: { name: "HapticGen", data: performanceData.hapticgen },
-        percept: { name: "Perceptual Mapping", data: performanceData.percept },
-        pitchmatch: { name: "PitchMatch", data: performanceData.pitchmatch }
+        percept: { name: "Perception-Level Mapping", data: performanceData.percept },
+        pitchmatch: { name: "Pitch Matching", data: performanceData.pitchmatch }
       };
 
       // If no algorithms are selected in the filter, show a message
@@ -1030,7 +1030,7 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
         if (currentLevel === 'level1') {
           if (params.data && params.data.algorithm && !params.data.category) {
             // Inner ring - algorithm
-            const fullName = params.name === "FreqShift" ? "Frequency Shift" : params.name;
+            const fullName = params.name === "FreqShift" ? "Frequency Shifting" : params.name;
             return `${fullName}<br/>Overall Win Rate: ${params.value.toFixed(1)}%<br/>Click to explore categories`;
           } else if (params.data && params.data.algorithm && params.data.category) {
             // Outer ring - category
@@ -1039,9 +1039,9 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
                                    params.name === "Human" ? "Human Non-Speech" :
                                    params.name === "Interior" ? "Interior Domestic" :
                                    params.name === "Exterior" ? "Exterior Urban" : params.name;
-            return `${fullCategoryName}<br/>Category Win Rate: ${originalValue.toFixed(1)}%<br/>Algorithm: ${params.data.algorithm === 'freqshift' ? 'FreqShift' : 
+            return `${fullCategoryName}<br/>Category Win Rate: ${originalValue.toFixed(1)}%<br/>Algorithm: ${params.data.algorithm === 'freqshift' ? 'Frequency Shifting' : 
               params.data.algorithm === 'hapticgen' ? 'HapticGen' : 
-              params.data.algorithm === 'percept' ? 'Percept' : 'PitchMatch'}<br/>Hover to see category name<br/>Click to explore sounds`;
+              params.data.algorithm === 'percept' ? 'Perception-Level Mapping' : 'Pitch Matching'}<br/>Hover to see category name<br/>Click to explore sounds`;
           }
         } else if (currentLevel === 'level2') {
           if (params.data && params.data.isCenter) {
@@ -1053,19 +1053,19 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
           if (params.data && params.data.isCenter) {
             return `${params.name}<br/>Click to go back to categories`;
           } else {
-            const algorithmName = selectedAlgorithm === 'freqshift' ? 'Frequency Shift' : 
+            const algorithmName = selectedAlgorithm === 'freqshift' ? 'Frequency Shifting' : 
                                    selectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
-                                   selectedAlgorithm === 'percept' ? 'Perceptual\nMapping' : 
-                                   selectedAlgorithm === 'pitchmatch' ? 'Pitch Match' : 'Unknown';
+                                   selectedAlgorithm === 'percept' ? 'Perception-Level\nMapping' : 
+                                   selectedAlgorithm === 'pitchmatch' ? 'Pitch Matching' : 'Unknown';
             return `${params.name}<br/>${algorithmName} Win Rate: ${params.value.toFixed(1)}%<br/>Wins: ${params.data.winCount}/${params.data.soundCount} sounds<br/>Click to see individual sounds`;
           }
         } else if (currentLevel === 'level4') {
           if (params.data && params.data.isCenter) {
             return `${params.name}<br/>Click to go back to subcategories`;
           } else {
-            return `${params.name}<br/>Rating: ${params.value.toFixed(1)}<br/>Algorithm: ${selectedAlgorithm === 'freqshift' ? 'FreqShift' : 
+            return `${params.name}<br/>Rating: ${params.value.toFixed(1)}<br/>Algorithm: ${selectedAlgorithm === 'freqshift' ? 'Frequency Shifting' : 
               selectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
-              selectedAlgorithm === 'percept' ? 'Percept' : 'PitchMatch'}`;
+              selectedAlgorithm === 'percept' ? 'Perception-Level Mapping' : 'Pitch Matching'}`;
           }
         }
 
@@ -1094,10 +1094,10 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
               formatter: function(params: any) {
                 // Short algorithm names for better fit
                 const name = params.name;
-                if (name === "Frequency Shift") return "FreqShift";
+                if (name === "Frequency Shifting") return "FreqShift";
                 if (name === "HapticGen") return "HapticGen";
-                if (name === "Perceptual Mapping") return "Percept";
-                if (name === "PitchMatch") return "PitchMatch";
+                if (name === "Perception-Level Mapping") return "Percept";
+                if (name === "Pitch Matching") return "PitchMatch";
                 return name;
               }
             },
@@ -1256,30 +1256,30 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
         }}>
           {currentLevel === 'level1' && (
             selectedPoint ? 
-            `🏆 Algorithm Performance Overview - ${selectedPoint.algorithm === 'freqshift' ? 'FreqShift' : 
+            `🏆 Algorithm Performance Overview - ${selectedPoint.algorithm === 'freqshift' ? 'Frequency Shifting' : 
               selectedPoint.algorithm === 'hapticgen' ? 'HapticGen' : 
-              selectedPoint.algorithm === 'percept' ? 'Perceptual Mapping' : 'PitchMatch'} ${selectedPoint.subcategory} selected in line chart` :
+              selectedPoint.algorithm === 'percept' ? 'Perception-Level Mapping' : 'Pitch Matching'} ${selectedPoint.subcategory} selected in line chart` :
             externalSelectedAlgorithm ? 
-            `🏆 Algorithm Performance Overview - ${externalSelectedAlgorithm === 'freqshift' ? 'FreqShift' : 
+            `🏆 Algorithm Performance Overview - ${externalSelectedAlgorithm === 'freqshift' ? 'Frequency Shifting' : 
               externalSelectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
-              externalSelectedAlgorithm === 'percept' ? 'Perceptual Mapping' : 'PitchMatch'} selected in line chart` :
+              externalSelectedAlgorithm === 'percept' ? 'Perception-Level Mapping' : 'Pitch Matching'} selected in line chart` :
             hoveredMethod ? 
-            `🏆 Algorithm Performance Overview - Hovering ${hoveredMethod === 'freqshift' ? 'FreqShift' : 
+            `🏆 Algorithm Performance Overview - Hovering ${hoveredMethod === 'freqshift' ? 'Frequency Shifting' : 
               hoveredMethod === 'hapticgen' ? 'HapticGen' : 
-              hoveredMethod === 'percept' ? 'Perceptual Mapping' : 'PitchMatch'} from line chart` :
+              hoveredMethod === 'percept' ? 'Perception-Level Mapping' : 'Pitch Matching'} from line chart` :
             ratings && ratings.length > 0 && algorithmsToShow && algorithmsToShow.length < 4 ?
             `🏆 Algorithm Performance Overview - Filtered (${algorithmsToShow.length}/4 algorithms)` :
             '🏆 Algorithm Performance Overview'
           )}
-          {currentLevel === 'level2' && `📊 ${selectedAlgorithm === 'freqshift' ? 'FreqShift' : 
+          {currentLevel === 'level2' && `📊 ${selectedAlgorithm === 'freqshift' ? 'Frequency Shifting' : 
             selectedAlgorithm === 'hapticgen' ? 'HapticGen' : 
-            selectedAlgorithm === 'percept' ? 'Perceptual Mapping' : 'PitchMatch'} by Category`}
+            selectedAlgorithm === 'percept' ? 'Perception-Level Mapping' : 'Pitch Matching'} by Category`}
           {currentLevel === 'level3' && `🎵 ${selectedCategory} Sounds`}
           {currentLevel === 'level4' && (
             selectedPoint ? 
-            `🎵 ${selectedPoint.algorithm === 'freqshift' ? 'FreqShift' : 
+            `🎵 ${selectedPoint.algorithm === 'freqshift' ? 'Frequency Shifting' : 
               selectedPoint.algorithm === 'hapticgen' ? 'HapticGen' : 
-              selectedPoint.algorithm === 'percept' ? 'Perceptual Mapping' : 'PitchMatch'} - ${selectedPoint.subcategory} (Selected from line chart)` :
+              selectedPoint.algorithm === 'percept' ? 'Perception-Level Mapping' : 'Pitch Matching'} - ${selectedPoint.subcategory} (Selected from line chart)` :
             `🎵 ${selectedSubcategory} Individual Sounds`
           )}
         </h3>

@@ -400,10 +400,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
           <div className="algorithm-list">
             {[
-              { key: 'freqshift', name: 'Frequency Shift', color: colors(0) },
+              { key: 'freqshift', name: 'Frequency Shifting', color: colors(0) },
               { key: 'hapticgen', name: 'HapticGen', color: colors(1) },
-              { key: 'percept', name: 'Perceptual Mapping', color: colors(2) },
-              { key: 'pitchmatch', name: 'Pitch Match', color: colors(3) }
+              { key: 'percept', name: 'Perception-Level Mapping', color: colors(2) },
+              { key: 'pitchmatch', name: 'Pitch Matching', color: colors(3) }
             ].map(algorithm => {
               const isSelected = localFilters.algorithms.includes(algorithm.key);
               

@@ -307,10 +307,10 @@ The neural network models require additional setup:
 
 #### **Traditional Algorithms**
 
-1. **Frequency Shift** - Frequency-shifted vibration generation
+1. **Frequency Shifting** - Frequency-shifted vibration generation
 2. **HapticGen** - Haptic-generated vibration patterns
-3. **Percept** - Perceptual audio-to-vibration translation
-4. **PitchMatch** - Pitch-matched vibration (requires MATLAB)
+3. **Perception-Level Mapping** - Perceptual audio-to-vibration translation
+4. **Pitch Matching** - Pitch-matched vibration (requires MATLAB)
 
 #### **Neural Network Models**
 

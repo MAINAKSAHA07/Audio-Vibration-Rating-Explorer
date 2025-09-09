@@ -495,17 +495,17 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
       .style("font-size", "16px")
       .style("font-weight", "700")
       .style("fill", "#2c3e50")
-      .text("Algorithm Wins Across Classes (Individual Sounds)");
+      .text("Algorithm Wins Across Classes");
     
     // Add subtitle
-    svg.append("text")
+    {/*svg.append("text")
       .attr("x", width / 2)
       .attr("y", 35)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
       .style("font-weight", "400")
       .style("fill", "#666")
-      .text("Lines connect winning points for each algorithm across classes");
+      .text("Lines connect winning points for each algorithm across classes");*/}
 
     // Add legend above the chart
     const legend = svg.append("g")
@@ -513,10 +513,10 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
 
     // Method name mapping for display
     const methodDisplayNames = {
-      'freqshift': 'Frequency Shift',
+      'freqshift': 'Frequency Shifting',
       'hapticgen': 'HapticGen', 
-      'percept': 'Perceptual Mapping',
-      'pitchmatch': 'Pitch Match'
+      'percept': 'Perception-Level Mapping',
+      'pitchmatch': 'Pitch Matching'
     };
 
     // Calculate spacing for horizontal legend - better distribution
@@ -573,7 +573,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
 
       legendGroup.append("text")
         .attr("x", 0)
-        .attr("y", -8)
+        .attr("y", -15)
         .attr("text-anchor", "middle")
         .style("font-size", "15px")
         .style("font-weight", "500")

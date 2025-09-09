@@ -484,10 +484,10 @@ const SoundGrid: React.FC<SoundGridProps> = ({
               color: 'white',
               fontWeight: 'bold'
             }}
-            title={`Best rating: ${sound.maxRating.toFixed(1)} achieved by ${sound.bestAlgorithm === 'freqshift' ? 'Frequency Shift' : 
+            title={`Best rating: ${sound.maxRating.toFixed(1)} achieved by ${sound.bestAlgorithm === 'freqshift' ? 'Frequency Shifting' : 
                     sound.bestAlgorithm === 'hapticgen' ? 'HapticGen' : 
-                    sound.bestAlgorithm === 'percept' ? 'Perceptual Mapping' : 
-                    sound.bestAlgorithm === 'pitchmatch' ? 'Pitch Match' : 'Frequency Shift'}`}
+                    sound.bestAlgorithm === 'percept' ? 'Perception-Level Mapping' : 
+                    sound.bestAlgorithm === 'pitchmatch' ? 'Pitch Matching' : 'Frequency Shifting'}`}
           >
             {sound.maxRating.toFixed(1)}
           </span>

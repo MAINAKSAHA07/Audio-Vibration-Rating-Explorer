@@ -45,10 +45,10 @@ const DetailedSoundDrawer: React.FC<DetailedSoundDrawerProps> = ({ sound, isOpen
 
   // Design name mapping
   const designNames = {
-    freqshift: 'Frequency Shift',
+    freqshift: 'Frequency Shifting',
     hapticgen: 'HapticGen',
-    percept: 'Perceptual Mapping',
-    pitchmatch: 'Pitch Match'
+    percept: 'Perception-Level Mapping',
+    pitchmatch: 'Pitch Matching'
   };
 
   // Get category group name

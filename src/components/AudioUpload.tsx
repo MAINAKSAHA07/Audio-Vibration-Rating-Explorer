@@ -662,14 +662,14 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          {/* Frequency Shift Results */}
+          {/* Frequency Shifting Results */}
           <div style={{
             backgroundColor: '#f8f9fa',
             padding: '20px',
             borderRadius: '8px',
             border: '1px solid #dee2e6'
           }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🎵 Frequency Shift Algorithm</h4>
+            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>🎵 Frequency Shifting Algorithm</h4>
             {vibrationResults.results.freqshift && 'error' in vibrationResults.results.freqshift ? (
               <div style={{ color: '#dc3545' }}>
                 ❌ Error: {vibrationResults.results.freqshift.error}
@@ -683,7 +683,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
                  <div style={{ marginTop: '15px' }}>
                    <VibrationWaveSurferPlayer
                      filename={(vibrationResults.results.freqshift as VibrationResult).filename}
-                     title="Frequency Shift Vibration"
+                     title="Frequency Shifting Vibration"
                      onPrepareAudio={prepareVibrationForWaveSurfer}
                    />
                  </div>
@@ -1006,7 +1006,7 @@ const AudioUpload: React.FC<AudioUploadProps> = () => {
           {isBackendAvailable && backendHealth ? (
             <div>
               <p style={{ margin: '5px 0' }}><strong>Status:</strong> {backendHealth.status}</p>
-              <p style={{ margin: '5px 0' }}><strong>Algorithms:</strong> Frequency Shift, HapticGen, Perceptual Mapping, Pitch Match, Top-Rated Sound2Hap, Preference-Weighted Sound2Hap</p>
+              <p style={{ margin: '5px 0' }}><strong>Algorithms:</strong> Frequency Shifting, HapticGen, Perception-Level Mapping, Pitch Matching, Top-Pair Sound2Hap, Preference-Weighted Sound2Hap</p>
               <p style={{ margin: '5px 0' }}>{backendHealth.message}</p>
             </div>
           ) : (
