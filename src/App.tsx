@@ -181,6 +181,13 @@ function App() {
   };
 
   const handleCategorySelect = (category: string) => {
+    console.log('🔄 handleCategorySelect called:', {
+      category,
+      currentConnectedCategory: connectedCategory,
+      currentConnectedAlgorithm: connectedAlgorithm,
+      currentFilterCategories: filterState.categories
+    });
+    
     setConnectedCategory(category);
     
     if (category) {
@@ -204,12 +211,22 @@ function App() {
           ...prev,
           categories: categoryGroup.sounds
         }));
+        
+        console.log('✅ Category selection updated:', {
+          connectedCategory: category,
+          filterCategories: categoryGroup.sounds
+        });
       } else {
         // Handle individual subcategory selection
         setFilterState(prev => ({
           ...prev,
           categories: [category]
         }));
+        
+        console.log('✅ Individual category selection updated:', {
+          connectedCategory: category,
+          filterCategories: [category]
+        });
       }
     } else {
       // Clear category selection
@@ -217,6 +234,11 @@ function App() {
         ...prev,
         categories: []
       }));
+      
+      console.log('✅ Category selection cleared:', {
+        connectedAlgorithm: connectedAlgorithm,
+        filterAlgorithms: filterState.algorithms
+      });
     }
   };
 
@@ -224,7 +246,8 @@ function App() {
     console.log('🔄 handleSubcategorySelect called:', {
       subcategory,
       currentConnectedSubcategory: connectedSubcategory,
-      currentFilterCategories: filterState.categories
+      currentFilterCategories: filterState.categories,
+      currentConnectedCategory: connectedCategory
     });
     
     setConnectedSubcategory(subcategory);
@@ -242,12 +265,24 @@ function App() {
       });
     } else {
       // Clear subcategory selection
-      setFilterState(prev => ({
-        ...prev,
-        categories: []
-      }));
-      
-      console.log('✅ Subcategory selection cleared');
+      // If we have a connected category, restore it; otherwise clear all categories
+      if (connectedCategory) {
+        setFilterState(prev => ({
+          ...prev,
+          categories: [connectedCategory]
+        }));
+        
+        console.log('✅ Subcategory cleared, category restored:', {
+          restoredCategory: connectedCategory
+        });
+      } else {
+        setFilterState(prev => ({
+          ...prev,
+          categories: []
+        }));
+        
+        console.log('✅ Subcategory and categories cleared');
+      }
     }
   };
 
@@ -509,13 +544,13 @@ function App() {
               onClick={() => setCurrentView('filtered')}
               className={currentView === 'filtered' ? 'active' : ''}
             >
-              📈 Audio Overview
+              📈 Audio dashboard
             </button>
             <button
               onClick={() => setCurrentView('upload')}
               className={currentView === 'upload' ? 'active' : ''}
             >
-              🎵 Audio Upload
+              🎵 Audio to Vibrations Generation
             </button>
           </div>
         </div>

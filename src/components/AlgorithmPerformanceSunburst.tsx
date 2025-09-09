@@ -929,6 +929,12 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
       }
     } else if (currentLevel === 'level3') {
       if (params.data && params.data.isCenter) {
+        console.log('🔍 Level 3 to Level 2 navigation:', {
+          selectedAlgorithm,
+          clearingCategory: selectedCategory,
+          clearingSubcategory: selectedSubcategory
+        });
+        
         setCurrentLevel('level2');
         setSelectedCategory('');
         setSelectedSubcategory('');
@@ -939,6 +945,11 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
         }
         if (onSubcategorySelect) {
           onSubcategorySelect('');
+        }
+        
+        // Ensure algorithm selection is maintained for level 2
+        if (onAlgorithmSelect && selectedAlgorithm) {
+          onAlgorithmSelect(selectedAlgorithm);
         }
       } else if (params.data && params.data.isSubcategory) {
         console.log('🔍 Navigating to Level 4:', {
@@ -958,12 +969,23 @@ const AlgorithmPerformanceSunburst: React.FC<AlgorithmPerformanceSunburstProps> 
       }
     } else if (currentLevel === 'level4') {
       if (params.data && params.data.isCenter) {
+        console.log('🔍 Level 4 to Level 3 navigation:', {
+          selectedAlgorithm,
+          selectedCategory,
+          clearingSubcategory: selectedSubcategory
+        });
+        
         setCurrentLevel('level3');
         setSelectedSubcategory('');
         
-        // Trigger bidirectional connection
+        // Trigger bidirectional connection to clear subcategory
         if (onSubcategorySelect) {
           onSubcategorySelect('');
+        }
+        
+        // Also trigger category selection to restore category filter
+        if (onCategorySelect && selectedCategory) {
+          onCategorySelect(selectedCategory);
         }
       } else if (params.data && params.data.isIndividualSound && onSoundSelect) {
         // Individual sound clicked - open detailed sound drawer

@@ -23,6 +23,8 @@ interface FilterPanelProps {
   onAlgorithmSelect?: (algorithm: string) => void;
   selectedCategory?: string;
   onCategorySelect?: (category: string) => void;
+  selectedSubcategory?: string;
+  onSubcategorySelect?: (subcategory: string) => void;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -34,7 +36,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   selectedAlgorithm,
   onAlgorithmSelect,
   selectedCategory,
-  onCategorySelect
+  onCategorySelect,
+  selectedSubcategory,
+  onSubcategorySelect
 }) => {
   console.log('🔍 FilterPanel rendering with:', { ratings: ratings.length, filterState, isOpen });
   const [localFilters, setLocalFilters] = useState<FilterState>(filterState);
@@ -109,6 +113,61 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   useEffect(() => {
     setLocalFilters(filterState);
   }, [filterState]);
+
+  // Handle external category selection changes from AlgorithmPerformanceSunburst
+  useEffect(() => {
+    if (selectedCategory) {
+      console.log('🔄 FilterPanel received category selection from Sunburst:', selectedCategory);
+      
+      // Map Sunburst category name to FilterPanel category name
+      const filterPanelCategoryName = selectedCategory === 'Natural\nSoundscapes' ? 'Natural soundscapes & water' :
+                                     selectedCategory === 'Human\nNon-Speech' ? 'Human, non-speech' :
+                                     selectedCategory === 'Interior\nDomestic' ? 'Interior/domestic' :
+                                     selectedCategory === 'Exterior\nUrban' ? 'Exterior/urban' :
+                                     selectedCategory; // Animals stays the same
+      
+      // Find the category group
+      const categoryGroup = categoryGroups.find(cg => cg.name === filterPanelCategoryName);
+      
+      if (categoryGroup) {
+        // Select all subcategories in the group
+        setLocalFilters(prev => ({
+          ...prev,
+          categories: categoryGroup.sounds
+        }));
+        
+        console.log('✅ FilterPanel updated categories from Sunburst:', {
+          sunburstCategory: selectedCategory,
+          filterPanelCategory: filterPanelCategoryName,
+          selectedSubcategories: categoryGroup.sounds
+        });
+      }
+    } else {
+      console.log('🔄 FilterPanel received category deselection from Sunburst');
+      // Don't clear categories here - let the parent handle it
+    }
+  }, [selectedCategory]);
+
+  // Handle external subcategory selection changes from AlgorithmPerformanceSunburst
+  useEffect(() => {
+    if (selectedSubcategory) {
+      console.log('🔄 FilterPanel received subcategory selection from Sunburst:', selectedSubcategory);
+      
+      // Select only this subcategory
+      setLocalFilters(prev => ({
+        ...prev,
+        categories: [selectedSubcategory]
+      }));
+      
+      console.log('✅ FilterPanel updated categories from Sunburst subcategory:', {
+        selectedSubcategory,
+        filterCategories: [selectedSubcategory]
+      });
+    } else {
+      console.log('🔄 FilterPanel received subcategory deselection from Sunburst');
+      // Don't clear categories here - let the parent handle it
+    }
+  }, [selectedSubcategory]);
 
   // Debounced filter update
   useEffect(() => {

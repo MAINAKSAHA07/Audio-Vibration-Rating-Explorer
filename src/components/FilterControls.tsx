@@ -40,13 +40,13 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           onClick={() => onViewChange('filtered')}
           className={currentView === 'filtered' ? 'active' : ''}
         >
-          📈 Audio Overview
+          📈 Audio dashboard
         </button>
         <button
           onClick={() => onViewChange('upload')}
           className={currentView === 'upload' ? 'active' : ''}
         >
-          🎵 Audio Upload
+          🎵 Audio to Vibrations Generation
         </button>
        {/* <button
           onClick={() => onViewChange('connected')}
