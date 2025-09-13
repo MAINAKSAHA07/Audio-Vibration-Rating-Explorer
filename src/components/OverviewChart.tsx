@@ -151,86 +151,47 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
-          // Process data for line chart - Only show winning points for each algorithm
+          // Process data for line chart - Show all points for each algorithm
     const methods = ['freqshift', 'hapticgen', 'percept', 'pitchmatch'];
     
-    // Process ratings data to find winning algorithms for each class
-    const winningData: { [key: string]: Array<{class: number, rating: number, category: string}> } = {
+    // Process ratings data to show all algorithm points for each class
+    const algorithmData: { [key: string]: Array<{class: number, rating: number, category: string}> } = {
       freqshift: [],
       hapticgen: [],
       percept: [],
       pitchmatch: []
     };
 
-    // Group ratings by class and audio file to handle individual sounds
-    const classAudioGroups = new Map<number, Map<string, RatingData[]>>();
+    // Group ratings by class and algorithm to calculate averages
+    const classAlgorithmGroups = new Map<number, Map<string, RatingData[]>>();
     filteredRatings.forEach(rating => {
       const classNum = parseInt(rating.target);
-      const audioFile = rating.audioFile;
+      const algorithm = rating.design;
       
-      if (!classAudioGroups.has(classNum)) {
-        classAudioGroups.set(classNum, new Map());
+      if (!classAlgorithmGroups.has(classNum)) {
+        classAlgorithmGroups.set(classNum, new Map());
       }
       
-      const audioMap = classAudioGroups.get(classNum)!;
-      if (!audioMap.has(audioFile)) {
-        audioMap.set(audioFile, []);
+      const algorithmMap = classAlgorithmGroups.get(classNum)!;
+      if (!algorithmMap.has(algorithm)) {
+        algorithmMap.set(algorithm, []);
       }
       
-      audioMap.get(audioFile)!.push(rating);
+      algorithmMap.get(algorithm)!.push(rating);
     });
 
-    // For each class, find which algorithm wins for individual sounds
-    classAudioGroups.forEach((audioMap, classNum) => {
-      // Track which algorithms have won for any sound in this class
-      const classWinners = new Set<string>();
-      
-      // Process each audio file separately
-      audioMap.forEach((audioRatings) => {
-        // Group by algorithm for this specific audio file
-        const algorithmRatings = new Map<string, number[]>();
-        audioRatings.forEach(rating => {
-          if (!algorithmRatings.has(rating.design)) {
-            algorithmRatings.set(rating.design, []);
-          }
-          algorithmRatings.get(rating.design)!.push(rating.rating);
-        });
-
-        // Calculate average rating for each algorithm for this audio file
-        const algorithmAverages = new Map<string, number>();
-        algorithmRatings.forEach((ratings, algorithm) => {
-          algorithmAverages.set(algorithm, d3.mean(ratings) || 0);
-        });
-
-        // Find the winning algorithm(s) for this audio file - including ties
-        const maxRating = Math.max(...Array.from(algorithmAverages.values()));
-        const winners = Array.from(algorithmAverages.entries())
-          .filter(([_, rating]) => rating === maxRating)
-          .map(([algorithm, _]) => algorithm);
-
-        // Add to class winners
-        winners.forEach(winner => {
-          if (methods.includes(winner)) {
-            classWinners.add(winner);
-          }
-        });
-      });
-
-      // Add points for all algorithms that won for any sound in this class
-      classWinners.forEach(winner => {
-        // Calculate the overall average rating for this algorithm in this class for display
-        const allClassRatings = Array.from(audioMap.values()).flat();
-        const algorithmRatings = allClassRatings
-          .filter(rating => rating.design === winner)
-          .map(rating => rating.rating);
-        
-        const averageRating = d3.mean(algorithmRatings) || 0;
-        
-        winningData[winner].push({
-          class: classNum,
-          rating: averageRating,
-          category: getCategoryForClass(classNum)
-        });
+    // For each class, calculate average rating for each algorithm
+    classAlgorithmGroups.forEach((algorithmMap, classNum) => {
+      algorithmMap.forEach((ratings, algorithm) => {
+        if (methods.includes(algorithm)) {
+          const averageRating = d3.mean(ratings.map(r => r.rating)) || 0;
+          
+          algorithmData[algorithm].push({
+            class: classNum,
+            rating: averageRating,
+            category: getCategoryForClass(classNum)
+          });
+        }
       });
     });
 
@@ -294,9 +255,9 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
       .y(d => yScale(d.rating))
       .curve(d3.curveMonotoneX);
 
-    // Draw lines and points for each method (only winning points)
+    // Draw lines and points for each method (all points)
     methods.forEach(method => {
-      const methodData = winningData[method];
+      const methodData = algorithmData[method];
 
       // Sort data by class for proper line drawing
       const sortedData = methodData.sort((a, b) => a.class - b.class);
@@ -442,7 +403,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
              .attr("y", 75)
              .style("font-size", "9px")
              .style("fill", "#666")
-             .text("Wins for individual sounds");
+             .text("Average rating for this class");
            
            // Connection status indicator
            if (isConnected) {
@@ -573,7 +534,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
       .style("font-size", "16px")
       .style("font-weight", "700")
       .style("fill", "#2c3e50")
-      .text("Algorithm Wins Across Classes");
+      .text("Algorithm Performance Across Classes");
     
     
     // Add subtitle
@@ -584,7 +545,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({
       .style("font-size", "12px")
       .style("font-weight", "400")
       .style("fill", "#666")
-      .text("Lines connect winning points for each algorithm across classes");*/}
+      .text("Lines connect average ratings for each algorithm across classes");*/}
 
     // Add legend above the chart
     const legend = svg.append("g")

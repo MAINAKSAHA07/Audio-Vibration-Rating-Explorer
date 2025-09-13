@@ -44,6 +44,7 @@ class VibrationService {
       console.warn('1. Click the shield icon in your browser address bar');
       console.warn('2. Select "Load unsafe scripts" or "Proceed to site"');
       console.warn('3. Or use Chrome with --disable-web-security flag for testing');
+      console.warn('4. Or start your React app with: npm start -- --disable-web-security');
     }
   }
 
@@ -69,7 +70,15 @@ class VibrationService {
       // Check if it's a mixed content error
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
-          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser or use HTTPS for the backend.`);
+          const mixedContentError = new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser or use HTTPS for the backend.`);
+          (mixedContentError as any).isMixedContentError = true;
+          (mixedContentError as any).solutions = [
+            'Click the shield icon in your browser address bar and select "Load unsafe scripts"',
+            'Use Chrome with --disable-web-security flag for testing',
+            'Start React with: npm start -- --disable-web-security',
+            'Configure your EC2 backend to use HTTPS'
+          ];
+          throw mixedContentError;
         }
       }
       
@@ -103,7 +112,14 @@ class VibrationService {
       // Check if it's a mixed content error
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
-          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          const mixedContentError = new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          (mixedContentError as any).isMixedContentError = true;
+          (mixedContentError as any).solutions = [
+            'Click the shield icon in your browser address bar and select "Load unsafe scripts"',
+            'Use Chrome with --disable-web-security flag for testing',
+            'Start React with: npm start -- --disable-web-security'
+          ];
+          throw mixedContentError;
         }
       }
       
@@ -153,7 +169,14 @@ class VibrationService {
       // Check if it's a mixed content error
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
-          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          const mixedContentError = new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          (mixedContentError as any).isMixedContentError = true;
+          (mixedContentError as any).solutions = [
+            'Click the shield icon in your browser address bar and select "Load unsafe scripts"',
+            'Use Chrome with --disable-web-security flag for testing',
+            'Start React with: npm start -- --disable-web-security'
+          ];
+          throw mixedContentError;
         }
       }
       
@@ -182,7 +205,14 @@ class VibrationService {
       // Check if it's a mixed content error
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
-          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          const mixedContentError = new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          (mixedContentError as any).isMixedContentError = true;
+          (mixedContentError as any).solutions = [
+            'Click the shield icon in your browser address bar and select "Load unsafe scripts"',
+            'Use Chrome with --disable-web-security flag for testing',
+            'Start React with: npm start -- --disable-web-security'
+          ];
+          throw mixedContentError;
         }
       }
       
@@ -221,7 +251,14 @@ class VibrationService {
       // Check if it's a mixed content error
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         if (window.isSecureContext && this.baseUrl.startsWith('http://')) {
-          throw new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          const mixedContentError = new Error(`Mixed content blocked: HTTPS site cannot access HTTP backend. Please allow mixed content in your browser.`);
+          (mixedContentError as any).isMixedContentError = true;
+          (mixedContentError as any).solutions = [
+            'Click the shield icon in your browser address bar and select "Load unsafe scripts"',
+            'Use Chrome with --disable-web-security flag for testing',
+            'Start React with: npm start -- --disable-web-security'
+          ];
+          throw mixedContentError;
         }
       }
       

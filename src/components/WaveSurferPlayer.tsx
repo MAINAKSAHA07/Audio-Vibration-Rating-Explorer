@@ -5,9 +5,10 @@ interface WaveSurferPlayerProps {
   audioUrl: string;
   title: string;
   height?: number;
+  showDownload?: boolean;
 }
 
-const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title, height = 60 }) => {
+const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title, height = 60, showDownload = false }) => {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -77,6 +78,40 @@ const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title, he
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      // Fetch the file from the backend
+      const response = await fetch(audioUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch file');
+      }
+      
+      // Get the file blob
+      const blob = await response.blob();
+      
+      // Create a blob URL and download
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = title || 'audio_file';
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback to direct URL download
+      const link = document.createElement('a');
+      link.href = audioUrl;
+      link.download = title || 'audio_file';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const getButtonText = () => {
     if (isLoading) return '⏳ Loading...';
     if (error) return '🔄 Retry';
@@ -88,14 +123,26 @@ const WaveSurferPlayer: React.FC<WaveSurferPlayerProps> = ({ audioUrl, title, he
 
   return (
     <div className="wavesurfer-player">
-      <button 
-        onClick={togglePlayPause} 
-        className="play-button" 
-        disabled={isButtonDisabled}
-        title={error || title}
-      >
-        {getButtonText()}
-      </button>
+      <div className="player-controls">
+        <button 
+          onClick={togglePlayPause} 
+          className="play-button" 
+          disabled={isButtonDisabled}
+          title={error || title}
+        >
+          {getButtonText()}
+        </button>
+        
+        {showDownload && (
+          <button 
+            onClick={handleDownload} 
+            className="download-button" 
+            title={`Download ${title}`}
+          >
+            ⬇️ Download
+          </button>
+        )}
+      </div>
       
       <div className="waveform-container">
         <div ref={waveformRef} className="waveform" />

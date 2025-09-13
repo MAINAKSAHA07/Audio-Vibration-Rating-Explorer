@@ -163,6 +163,7 @@ const DetailedSoundDrawer: React.FC<DetailedSoundDrawerProps> = ({ sound, isOpen
                         audioUrl={getVibrationUrl(vibrationFile)} 
                         title={`${sound.soundname || sound.filename} - ${design}`}
                         height={100}
+                        showDownload={true}
                       />
                     </div>
                   </div>
